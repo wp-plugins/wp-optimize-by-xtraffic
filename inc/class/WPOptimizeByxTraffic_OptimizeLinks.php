@@ -276,6 +276,12 @@ LIMIT 0,3
 		}
 		
 		
+		$options['do_enable_db_fulltext_time'] = time();
+		
+		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
+		
+		
+		
 		$dbFieldsHasFulltext = array();
 		
 		$dbFieldsHasFulltext['post_title'] = false;
@@ -420,6 +426,14 @@ LIMIT 0,3
 			
 		}
 		
+		
+		$options1 = $this->get_options();
+		
+		$options = Data::mergeArrays(array(
+			$options1
+			,$options
+		));
+		
 		$options['do_enable_db_fulltext_time'] = time();
 		
 		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
@@ -434,12 +448,17 @@ LIMIT 0,3
 	function optimize_links_process_text($text, $mode)
 	{
 		
-		$keyCacheProcessText = PepVN_Data::createKey(array(
+		$keyCacheProcessText = array(
 			__METHOD__
 			,$text
 			,$mode
 			,'process_text'
-		));
+		);
+		
+		$keyCacheProcessText = PepVN_Data::createKey($keyCacheProcessText);
+		
+		
+		
 		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessText); 
 		
 		if($valueTemp) {
@@ -544,7 +563,7 @@ LIMIT 0,3
 		));
 		
 		$parametersPrimary['group_keywords1'] = $this->cacheObj->get_cache($keyCache1);
-		//$parametersPrimary['group_keywords1'] = false;//test
+		
 		if(!$parametersPrimary['group_keywords1']) {
 			
 			$parametersPrimary['group_keywords1'] = array();
@@ -633,7 +652,7 @@ LIMIT 0,3
 				$parametersPrimary['group_keywords2'] = array();
 				
 				foreach($parametersPrimary['group_keywords1'] as $key1 => $value1) {
-					$patterns1 = '#([\s\,\;\.]+?)('.preg_quote($key1).')([\s\,\;\.]+?)#';
+					$patterns1 = '#([\s\,\;\.]+?)('.PepVN_Data::preg_quote($key1).')([\s\,\;\.]+?)#';
 					if(!$options['optimize_links_casesens']) {
 						$patterns1 .= 'i';
 					}
@@ -716,7 +735,7 @@ LIMIT 0,3
 									}
 									
 									if ($options['optimize_links_link_to_pages']) {
-										$parametersTemp2['post_types'][] = 'page';
+										$parametersTemp2['post_types'][] = 'page'; 
 										
 									}
 									
@@ -768,7 +787,7 @@ LIMIT 0,3
 							if($targetLink2) {
 								
 								
-								$patterns2 = '#([\s\,\;\.]+?)('.preg_quote($key1).')([\s\,\;\.]+?)#';
+								$patterns2 = '#([\s\,\;\.]+?)('.PepVN_Data::preg_quote($key1).')([\s\,\;\.]+?)#';
 								if(!$options['optimize_links_casesens']) {
 									$patterns2 .= 'i';
 								}
@@ -1077,11 +1096,11 @@ LIMIT 0,3
 								<li>&nbsp;<input type="checkbox" name="optimize_links_allow_link_to_pageself"  $optimize_links_allow_link_to_pageself /><label for="optimize_links_allow_link_to_pageself"> Allow links to self</label></li>
 							</ul>
 							
-							<li class="xtr_hid">
-								<input type="checkbox" name="optimize_links_process_in_comment"  $optimize_links_process_in_comment /><label for="optimize_links_process_in_comment"> Comments (may slow down performance)</label>
+							<li class="">
+								<input type="checkbox" name="optimize_links_process_in_comment"  $optimize_links_process_in_comment /><label for="optimize_links_process_in_comment">Process Comments's Content</label>
 							</li>
 							
-							<li class="xtr_hid">
+							<li class="">
 								<input type="checkbox" name="optimize_links_process_in_feed" $optimize_links_process_in_feed /><label for="optimize_links_process_in_feed"> Process RSS feeds Content</label>
 							</li>
 							

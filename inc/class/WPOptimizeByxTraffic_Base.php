@@ -3,6 +3,7 @@
 
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Data.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Images.php');
 
 
 if ( !class_exists('WPOptimizeByxTraffic_Base') ) :
@@ -19,12 +20,10 @@ class WPOptimizeByxTraffic_Base {
 	function __construct() 
 	{
 	
-		
+		$doActions = array();
 		
 		$this->cacheObj = new PepVN_Cache();
 		$this->cacheObj->cache_time = 86400;
-		
-		$doUpdateOptionsStatus = false; 
 		
 		$options = $this->get_options();
 		if ($options) {
@@ -49,25 +48,40 @@ class WPOptimizeByxTraffic_Base {
 			}
 			$options['last_time_clear_cache'] = (int)$options['last_time_clear_cache'];
 			if((time() - $options['last_time_clear_cache']) > (86400 * 7)) {
-				//$this->clear_cache();
+				
 				
 				$options['last_time_clear_cache'] = time();
 				
+				$doActions['updateOptions'] = 1;
 				
-				$doUpdateOptionsStatus = true;
+				$doActions['base_clear_data'] = 1;
+				
 			}
 		}
 		
 		// Add Options Page
 		add_action('admin_menu',  array(&$this, 'wpoptimizebyxtraffic_admin_menu'));
 
-		if ($options['notice']) {
+		if (isset($options['notice']) && $options['notice']) {
 			add_action('admin_notices', array(&$this,'admin_notice'));
 		}
 		
-		if($doUpdateOptionsStatus) {
+		if(isset($doActions['updateOptions']) && $doActions['updateOptions']) {
 			update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 		}
+		
+		if(isset($doActions['base_clear_data']) && $doActions['base_clear_data']) {
+			$this->base_clear_data();
+		}
+		
+		
+		$this->fullDomainName = '';
+		$parseUrl = parse_url(get_bloginfo('wpurl'));
+		if(isset($parseUrl['host']) && $parseUrl['host']) {
+			$this->fullDomainName = $parseUrl['host'];
+			
+		}
+		
 	}
 	
 		
@@ -90,6 +104,9 @@ class WPOptimizeByxTraffic_Base {
 	function get_options() 
 	{
 
+		$rs_parse_url = parse_url(get_bloginfo('wpurl'));
+		
+		
 		$options = array(
 			
 			//optimize_links Setting
@@ -138,13 +155,47 @@ class WPOptimizeByxTraffic_Base {
 			'optimize_images_override_alt' => 'on',//on
 			'optimize_images_override_title' => '',//on
 			
+			//watermark image
+			'optimize_images_watermarks_enable' => '',//on
+			'optimize_images_watermarks_watermark_position' => 'bottom_right',
+			
+			'optimize_images_watermarks_watermark_opacity_value' => 100,
+			'optimize_images_watermarks_watermark_type' => 'text',
+			'optimize_images_watermarks_watermark_text_value' => $rs_parse_url['host'],
+			
+			'optimize_images_watermarks_watermark_text_font_name' => 'arial',
+			'optimize_images_watermarks_watermark_text_size' => '20%',
+			'optimize_images_watermarks_watermark_text_color' => 'ffffff',
+			'optimize_images_watermarks_watermark_text_margin_x' => 10,
+			'optimize_images_watermarks_watermark_text_margin_y' => 10,
+			'optimize_images_watermarks_watermark_text_opacity_value' => 100,
+			'optimize_images_watermarks_watermark_text_background_enable' => 'on',
+			'optimize_images_watermarks_watermark_text_background_color' => '222222',
+			'optimize_images_watermarks_watermark_text_background_opacity_value' => 100,
+			
+			'optimize_images_watermarks_watermark_text_outline_enable' => '',
+			'optimize_images_watermarks_watermark_text_outline_color' => 'ffffff',
+			'optimize_images_watermarks_watermark_text_outline_width' => 1,
+			
+			'optimize_images_watermarks_watermark_image_url' => '',
+			'optimize_images_watermarks_watermark_image_width' => '',
+			'optimize_images_watermarks_watermark_image_margin_x' => 10,
+			'optimize_images_watermarks_watermark_image_margin_y' => 10,
+			
+			
+			'optimize_images_image_quality_value' => 100,
+			'optimize_images_rename_img_filename_value' => '',
+			'optimize_images_maximum_files_handled_each_request' => 0,
+			'optimize_images_handle_again_files_different_configuration_enable' => '',//on
+			'optimize_images_remove_files_available_different_configuration_enable' => 'on',//on
+			
 			
 			
 			//General Setting
 			'last_time_clear_cache' => 0
 		);
 
-		$saved = get_option($this->wpOptimizeByxTraffic_DB_option);
+		$saved = get_option($this->wpOptimizeByxTraffic_DB_option); 
 
 
 		if (!empty($saved)) {
@@ -163,20 +214,70 @@ class WPOptimizeByxTraffic_Base {
 	}
 
 	
-	function clear_cache()
+	function base_clear_data()
 	{
-		$cachePath = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH;
-		$cacheTempPath = $cachePath.'temp/';
-		if($cacheTempPath && file_exists($cacheTempPath)) {
-			PepVN_Data::rrmdir($cacheTempPath);
-			
-			$cacheTempPath1 = $cacheTempPath;
-			$cacheTempPath1 = realpath($cacheTempPath1);
-			if($cacheTempPath1 && file_exists($cacheTempPath1)) {
-			} else {
-				mkdir($cacheTempPath, WPOPTIMIZEBYXTRAFFIC_CHMOD, true);
+		
+		$timestampNow = time();
+		$timestampNow = (int)$timestampNow;
+		
+		
+		
+		$cachePath = PEPVN_CACHE_DATA_DIR.'s'.DIRECTORY_SEPARATOR;
+		
+		$arrayPaths = array();
+		$arrayPaths[] = $cachePath;
+		if(isset($this->pepvn_UploadsPreviewImgFolderPath) && $this->pepvn_UploadsPreviewImgFolderPath) {
+			$arrayPaths[] = $this->pepvn_UploadsPreviewImgFolderPath;
+		}
+		
+		foreach($arrayPaths as $path1) {
+			if($path1) {
+				$pathTemp1 = $path1;
+				$pathTemp1 = realpath($path1);
+				if($pathTemp1 && file_exists($pathTemp1)) {
+					PepVN_Data::rrmdir($pathTemp1);
+					
+					$pathTemp1 = $path1;
+					$pathTemp1 = realpath($pathTemp1);
+					if($pathTemp1 && file_exists($pathTemp1)) {
+					} else {
+						PepVN_Data::createFolder($path1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+						PepVN_Data::chmod($path1,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+					}
+				}
+				
 			}
 		}
+		
+		
+		$globPaths = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH.'files'.DIRECTORY_SEPARATOR;
+		$globPaths = glob($globPaths."*.*");
+		
+		
+		if($globPaths && (count($globPaths)>0)) {
+			$timeout1 = 86400 * 3;
+			foreach ($globPaths as $filename) {
+				$filename = realpath($filename);
+				if($filename && file_exists($filename)) {
+					$deleteStatus1 = true;
+					$filemtimeTemp1 = filemtime($filename);
+					if($filemtimeTemp1) {
+						$filemtimeTemp1 = (int)$filemtimeTemp1;
+						if(($timestampNow - $filemtimeTemp1) <= $timeout1) {
+							$deleteStatus1 = false;
+						}
+					}
+					if($deleteStatus1) {
+						@unlink($filename);
+						
+					}
+				}
+				
+			}
+		}
+		
+		
+		
 	}
 	
 	function handle_options()
@@ -198,46 +299,106 @@ class WPOptimizeByxTraffic_Base {
 			
 			if ( isset($_POST['optimize_links_submitted']) ) {
 				
-				$options['optimize_links_process_in_post']=$_POST['optimize_links_process_in_post'];					
-				$options['optimize_links_allow_link_to_postself']=$_POST['optimize_links_allow_link_to_postself'];					
-				$options['optimize_links_process_in_page']=$_POST['optimize_links_process_in_page'];					
-				$options['optimize_links_allow_link_to_pageself']=$_POST['optimize_links_allow_link_to_pageself'];					
-				$options['optimize_links_process_in_comment']=$_POST['optimize_links_process_in_comment'];					
-				$options['optimize_links_excludeheading']=$_POST['optimize_links_excludeheading'];									
-				$options['optimize_links_link_to_posts']=$_POST['optimize_links_link_to_posts'];
-				$options['optimize_links_link_to_pages']=$_POST['optimize_links_link_to_pages'];					
-				$options['optimize_links_link_to_cats']=$_POST['optimize_links_link_to_cats'];					
-				$options['optimize_links_link_to_tags']=$_POST['optimize_links_link_to_tags'];					
-				$options['optimize_links_ignore']=$_POST['optimize_links_ignore'];	
-				$options['optimize_links_ignorepost']=$_POST['optimize_links_ignorepost'];					
-				$options['optimize_links_maxlinks']=(int) $_POST['optimize_links_maxlinks'];					
-				$options['optimize_links_maxsingle']=(int) $_POST['optimize_links_maxsingle'];					
-				$options['optimize_links_maxsingleurl']=(int) $_POST['optimize_links_maxsingleurl'];
-				$options['optimize_links_minusage']=(int) $_POST['optimize_links_minusage'];			// credit to Dominik Deobald		
-				$options['optimize_links_customkey']=$_POST['optimize_links_customkey'];	
-				$options['optimize_links_customkey_url']=$_POST['optimize_links_customkey_url'];
-				$options['optimize_links_customkey_preventduplicatelink']=$_POST['optimize_links_customkey_preventduplicatelink'];
-				//$options['optimize_links_nofoln']=$_POST['optimize_links_nofoln'];		
-				$options['optimize_links_nofolo']=$_POST['optimize_links_nofolo'];	
-				//$options['optimize_links_blankn']=$_POST['optimize_links_blankn'];	
-				$options['optimize_links_blanko']=$_POST['optimize_links_blanko'];	
-				$options['optimize_links_onlysingle']=$_POST['optimize_links_onlysingle'];	
-				$options['optimize_links_casesens']=$_POST['optimize_links_casesens'];	
-				$options['optimize_links_process_in_feed']=$_POST['optimize_links_process_in_feed'];
+				$arrayFields1 = array(
+					'optimize_links_process_in_post'
+					,'optimize_links_allow_link_to_postself'
+					,'optimize_links_process_in_page'
+					,'optimize_links_allow_link_to_pageself'
+					,'optimize_links_process_in_comment'
+					,'optimize_links_excludeheading'
+					,'optimize_links_link_to_posts'
+					,'optimize_links_link_to_pages'
+					,'optimize_links_link_to_cats'
+					,'optimize_links_link_to_tags'
+					,'optimize_links_ignore'
+					,'optimize_links_ignorepost'
+					,'optimize_links_maxlinks'
+					,'optimize_links_maxsingle'
+					,'optimize_links_maxsingleurl'
+					,'optimize_links_minusage'
+					,'optimize_links_customkey'
+					,'optimize_links_customkey_url'
+					,'optimize_links_customkey_preventduplicatelink'
+					,'optimize_links_nofolo'
+					,'optimize_links_blanko'
+					,'optimize_links_onlysingle'
+					,'optimize_links_casesens'
+					,'optimize_links_process_in_feed'
+					,'optimize_links_use_cats_as_keywords'
+					,'optimize_links_use_tags_as_keywords'
+					,'optimize_links_nofollow_urls'
+					,'optimize_links_nofolo_blanko_exclude_urls'
+					
+					
+				);
 				
-				$options['optimize_links_use_cats_as_keywords']=$_POST['optimize_links_use_cats_as_keywords'];
-				$options['optimize_links_use_tags_as_keywords']=$_POST['optimize_links_use_tags_as_keywords'];
-				$options['optimize_links_nofollow_urls']=$_POST['optimize_links_nofollow_urls'];
-				$options['optimize_links_nofolo_blanko_exclude_urls']=$_POST['optimize_links_nofolo_blanko_exclude_urls'];
+				
+				foreach($arrayFields1 as $key1 => $value1) {
+					if(isset($_POST[$value1])) {
+						$options[$value1] = $_POST[$value1];
+					} else {
+						$options[$value1] = '';
+					}
+				}
+				
+				
+				$options['optimize_links_maxlinks']=(int) $options['optimize_links_maxlinks'];	
+				$options['optimize_links_maxsingle']=(int) $options['optimize_links_maxsingle'];					
+				$options['optimize_links_maxsingleurl']=(int) $options['optimize_links_maxsingleurl'];
+				$options['optimize_links_minusage']=(int) $options['optimize_links_minusage'];
+				
 				
 			}
 			
 			if ( isset($_POST['optimize_images_submitted']) ) {
-				$options['optimize_images_alttext'] = $_POST['optimize_images_alttext'];
-				$options['optimize_images_titletext'] = $_POST['optimize_images_titletext'];
 				
-				$options['optimize_images_override_alt'] = $_POST['optimize_images_override_alt'];
-				$options['optimize_images_override_title'] = $_POST['optimize_images_override_title'];
+				$arrayFields1 = array(
+					'optimize_images_alttext'
+					,'optimize_images_titletext'
+					,'optimize_images_override_alt'
+					,'optimize_images_override_title'
+					
+					
+					//watermark image
+					,'optimize_images_watermarks_enable'
+					,'optimize_images_watermarks_watermark_position'
+					,'optimize_images_watermarks_watermark_opacity_value'
+					,'optimize_images_watermarks_watermark_type'
+					,'optimize_images_watermarks_watermark_text_value'
+					,'optimize_images_watermarks_watermark_text_font_name'
+					,'optimize_images_watermarks_watermark_text_size'
+					,'optimize_images_watermarks_watermark_text_color'
+					,'optimize_images_watermarks_watermark_text_margin_x'
+					,'optimize_images_watermarks_watermark_text_margin_y'
+					,'optimize_images_watermarks_watermark_text_opacity_value'
+					,'optimize_images_watermarks_watermark_text_background_enable'
+					,'optimize_images_watermarks_watermark_text_background_color'
+					,'optimize_images_watermarks_watermark_text_background_opacity_value'
+					,'optimize_images_watermarks_watermark_text_outline_enable'
+					,'optimize_images_watermarks_watermark_text_outline_color'
+					,'optimize_images_watermarks_watermark_text_outline_width'
+					
+					,'optimize_images_watermarks_watermark_image_url'
+					,'optimize_images_watermarks_watermark_image_width'
+					,'optimize_images_watermarks_watermark_image_margin_x'
+					,'optimize_images_watermarks_watermark_image_margin_y'
+					
+					,'optimize_images_image_quality_value'
+					,'optimize_images_rename_img_filename_value'
+					,'optimize_images_maximum_files_handled_each_request'
+					,'optimize_images_handle_again_files_different_configuration_enable'
+					,'optimize_images_remove_files_available_different_configuration_enable'
+					
+					
+				);
+				
+				foreach($arrayFields1 as $key1 => $value1) {
+					if(isset($_POST[$value1])) {
+						$options[$value1] = $_POST[$value1];
+					} else {
+						$options[$value1] = '';
+					}
+				}
 				
 			}
 		
@@ -248,8 +409,7 @@ class WPOptimizeByxTraffic_Base {
 			
 			echo '<div class="updated fade"><p>Plugin settings saved.</p></div>';
 			
-			$this->clear_cache();
-			
+			$this->base_clear_data();
 			
 		}
 		
@@ -322,9 +482,55 @@ class WPOptimizeByxTraffic_Base {
 		
 		
 	}
+	
+	
+	function quickGetUrlContent($input_url, $input_args = false) 
+	{
+		if(!$input_args) {
+			$input_args = array();
+		}
+		
+		$args1 = array(
+			'timeout'     => 6,
+			'redirection' => 9,
+			//'httpversion' => '1.0',
+			'user-agent'  => 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36',//'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+			'blocking'    => true,
+			'headers'     => array(),
+			'cookies'     => array(),
+			//'body'        => null,
+			'compress'    => true,
+			'decompress'  => true,
+			'sslverify'   => false,
+			//'stream'      => false,
+			//'filename'    => null
+		);
+		
+		foreach($input_args as $key1 => $value1) {
+			$args1[$key1] = $value1;
+		}
+		
+		$objWPHttp = new WP_Http();
+		$resultData = $objWPHttp->get($input_url, $args1);
+		
+		if($resultData && is_array($resultData)) {
+			if(isset($resultData['body']) && $resultData['body']) {
+				return $resultData['body']; 
+			}
+		}
+		
+		
+		
+		$resultData = '';
+		return $resultData;
+		
+		
+	}
 
 
 }
+
+
 
 endif;
 
