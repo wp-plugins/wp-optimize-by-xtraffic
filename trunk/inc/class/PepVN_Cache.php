@@ -12,8 +12,10 @@
 
  
  
-if(!defined('PEPVN_CACHE_DIR')){
-	define('PEPVN_CACHE_DIR', realpath(dirname(__FILE__).'/../').'/cache/temp/');
+if(!defined('PEPVN_CACHE_DATA_DIR')){
+	
+	define('PEPVN_CACHE_DATA_DIR', WPOPTIMIZEBYXTRAFFIC_CACHE_PATH.'data'.DIRECTORY_SEPARATOR);
+	
 }
  
 
@@ -24,54 +26,66 @@ class PepVN_Cache
 {
 
 	//Path to cache folder (with trailing /)
-	public $cache_path = PEPVN_CACHE_DIR;
+	public $cache_path = '';
 	
 	//Length of time to cache a file in seconds
 	public $cache_time = 3600;
 	
 	function __construct() {
-		$this->cache_path = PEPVN_CACHE_DIR;
+		$this->cache_path = PEPVN_CACHE_DATA_DIR.'s'.DIRECTORY_SEPARATOR;
 		$this->cache_time = 3600;
+		
+		
+		PepVN_Data::createFolder($this->cache_path, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+		PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+		
 	}
 
 	
-	function set_cache($label, $data)
+	public function set_cache($label, $data)
 	{
-		if(!file_exists($this->cache_path)) {
-			//mkdir($this->cache_path);
-			mkdir($this->cache_path, WPOPTIMIZEBYXTRAFFIC_CHMOD, true);
+		if($this->cache_path && file_exists($this->cache_path)) {
+		} else {
+							
+			PepVN_Data::createFolder($this->cache_path, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			
 		}
 		
-		if(file_exists($this->cache_path)) {
-			file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', gzcompress(serialize($data),2));
-			
+		if($this->cache_path && file_exists($this->cache_path) && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($this->cache_path))) {
+			@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', gzcompress(serialize($data),2));
 		}
 		
 	}
 
-	function get_cache($label)
+	public function get_cache($label)
 	{
 		if($this->is_cached($label)){
             $filename = $this->cache_path . $this->safe_filename($label) .'.cache';
+			
 			return unserialize(gzuncompress(file_get_contents($filename)));
 		}
 
 		return false;
 	}
 
-	function is_cached($label)
+	public function is_cached($label)
 	{
+		$resultData = false;
+		
 		$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
 
-		if(file_exists($filename) && (filemtime($filename) + $this->cache_time >= time())) return true;
-
-		return false;
+		if($filename && file_exists($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
+			$resultData = true;
+		}
+		
+		return $resultData;
 	}
 
 	//Helper function to validate filenames
-	function safe_filename($filename)
+	public function safe_filename($filename)
 	{
-		return preg_replace('/[^0-9a-z\.\_\-]/i','', strtolower($filename));
+		return preg_replace('/[^0-9a-z\.\_\-]/i','', strtolower($filename)); 
 	}
 
 
