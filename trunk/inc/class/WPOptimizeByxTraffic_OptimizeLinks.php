@@ -447,9 +447,14 @@ LIMIT 0,3
 
 	function optimize_links_process_text($text, $mode)
 	{
+		$keyCacheMethod = array(
+			__METHOD__
+		);
+		$keyCacheMethod = PepVN_Data::createKey($keyCacheMethod);
+		
 		
 		$keyCacheProcessText = array(
-			__METHOD__
+			$keyCacheMethod
 			,$text
 			,$mode
 			,'process_text'
@@ -467,6 +472,9 @@ LIMIT 0,3
 		
 		
 		global $wpdb, $post;
+		
+		
+		
 		
 		$parametersPrimary = array();
 		$parametersPrimary['group_keywords1'] = array();
@@ -644,7 +652,7 @@ LIMIT 0,3
 		
 		
 		$numberTotalLinksAdded = 0;
-		$arrayLinksAdded = array();
+		
 		
 		if($parametersPrimary['group_keywords1']) {
 			if(count($parametersPrimary['group_keywords1'])>0) {
@@ -652,28 +660,34 @@ LIMIT 0,3
 				$parametersPrimary['group_keywords2'] = array();
 				
 				foreach($parametersPrimary['group_keywords1'] as $key1 => $value1) {
-					$patterns1 = '#([\s\,\;\.]+?)('.PepVN_Data::preg_quote($key1).')([\s\,\;\.]+?)#';
-					if(!$options['optimize_links_casesens']) {
-						$patterns1 .= 'i';
-					}
+					$targetKeywordClean = PepVN_Data::strtolower(PepVN_Data::cleanKeyword($key1));
+					if(isset(PepVN_Data::$cacheData[$keyCacheMethod]['keywordsAdded'][$targetKeywordClean]) && PepVN_Data::$cacheData[$keyCacheMethod]['keywordsAdded'][$targetKeywordClean]) {
+					} else {
 					
-					$numberMatched1 = preg_match_all( $patterns1,$text,$matched1);
-					
-					$numberMatched1 = (int)$numberMatched1;
-					if($numberMatched1>0) {
-						if(isset($parametersPrimary['group_keywords2'][$key1]) && $parametersPrimary['group_keywords2'][$key1]) {
-						
-						} else {
-							$parametersPrimary['group_keywords2'][$key1] = 0;
+						$patterns1 = '#([\s\,\;\.]+?)('.PepVN_Data::preg_quote($key1).')([\s\,\;\.]+?)#';
+						if(!$options['optimize_links_casesens']) {
+							$patterns1 .= 'i';
 						}
 						
-						$keywordLength1 = strlen($key1);
-						$keywordLength1 = (int)$keywordLength1;
-						$keywordLength1 = $keywordLength1 * 2.8;
-						$keywordLength1 = (int)$keywordLength1;
+						$numberMatched1 = preg_match_all( $patterns1,$text,$matched1);
 						
+						$numberMatched1 = (int)$numberMatched1;
+						if($numberMatched1>0) {
+							if(isset($parametersPrimary['group_keywords2'][$key1]) && $parametersPrimary['group_keywords2'][$key1]) {
+							
+							} else {
+								$parametersPrimary['group_keywords2'][$key1] = 0;
+							}
+							
+							$keywordLength1 = strlen($key1);
+							$keywordLength1 = (int)$keywordLength1;
+							$keywordLength1 = $keywordLength1 * 2.8;
+							$keywordLength1 = (int)$keywordLength1;
+							
+							
+							$parametersPrimary['group_keywords2'][$key1] += $numberMatched1 * $keywordLength1;
+						}
 						
-						$parametersPrimary['group_keywords2'][$key1] += $numberMatched1 * $keywordLength1;
 					}
 				}
 				
@@ -694,6 +708,8 @@ LIMIT 0,3
 							}
 						}
 						
+						$targetKeywordClean = PepVN_Data::strtolower(PepVN_Data::cleanKeyword($key1));
+						
 						$checkStatus1 = false;
 						
 						$targetLink1 = false;
@@ -712,7 +728,8 @@ LIMIT 0,3
 									foreach($targetLinks1 as $key2 => $value2) {
 										$value2 = trim($value2);
 										if($value2) {
-											if(!in_array($value2,$arrayLinksAdded)) {
+											if(isset(PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$value2]) && PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$value2]) {
+											} else {
 												$targetLink2 = $value2;
 												$targetLinkTitle2 = $key1;
 												break;
@@ -748,30 +765,29 @@ LIMIT 0,3
 										$checkStatus2 = false;
 										
 										if($valueTwo['post_id'] != $post->ID) {
-											if(!in_array($valueTwo['post_link'],$arrayLinksAdded)) {
-												$checkStatus2 = true;
-												$targetLink2 = $valueTwo['post_link'];
-												$targetLinkTitle2 = $valueTwo['post_title'];
-											}
+											$checkStatus2 = true;
 										} else {
 											if ($post->post_type == 'post') {
-												
 												if ($options['optimize_links_allow_link_to_postself']) {
 													$checkStatus2 = true;
-													$targetLink2 = $valueTwo['post_link'];
-													$targetLinkTitle2 = $valueTwo['post_title'];
 												}
 											} else if ($post->post_type == 'page') {
 												if ($options['optimize_links_allow_link_to_pageself']) {
 													$checkStatus2 = true;
-													$targetLink2 = $valueTwo['post_link'];
-													$targetLinkTitle2 = $valueTwo['post_title'];
 												}
 											
 											}
 										}
 										
 										if($checkStatus2) {
+											if(isset(PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$valueTwo['post_link']]) && PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$valueTwo['post_link']]) {
+												$checkStatus2 = false;
+											}
+										}
+										
+										if($checkStatus2) {
+											$targetLink2 = $valueTwo['post_link'];
+											$targetLinkTitle2 = $valueTwo['post_title'];
 											break;
 										}
 										
@@ -811,7 +827,9 @@ LIMIT 0,3
 
 								if($count2>0) {
 								
-									$arrayLinksAdded[] = $targetLink2;
+									
+									PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$targetLink2] = 1;
+									PepVN_Data::$cacheData[$keyCacheMethod]['keywordsAdded'][$targetKeywordClean] = 1; 
 
 									$rsTwo = PepVN_Data::escapeHtmlTags($text);
 									$text = $rsTwo['content'];

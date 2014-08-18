@@ -20,7 +20,7 @@ class PepVN_Data
 {
 
 	public static $defaultParams = false;
-	public static $cacheData = false;
+	public static $cacheData = array();
 	
 	function __construct()
 	{
