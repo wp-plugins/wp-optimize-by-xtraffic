@@ -175,8 +175,13 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			$paramsWatermarkOptions['image'] = false;
 		}
 		
-		$isProcessStatus = false;
+		if(isset($options['optimize_images_watermarks_enable']) && $options['optimize_images_watermarks_enable']) {
+		} else {
+			$paramsWatermarkOptions['text'] = false;
+			$paramsWatermarkOptions['image'] = false;
+		}
 		
+		$isProcessStatus = false;
 		
 		if(($paramsWatermarkOptions['text']) || ($paramsWatermarkOptions['image'])) {
 			$isProcessStatus = true;
@@ -201,8 +206,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 				}
 			}
 		}
-		
-		
 		
 		if(!$isProcessStatus) {
 			return $resultData;
@@ -1231,7 +1234,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		
 		$patternsReplace = array();
-		$patternsReplace2 = array();
+		$patternsReplaceImgSrc = array();
 		
 		
 		
@@ -1345,7 +1348,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						$checkStatus2 = false;
 						
 						if($this->hostHasToolToProcessImage) {
-							if(PepVN_Data::isImg($imgSrc)) {
+							//if(PepVN_Data::isImg($imgSrc)) {
+							if(PepVN_Data::isUrl($imgSrc)) { 
 								$checkStatus2 = true;
 							}
 							
@@ -1409,7 +1413,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								
 								$newImgTag = str_replace($imgSrc,$imgSrc2,$newImgTag);
 								
-								$patternsReplace2[$imgSrc] = $imgSrc2;
+								$patternsReplaceImgSrc[$imgSrc] = $imgSrc2;
 							}
 							
 						}
@@ -1433,8 +1437,13 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			}
 			
 			
-			if(count($patternsReplace2)>0) {
-				$text = str_replace(array_keys($patternsReplace2),array_values($patternsReplace2),$text);
+			if(count($patternsReplaceImgSrc)>0) {
+				$imgNewName = preg_replace('#[ \t]+#i','-',$imgNewName);
+				foreach($patternsReplaceImgSrc as $keyOne => $valueOne) {
+					$text = preg_replace('#([\'\"\s \t]+)'.PepVN_Data::preg_quote($keyOne).'([\'\"\s \t]+)#is','\1'.$valueOne.'\2',$text);
+				}
+				//$text = str_replace(array_keys($patternsReplaceImgSrc),array_values($patternsReplaceImgSrc),$text);
+				
 			}
 			
 			
