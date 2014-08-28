@@ -40,7 +40,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		}
 		
 		
-		$this->pepvn_ImgFolderCachePath = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH . 'files' . DIRECTORY_SEPARATOR;
+		$this->pepvn_ImgFolderCachePath = WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH;
 		if(!file_exists($this->pepvn_ImgFolderCachePath)) {
 			
 			PepVN_Data::createFolder($this->pepvn_ImgFolderCachePath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
@@ -392,7 +392,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						
 						
 							$imgOriginalCacheFilePath = $imgFolderCachePath . DIRECTORY_SEPARATOR;
-							$imgOriginalCacheFilePath .= md5($input_parameters['original_image_src']).'.txt';
+							$imgOriginalCacheFilePath .= md5($input_parameters['original_image_src']).'.txt'; 
 							
 							if(!file_exists($imgOriginalCacheFilePath)) {
 								@file_put_contents($imgOriginalCacheFilePath,'');

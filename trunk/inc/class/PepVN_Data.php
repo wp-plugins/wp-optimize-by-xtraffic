@@ -199,6 +199,62 @@ class PepVN_Data
 		return $rgb; // returns an array with the rgb values
 	}
 
+	
+	
+	public static function minifyHtml($input_data)
+	{
+		
+		$patterns = array(
+			1 => "/(\<\!\-\-)(.*?)(\-\-\>)/s", // Remove all comments
+			2 => '/([\t])+/',
+			3 => '/( ){2,}/',
+			4 => '/[\r\n\t ]+(<)/s', //before
+			5 => '/(>)([\r\n\t ])+/s', //after
+			6 => '/[\r\n\t ]+(\<\/)/s', //before
+			7 => '/(\>)[\r\n\t ]+(\<)/s',
+		);
+		
+		$replacements = array(
+			1 => ' ',
+			2 => ' ',
+			3 => ' ',
+			4 => ' $1',
+			5 => '$1 ',
+			6 => ' $1',
+			7 => '$1 $2', 
+		);
+		
+		$input_data = preg_replace($patterns, $replacements, $input_data);
+		
+		return $input_data;
+	}
+	
+	
+	
+	public static function minifyCss($input_data)
+	{
+		$patterns = array(
+			'#/\*[^*]*\*+([^/][^*]*\*+)*/#' => ''
+			,'#\s+#s' => ' ' // Compress all spaces into single space
+			
+			,'#(\/\*|\<\!\-\-)(.*?)(\*\/|\-\-\>)#s' => ' '// Remove all comments
+			,'#(\s+)?([,{};:>\+])(\s+)?#s' => '$2' // Remove un-needed spaces around special characters
+			//,'#url\([\'\"](.*?)[\'\"]\)#s' => 'url($1)'// Remove quotes from urls
+			,'#;{2,}#' => ';' // Remove unecessary semi-colons
+			
+			
+			,'#^\s+#m' => ' '
+			,'#url\((\s+)([^\)]+)(\s+)\)#' => 'url($2)'
+		);
+		
+		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
+		
+		return $input_data;
+		
+	}
+	
+	
+	
 	public static function hashMd5($input_data)
 	{
 		$input_data = serialize($input_data);
@@ -265,7 +321,7 @@ class PepVN_Data
 		}
 		
 		
-		return $resultData;
+		return $resultData; 
 		
 	}
 	
@@ -309,7 +365,7 @@ class PepVN_Data
 			$input_delimiter = preg_replace('#[;,]+#i',';',$input_delimiter);
 		}
 		
-		$input_data = explode(';',$input_data);
+		$input_data = explode($input_delimiter,$input_data);
 		
 		return $input_data;
 		
@@ -332,6 +388,18 @@ class PepVN_Data
 		
 		return $resultData;
 		
+	}
+	
+	
+	
+	public static function appendTextToTagHeadOfHtml($input_text,$input_html) 
+	{
+		return preg_replace('#(\s*?</head>\s*?<body[^>]*?>)#is', $input_text.' \1',$input_html);
+	}
+	
+	public static function appendTextToTagBodyOfHtml($input_text,$input_html) 
+	{
+		return preg_replace('#(\s*?</body>\s*?</html>\s*?)$#is', $input_text.' \1',$input_html);
 	}
 	
 	
@@ -364,6 +432,52 @@ class PepVN_Data
 		
 	}
 	
+	
+	
+	public static function removeProtocolUrl($input_url) 
+	{
+		$input_url = trim($input_url);
+		
+		$input_url = preg_replace('#^https?://#i','',$input_url);
+		$input_url = preg_replace('#^:?//#i','',$input_url);
+		
+		return $input_url;
+		
+	}
+	
+	
+	
+	public static function is_writable($input_path) 
+	{
+		$resultData = false;
+		
+		if($input_path) {
+			if(file_exists($input_path)) {
+				if(is_writable($input_path)) {
+					$resultData = true;
+				}
+			}
+		}
+		
+		return $resultData;
+	}
+	
+	public static function isEmptyArray($input_data) 
+	{
+		$resultData = true;
+		
+		if($input_data) {
+			if(is_array($input_data)) {
+				if(count($input_data)>0) {
+					$resultData = false;
+				}
+			}
+		}
+		
+		return $resultData;
+	}
+	
+	
 	public static function cleanArray($input_data) 
 	{
 		$resultData = array();
@@ -381,6 +495,81 @@ class PepVN_Data
 		return $resultData;
 		
 	}
+	
+	
+	
+	public static function escapeByPattern($input_content, $input_options) 
+	{
+
+		$input_content = (string)$input_content;
+		
+		
+		if(!isset($input_options['pattern'])) {
+			$input_options['pattern'] = '';
+		}
+		
+		if(!isset($input_options['target_patterns'])) {
+			$input_options['target_patterns'] = array();
+		}
+		$input_options['target_patterns'] = (array)$input_options['target_patterns'];
+		
+		if(!isset($input_options['wrap_target_patterns'])) {
+			$input_options['wrap_target_patterns'] = '';
+		}
+
+		$resultData = array(
+			'content' => $input_content
+			,'patterns' => array()
+		);
+		
+		
+		$checkStatus1 = false;
+		if($input_options['pattern']) {
+			if(!PepVN_Data::isEmptyArray($input_options['target_patterns'])) {
+				$checkStatus1 = true;
+			}
+			
+		}
+		
+		if(!$checkStatus1) {
+			return $resultData;
+		}
+		
+
+		$patternsEscape1 = array();
+		
+		$matched1 = false;
+		preg_match_all($input_options['pattern'],$input_content,$matched1);
+		foreach($input_options['target_patterns'] as $keyOne => $valueOne) {
+			if(isset($matched1[$valueOne]) && $matched1[$valueOne]) {
+				if(count($matched1[$valueOne])>0) {
+					foreach($matched1[$valueOne] as $keyTwo => $valueTwo) {
+						$search1 = $valueTwo;
+						$replace1 = md5($valueTwo);
+						$replace1 = str_split($replace1);
+						$replace1 = implode('_',$replace1);
+
+						$patternsEscape1[$search1] = $input_options['wrap_target_patterns'].'______'.$replace1.'______'.$input_options['wrap_target_patterns'];
+						
+					}
+				}
+			}
+		}
+		
+		
+		if(count($patternsEscape1)>0) {
+			$input_content = str_replace(array_keys($patternsEscape1),array_values($patternsEscape1),$input_content);
+			$resultData['content'] = $input_content;
+			$resultData['patterns'] = $patternsEscape1;
+
+		}
+
+		return $resultData;
+
+	}
+	
+	
+	
 	
 	public static function escapeHtmlTags($input_content) 
 	{
@@ -490,6 +679,51 @@ class PepVN_Data
 		return $resultData;
 
 	}
+	
+	
+	
+	
+	public static function escapeSpecialElementsInHtmlPage($input_content) 
+	{
+
+		$input_content = (string)$input_content;
+
+		$resultData = array(
+			'content' => $input_content
+			,'patterns' => array()
+		);
+
+		$patternsEscape1 = array();
+
+		$matched1 = false;
+		
+		preg_match_all("/<\!--\s*\[\s*if[^>]+>(.*?)<\!\s*\[\s*endif\s*\]\s*-->/si", $input_content, $matched1);
+		if(isset($matched1[0]) && $matched1[0]) {
+			if(count($matched1[0])>0) {
+				foreach($matched1[0] as $key1 => $value1) {
+					$search1 = $value1;
+					$replace1 = md5($value1);
+					$replace1 = str_split($replace1);
+					$replace1 = implode('_',$replace1);
+
+					$patternsEscape1[$search1] = '______'.$replace1.'______';
+				}
+			}
+		}
+		
+		
+		if(count($patternsEscape1)>0) {
+			$input_content = str_replace(array_keys($patternsEscape1),array_values($patternsEscape1),$input_content);
+			$resultData['content'] = $input_content;
+			$resultData['patterns'] = $patternsEscape1;
+
+		}
+
+		return $resultData;
+
+	}
+
+
 	
 	
 	

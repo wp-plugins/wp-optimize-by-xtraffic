@@ -1,7 +1,7 @@
 === WP Optimize By xTraffic ===
 Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
-Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress
+Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed
 Requires at least: 2.3
 Tested up to: 3.9.2
 Stable tag: trunk
@@ -36,6 +36,17 @@ Everything is done completely automatically, and you can change the options from
       * Set image (your logo) size (px or %). In case you set text size by %, plugin will create watermark's size based on image's size
   * Optimize Image Quality : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
   * Rename Image Filename : Rename your image's filename for friendly SEO
+* Optimize Speed : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
+  * Optimize Javascript :
+    * Combine Javascript
+    * Minify Javascript
+    * Asynchronous Javascript Loading
+  * Optimize CSS (Style) :
+    * Combine CSS
+    * Minify CSS
+    * Asynchronous CSS Loading
+  * Optimize HTML
+    * Minify HTML
 
 == Installation ==
 
@@ -52,6 +63,9 @@ To install the plugin "WP Optimize By xTraffic" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 2.0 =
+* Added feature Optimize Speed make page speed load amazingly fast
 
 = 1.1.1 =
 * Fix some errors of watermark images

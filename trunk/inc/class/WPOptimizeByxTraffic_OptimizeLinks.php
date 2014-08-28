@@ -924,7 +924,7 @@ LIMIT 0,3
 				foreach($rsOne['patterns'] as $keyOne => $valueOne) {
 					
 					if(preg_match('#<a[^>]+>#i',$keyOne,$matched1)) {
-						if(preg_match('#href=(\'|")(https?://[^"\']+)\1#i',$keyOne,$matched2)) {
+						if(preg_match('#href=(\'|")(https?://[^"\']+)\1#i',$keyOne,$matched2)) { 
 							
 							if(isset($matched2[2]) && $matched2[2]) {
 								
