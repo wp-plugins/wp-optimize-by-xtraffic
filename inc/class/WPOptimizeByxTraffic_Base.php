@@ -4,6 +4,8 @@
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Data.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Images.php');
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_CSSmin.php');
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_JSMin.php'); 
 
 
 if ( !class_exists('WPOptimizeByxTraffic_Base') ) :
@@ -17,8 +19,19 @@ class WPOptimizeByxTraffic_Base {
 	
 	protected $cacheObj;
 	
+	protected $adminNoticesData = array();
+	
 	function __construct() 
 	{
+		
+		$cacheFilesPath = WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH;
+		if(!file_exists($cacheFilesPath)) {
+			PepVN_Data::createFolder($cacheFilesPath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			PepVN_Data::chmod($cacheFilesPath,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+		}
+		
+	
+	
 	
 		$doActions = array();
 		
@@ -63,7 +76,7 @@ class WPOptimizeByxTraffic_Base {
 		add_action('admin_menu',  array(&$this, 'wpoptimizebyxtraffic_admin_menu'));
 
 		if (isset($options['notice']) && $options['notice']) {
-			add_action('admin_notices', array(&$this,'admin_notice'));
+			$adminNoticesData[] = $options['notice'];
 		}
 		
 		if(isset($doActions['updateOptions']) && $doActions['updateOptions']) {
@@ -71,7 +84,7 @@ class WPOptimizeByxTraffic_Base {
 		}
 		
 		if(isset($doActions['base_clear_data']) && $doActions['base_clear_data']) {
-			$this->base_clear_data();
+			$this->base_clear_data(',all,');
 		}
 		
 		
@@ -81,6 +94,10 @@ class WPOptimizeByxTraffic_Base {
 			$this->fullDomainName = $parseUrl['host'];
 			
 		}
+		
+		add_action('admin_notices', array(&$this,'admin_notice'));
+		
+		//add_action('save_post', array(&$this,'base_clear_data'));
 		
 	}
 	
@@ -109,7 +126,10 @@ class WPOptimizeByxTraffic_Base {
 		
 		$options = array(
 			
-			//optimize_links Setting
+			/*
+			* Optimize Links Setting
+			*/
+			
 			
 			'optimize_links_process_in_post' => 'on',
 			'optimize_links_allow_link_to_postself' => '',
@@ -147,7 +167,12 @@ class WPOptimizeByxTraffic_Base {
 			
 			'optimize_links_notice'=>'1',
 			
-			//optimize_images Setting
+			
+			
+			
+			/*
+			* Optimize Images Setting
+			*/
 			
 			'optimize_images_alttext' => '%img_name %title',
 			'optimize_images_titletext' => '',
@@ -185,9 +210,43 @@ class WPOptimizeByxTraffic_Base {
 			
 			'optimize_images_image_quality_value' => 100,
 			'optimize_images_rename_img_filename_value' => '',
-			'optimize_images_maximum_files_handled_each_request' => 0,
+			'optimize_images_maximum_files_handled_each_request' => 2,
 			'optimize_images_handle_again_files_different_configuration_enable' => '',//on
 			'optimize_images_remove_files_available_different_configuration_enable' => 'on',//on
+			
+			
+			
+			
+			
+			/*
+			* Optimize Speed Setting
+			*/
+			
+			
+			//optimize_javascript
+			'optimize_speed_optimize_javascript_enable' => '',//on
+			'optimize_speed_optimize_javascript_combine_javascript_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_minify_javascript_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_exclude_external_javascript_enable' => '',//on
+			'optimize_speed_optimize_javascript_exclude_inline_javascript_enable' => '',//on
+			'optimize_speed_optimize_javascript_exclude_url' => 'alexa.com,',//text
+			
+			
+			//optimize_css
+			'optimize_speed_optimize_css_enable' => '',//on
+			'optimize_speed_optimize_css_combine_css_enable' => 'on',//on
+			'optimize_speed_optimize_css_minify_css_enable' => 'on',//on
+			'optimize_speed_optimize_css_asynchronous_css_loading_enable' => 'on',//on
+			'optimize_speed_optimize_css_exclude_external_css_enable' => '',//on
+			'optimize_speed_optimize_css_exclude_inline_css_enable' => '',//on
+			'optimize_speed_optimize_css_exclude_url' => '',//text
+			
+			
+			//optimize_html
+			'optimize_speed_optimize_html_enable' => '',//on
+			'optimize_speed_optimize_html_minify_html_enable' => 'on',//on
+			
 			
 			
 			
@@ -214,8 +273,11 @@ class WPOptimizeByxTraffic_Base {
 	}
 
 	
-	function base_clear_data()
+	function base_clear_data($input_action='')
 	{
+		
+		$input_action = (array)$input_action;
+		$input_action = ','.implode(',',$input_action).',';
 		
 		$timestampNow = time();
 		$timestampNow = (int)$timestampNow;
@@ -250,30 +312,53 @@ class WPOptimizeByxTraffic_Base {
 		}
 		
 		
-		$globPaths = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH.'files'.DIRECTORY_SEPARATOR;
-		$globPaths = glob($globPaths."*.*");
-		
-		
-		if($globPaths && (count($globPaths)>0)) {
-			$timeout1 = 86400 * 3;
-			foreach ($globPaths as $filename) {
-				$filename = realpath($filename);
-				if($filename && file_exists($filename)) {
-					$deleteStatus1 = true;
-					$filemtimeTemp1 = filemtime($filename);
-					if($filemtimeTemp1) {
-						$filemtimeTemp1 = (int)$filemtimeTemp1;
-						if(($timestampNow - $filemtimeTemp1) <= $timeout1) {
-							$deleteStatus1 = false;
+		if(
+			(false !== stripos($input_action,',all,'))
+			|| (false !== stripos($input_action,',cache_files,'))
+		) {
+			
+			$arrayPathFilesNeedCheck = array(
+				WPOPTIMIZEBYXTRAFFIC_CACHE_PATH.'files'.DIRECTORY_SEPARATOR
+				,WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN.'static-files'.DIRECTORY_SEPARATOR
+			);
+			
+			foreach($arrayPathFilesNeedCheck as $key1 => $value1) {
+				if($value1) {
+					if(file_exists($value1)) {
+						if(PepVN_Data::is_writable($value1)) {
+							
+							
+							$globPaths = glob($value1."*.*");
+							
+							
+							if($globPaths && (count($globPaths)>0)) {
+								$timeout1 = 86400 * 3;
+								foreach ($globPaths as $filename) {
+									$filename = realpath($filename);
+									if($filename && file_exists($filename)) {
+										$deleteStatus1 = true;
+										$filemtimeTemp1 = filemtime($filename);
+										if($filemtimeTemp1) {
+											$filemtimeTemp1 = (int)$filemtimeTemp1;
+											if(($timestampNow - $filemtimeTemp1) <= $timeout1) {
+												$deleteStatus1 = false;
+											}
+										}
+										if($deleteStatus1) {
+											@unlink($filename);
+											
+										}
+									}
+									
+								}
+							}
+							
 						}
 					}
-					if($deleteStatus1) {
-						@unlink($filename);
-						
-					}
 				}
-				
 			}
+			
+			
 		}
 		
 		
@@ -401,6 +486,52 @@ class WPOptimizeByxTraffic_Base {
 				}
 				
 			}
+			
+			
+			
+			//optimize_speed
+			if ( isset($_POST['optimize_speed_submitted']) ) {
+				
+				$arrayFields1 = array(
+					
+					//optimize_javascript
+					'optimize_speed_optimize_javascript_enable'
+					,'optimize_speed_optimize_javascript_combine_javascript_enable'
+					,'optimize_speed_optimize_javascript_minify_javascript_enable'
+					,'optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable'
+					,'optimize_speed_optimize_javascript_exclude_external_javascript_enable'
+					,'optimize_speed_optimize_javascript_exclude_inline_javascript_enable'
+					,'optimize_speed_optimize_javascript_exclude_url'
+					
+					//optimize_css
+					,'optimize_speed_optimize_css_enable'
+					,'optimize_speed_optimize_css_combine_css_enable'
+					,'optimize_speed_optimize_css_minify_css_enable'
+					,'optimize_speed_optimize_css_asynchronous_css_loading_enable'
+					,'optimize_speed_optimize_css_exclude_external_css_enable'
+					,'optimize_speed_optimize_css_exclude_inline_css_enable'
+					,'optimize_speed_optimize_css_exclude_url'
+					
+					
+					//optimize_html
+					,'optimize_speed_optimize_html_enable'
+					,'optimize_speed_optimize_html_minify_html_enable'
+					
+				);
+				
+				foreach($arrayFields1 as $key1 => $value1) {
+					if(isset($_POST[$value1])) {
+						$options[$value1] = $_POST[$value1];
+					} else {
+						$options[$value1] = '';
+					}
+				}
+				
+				$options['optimize_speed_optimize_javascript_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_javascript_exclude_url']);
+				$options['optimize_speed_optimize_css_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_css_exclude_url']);
+				
+			}
+		
 		
 			
 			
@@ -409,7 +540,7 @@ class WPOptimizeByxTraffic_Base {
 			
 			echo '<div class="updated fade"><p>Plugin settings saved.</p></div>';
 			
-			$this->base_clear_data();
+			$this->base_clear_data(',all,');
 			
 		}
 		
@@ -417,7 +548,7 @@ class WPOptimizeByxTraffic_Base {
 			'options' => $options
 		);
 		
-		return $resultData;
+		return $resultData; 
 		
 	}
 	
@@ -425,7 +556,14 @@ class WPOptimizeByxTraffic_Base {
 	function admin_notice() 
 	{
 		
+		$this->adminNoticesData = array_unique($this->adminNoticesData);
 		
+		if(!PepVN_Data::isEmptyArray($this->adminNoticesData)) {
+			foreach($this->adminNoticesData as $keyOne => $valueOne) {
+				echo $valueOne;
+				unset($this->adminNoticesData[$keyOne]);
+			}
+		}
 		
 	}
 	
@@ -458,15 +596,25 @@ class WPOptimizeByxTraffic_Base {
 				, 'wpoptimizebyxtraffic_optimize_links'	//menu_slug
 				, array( $this, 'optimize_links_handle_options' )	//function
 				
-			),
+			)
 			
-			array( 
+			, array( 
 				'wpoptimizebyxtraffic_optimize_links' //parent_slug
 				, 'Optimize Images'	//page_title
 				, 'Optimize Images'	//menu_title
 				, 'manage_options'	//capability
 				, 'wpoptimizebyxtraffic_optimize_images'	//menu_slug
 				, array( $this, 'optimize_images_handle_options' )	//function
+				, null
+			)
+			
+			, array( 
+				'wpoptimizebyxtraffic_optimize_links' //parent_slug
+				, 'Optimize Speed'	//page_title
+				, 'Optimize Speed'	//menu_title
+				, 'manage_options'	//capability
+				, 'wpoptimizebyxtraffic_optimize_speed'	//menu_slug
+				, array( $this, 'optimize_speed_handle_options' )	//function
 				, null
 			)
 			
@@ -490,6 +638,34 @@ class WPOptimizeByxTraffic_Base {
 			$input_args = array();
 		}
 		
+		
+		
+		
+		if(preg_match('#^//.+#i',$input_url,$matched1)) {
+			$input_url = 'http:'.$input_url;
+		}
+		
+		$cacheTimeout = 0;
+		
+		if(isset($input_args['cache_timeout'])) {
+			$cacheTimeout = (int)$input_args['cache_timeout'];
+			unset($input_args['cache_timeout']);
+		}
+		
+		$cacheTimeout = (int)$cacheTimeout;
+		
+		if($cacheTimeout > 0) {
+			$keyCache1 = PepVN_Data::createKey(array(
+				__METHOD__
+				,$input_url
+			));
+			
+			$resultData = $this->cacheObj->get_cache($keyCache1);
+			if($resultData) {
+				return $resultData;
+			}
+		}
+		
 		$args1 = array(
 			'timeout'     => 6,
 			'redirection' => 9,
@@ -510,12 +686,27 @@ class WPOptimizeByxTraffic_Base {
 			$args1[$key1] = $value1;
 		}
 		
-		$objWPHttp = new WP_Http();
-		$resultData = $objWPHttp->get($input_url, $args1);
+		$objWPHttp = new WP_Http_Streams();
+		$resultData = $objWPHttp->request($input_url, $args1);
+		
 		
 		if($resultData && is_array($resultData)) {
 			if(isset($resultData['body']) && $resultData['body']) {
-				return $resultData['body']; 
+				$isOkStatus = true;
+				if(isset($resultData['response']['code']) && $resultData['response']['code']) {
+					$resultData['response']['code'] = (int)$resultData['response']['code'];
+					if(200 !== $resultData['response']['code']) {
+						$isOkStatus = false;
+					}
+				}
+				
+				if($isOkStatus) {
+					if($cacheTimeout > 0) {
+						$this->cacheObj->set_cache($keyCache1, $resultData['body']);
+					}
+					return $resultData['body'];  
+				}
+				
 			}
 		}
 		
