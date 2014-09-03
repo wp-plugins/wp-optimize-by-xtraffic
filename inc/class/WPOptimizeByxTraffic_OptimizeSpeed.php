@@ -195,7 +195,8 @@ setTimeout(function() {
 			} else if('div_tag' === $input_parameters['load_by']) {
 				
 				
-				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" data_src="'.($input_parameters['url']).'" data_id="'.$input_parameters['id'].'" data_file_type="'.$input_parameters['file_type'].'" data_media="'.$input_parameters['media'].'" data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
+				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" data_append_to="'.$input_parameters['append_to'].'" data_src="'.($input_parameters['url']).'" data_id="'.$input_parameters['id'].'" data_file_type="'.$input_parameters['file_type'].'" data_media="'.$input_parameters['media'].'" data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
+				
 			}
 		}
 		
@@ -354,7 +355,7 @@ setTimeout(function() {
 							
 								$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 									'url' => $jsLink1
-									,'load_by' => 'js'
+									,'load_by' => 'div_tag'//js
 									,'file_type' => 'js'
 								));
 								if($valueTemp) {
@@ -766,7 +767,7 @@ setTimeout(function() {
 								if('on' == $options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) {
 									$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 										'url' => $cssLink1
-										,'load_by' => 'js'
+										,'load_by' => 'div_tag'
 										,'file_type' => 'css'
 										,'media' => $mediaType1
 									));
@@ -1027,7 +1028,7 @@ setTimeout(function() {
 								if('on' == $options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) {
 									$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 										'url' => $combinedAllCssFilesUrl
-										,'load_by' => 'js'
+										,'load_by' => 'div_tag'
 										,'append_to' => 'head'
 										,'file_type' => 'css'
 										,'media' => $value1['media']
@@ -1069,7 +1070,8 @@ setTimeout(function() {
 		
 		$jsUrl = WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL;
 		$jsUrl = PepVN_Data::removeProtocolUrl($jsUrl);
-		$jsUrl .= 'js/optimize_speed_by_xtraffic.min.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		$jsUrl = $jsUrl . 'js/optimize_speed_by_xtraffic.min.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$jsUrl = $jsUrl . 'js/optimize_speed_by_xtraffic.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION . time();//test
 		$jsId = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-optimize-speed';
 		$jsLoaderId = $jsId.'-js-loader';
 		
@@ -1077,7 +1079,7 @@ setTimeout(function() {
 /*<![CDATA[*/
 setTimeout(function() {
 (function(e) { var t, n, r, s, i = "'.$jsId.'"; if(e.getElementById(i)) { return 0; } t = document.location.protocol; if(-1 !== t.indexOf("https")) { n = "https:"; } else { n = "http:"; } r = e.createElement("script"); r.setAttribute("data-cfasync","false"); r.id = i; r.setAttribute("language","javascript"); r.setAttribute("type","text/javascript"); r.async = true; r.src = n + "//'.$jsUrl.'"; s = e.getElementById("'.$jsLoaderId.'"); s.parentNode.insertBefore(r, s); s.parentNode.removeChild(s); })(document);
-}, 2);
+}, 10);
 /*]]>*/
 </script>';
 		$textAppendToBody .= ' '.$jsLoadString;
