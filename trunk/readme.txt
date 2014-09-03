@@ -64,6 +64,9 @@ To install the plugin "WP Optimize By xTraffic" and get it working :
 
 == Changelog ==
 
+= 2.1 =
+* Fix & Improve Optimize Speed
+
 = 2.0 =
 * Added feature Optimize Speed make page speed load amazingly fast
 
