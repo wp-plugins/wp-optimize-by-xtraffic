@@ -56,6 +56,20 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 		
 	}
 	
+	
+	
+	public function optimize_speed_fix_javascript_code($input_data) 
+	{
+		
+		$patterns = array(
+			'#'.PepVN_Data::preg_quote('document.open();document.write("<img id=\"wpstats\" src=\""+u+"\" alt=\"\" />");document.close();').'#is' => 'wpOptimizeByxtraffic_appendHtml(document.getElementsByTagName("body")[0],"<img id=\"wpstats\" src=\""+u+"\" alt=\"\" />");'
+		);
+		
+		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
+		
+		return $input_data;
+	}
+	
 	public function optimize_speed_get_all_javascripts($text) 
 	{
 		$resultData = array();
@@ -195,7 +209,7 @@ setTimeout(function() {
 			} else if('div_tag' === $input_parameters['load_by']) {
 				
 				
-				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" data_append_to="'.$input_parameters['append_to'].'" data_src="'.($input_parameters['url']).'" data_id="'.$input_parameters['id'].'" data_file_type="'.$input_parameters['file_type'].'" data_media="'.$input_parameters['media'].'" data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
+				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" pepvn_data_append_to="'.$input_parameters['append_to'].'" pepvn_data_src="'.($input_parameters['url']).'" pepvn_data_id="'.$input_parameters['id'].'" pepvn_data_file_type="'.$input_parameters['file_type'].'" pepvn_data_media="'.$input_parameters['media'].'" pepvn_data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
 				
 			}
 		}
@@ -405,7 +419,12 @@ setTimeout(function() {
 								}
 							} else if(preg_match('/<script[^><]*>(.*?)<\/script>/is',$value1,$matched2)) {
 							
-								if(!$options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) {
+								if('on' === $options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) {
+									
+									if(isset($matched2[1]) && $matched2[1]) {
+										$arrayDataTextNeedReplace[$value1] = ' <div class="wp-optimize-by-xtraffic-js-loader-inlinejs-data" pepvn_data_src="'.(base64_encode($matched2[1])).'"  style="display:none;" ></div> ';  
+									}
+								} else {
 									$rsGetAllJavascripts1[$key1] = $value1;
 								}
 								
@@ -526,6 +545,7 @@ setTimeout(function() {
 										
 									}
 									
+									$jsContent1 = $this->optimize_speed_fix_javascript_code($jsContent1);
 									
 									$jsContent1 = ' try { '.$jsContent1.' } catch(err) { } ';
 									
@@ -563,7 +583,10 @@ setTimeout(function() {
 						
 						$combinedAllJavascriptsFilesUrl = str_replace($this->optimize_speed_UploadsStaticFilesFolderPath,$this->optimize_speed_UploadsStaticFilesFolderUrl,$combinedAllJavascriptsFilesPath);
 						
-						$combinedAllJavascriptsFilesUrl = preg_replace('#^https?://#i','',$combinedAllJavascriptsFilesUrl);
+						//$combinedAllJavascriptsFilesUrl = preg_replace('#^https?://#i','',$combinedAllJavascriptsFilesUrl);
+						
+						$combinedAllJavascriptsFilesUrl = PepVN_Data::removeProtocolUrl($combinedAllJavascriptsFilesUrl);
+						
 						$combinedAllJavascriptsFilesUrl = trim($combinedAllJavascriptsFilesUrl);
 												
 						if('on' == $options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable']) {
@@ -578,7 +601,7 @@ setTimeout(function() {
 							}
 							
 						} else {
-							$textAppendToBody .= ' <script language="javascript" type="text/javascript" src="'.$combinedAllJavascriptsFilesUrl.'" ></script> ';
+							$textAppendToBody .= ' <script language="javascript" type="text/javascript" src="//'.$combinedAllJavascriptsFilesUrl.'" ></script> ';
 						}
 						
 					}

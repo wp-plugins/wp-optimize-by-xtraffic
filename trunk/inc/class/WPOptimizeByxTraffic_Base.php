@@ -95,6 +95,12 @@ class WPOptimizeByxTraffic_Base {
 			
 		}
 		
+		$this->urlProtocol = 'http:';
+		if(PepVN_Data::is_ssl()) {
+			$this->urlProtocol = 'https:';
+		}
+		
+		
 		add_action('admin_notices', array(&$this,'admin_notice'));
 		
 		//add_action('save_post', array(&$this,'base_clear_data'));
