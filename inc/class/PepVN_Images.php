@@ -307,6 +307,8 @@ class PepVN_PHPImage {
 	 * @var resource
 	 */
 	protected $img;
+	
+	public $img_file_path;
 
 	/**
 	 * Canvas resource
@@ -430,9 +432,10 @@ class PepVN_PHPImage {
 		}
 		if($mixed !== null && $height !== null){
 			$this->initialiseCanvas($mixed, $height);
-		}else if($mixed !== null && is_string($mixed)){
+		} else if($mixed !== null && is_string($mixed)){
 			$image = $this->setDimensionsFromImage($mixed);
 			$image->draw($mixed);
+			$image->img_file_path = $mixed;
 			return $image;
 		}
 	}
@@ -852,9 +855,10 @@ class PepVN_PHPImage {
 					$scaleQuality = floor(($imageQuality/100) * 9);
 		 
 					// *** Invert quality setting as 0 is best, not 9
-					$invertScaleQuality = 9 - $scaleQuality;
+					$invertScaleQuality = 9 - $scaleQuality; 
 					
-					imagepng($this->img, $path, $invertScaleQuality);
+					imagepng($this->img, $path, 9);
+					
 					break;
 				default:
 					imagejpeg($this->img, $path, $this->quality); 

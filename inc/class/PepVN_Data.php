@@ -233,11 +233,14 @@ class PepVN_Data
 	
 	public static function minifyCss($input_data)
 	{
+		$input_data = self::removeCommentInCss($input_data);
+		
 		$patterns = array(
 			'#/\*[^*]*\*+([^/][^*]*\*+)*/#' => ''
 			,'#\s+#s' => ' ' // Compress all spaces into single space
 			
-			,'#(\/\*|\<\!\-\-)(.*?)(\*\/|\-\-\>)#s' => ' '// Remove all comments
+			//,'#(\/\*|\<\!\-\-)(.*?)(\*\/|\-\-\>)#s' => ' '// Remove all comments
+			,'#(\/\*)(.*?)(\*\/)#is' => ' '// Remove all comments
 			,'#(\s+)?([,{};:>\+])(\s+)?#s' => '$2' // Remove un-needed spaces around special characters
 			//,'#url\([\'\"](.*?)[\'\"]\)#s' => 'url($1)'// Remove quotes from urls
 			,'#;{2,}#' => ';' // Remove unecessary semi-colons
@@ -245,6 +248,20 @@ class PepVN_Data
 			
 			,'#^\s+#m' => ' '
 			,'#url\((\s+)([^\)]+)(\s+)\)#' => 'url($2)'
+		);
+		
+		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
+		
+		return $input_data;
+		
+	}
+	
+	
+	
+	public static function removeCommentInCss($input_data)
+	{
+		$patterns = array(
+			'#(\/\*)(.*?)(\*\/)#is' => ' '// Remove all comments
 		);
 		
 		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
@@ -347,7 +364,23 @@ class PepVN_Data
 		return $input_string;
 	}
 	
-	
+		
+	/**
+	 * Determine if SSL is used.
+	 *
+	 * @return bool True if SSL, false if not used.
+	 */
+	public static function is_ssl() {
+		if ( isset($_SERVER['HTTPS']) ) {
+			if ( 'on' == strtolower($_SERVER['HTTPS']) )
+				return true;
+			if ( '1' == $_SERVER['HTTPS'] )
+				return true;
+		} elseif ( isset($_SERVER['SERVER_PORT']) && ( '443' == $_SERVER['SERVER_PORT'] ) ) {
+			return true;
+		}
+		return false;
+	}
 	
 	public static function removeVietnameseSign($input_text)
 	{
@@ -1067,6 +1100,7 @@ class PepVN_Data
 	
 	public static function chmod($input_path, $input_from_path, $input_chmod = '')
 	{
+		return true;
 		
 		$resultData = false;
 		

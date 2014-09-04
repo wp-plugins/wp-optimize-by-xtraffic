@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 2.1
+Version: 2.2
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -10,7 +10,7 @@ Description: WP Optimize By xTraffic provides automatically optimize your wordpr
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '2.1' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '2.2' );
 }
 
 

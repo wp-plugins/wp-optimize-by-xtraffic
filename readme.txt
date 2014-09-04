@@ -64,6 +64,10 @@ To install the plugin "WP Optimize By xTraffic" and get it working :
 
 == Changelog ==
 
+= 2.2 =
+* Fix & Improve Optimize Speed
+* Fix & Improve Optimize Images
+
 = 2.1 =
 * Fix & Improve Optimize Speed
 
