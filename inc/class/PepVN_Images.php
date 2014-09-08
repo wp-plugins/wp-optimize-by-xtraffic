@@ -211,7 +211,7 @@ class PepVN_Images
 		$checkStatus = false;
 		$count = 0;
 		
-		$filesrc = realpath($filesrc);
+		//$filesrc = realpath($filesrc); 
 		if($filesrc && file_exists($filesrc)) {
 		
 			if(($fh = @fopen($filesrc, 'rb'))) {
@@ -242,7 +242,7 @@ class PepVN_Images
 	
 		$count = 0;
 		
-		$filesrc = realpath($filesrc);
+		//$filesrc = realpath($filesrc);
 		
 		if($filesrc && file_exists($filesrc)) {
 			$count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00\x2C#s', @file_get_contents($filesrc), $matches1);

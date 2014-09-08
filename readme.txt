@@ -17,11 +17,12 @@ This plugin also optimizes post's images for friendly SEO, reduce your images si
 
 Everything is done completely automatically, and you can change the options from the administration settings panel.
 
-## Features include :
-* Optimize Links : automatically link keywords in your posts and comments with your focused links or best related posts. This plugin allows you to set nofollow attribute and open links in a new window.
+= Features include : =
+
+* ***Optimize Links*** : automatically link keywords in your posts and comments with your focused links or best related posts. This plugin allows you to set nofollow attribute and open links in a new window.
   * Make external links open in new window and add nofollow attribute
   * Add nofollow links (include internal links & external links)
-* Optimize Images : 
+* ***Optimize Images*** : 
   * Automatically adds alt and title attributes to all images in all posts specified by your settings (friendly SEO)
   * Automatically bulk watermark images by :
     * Watermark Position : TOP ; MIDDLE ; BOTTOM + LEFT ; CENTER ; RIGHT
@@ -34,27 +35,31 @@ Everything is done completely automatically, and you can change the options from
     * Watermark by image : 
       * Set image (your logo) url
       * Set image (your logo) size (px or %). In case you set text size by %, plugin will create watermark's size based on image's size
-  * Optimize Image Quality : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
-  * Rename Image Filename : Rename your image's filename for friendly SEO
-* Optimize Speed : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
-  * Optimize Javascript :
+  * *Optimize Image Quality* : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
+  * *Rename Image Filename* : Rename your image's filename for friendly SEO
+* ***Optimize Speed*** : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
+  * *Optimize Javascript* :
     * Combine Javascript
     * Minify Javascript
     * Asynchronous Javascript Loading
-  * Optimize CSS (Style) :
+  * *Optimize CSS (Style)* :
     * Combine CSS
     * Minify CSS
     * Asynchronous CSS Loading
-  * Optimize HTML
+  * *Optimize HTML*
     * Minify HTML
-
+	
+= Languages : =
+* English (default)
+* Vietnamese (vi) - **[Translate by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translate by xTraffic.pep.vn")**
+	
 == Installation ==
 
-To install the plugin "WP Optimize By xTraffic" and get it working :
+To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
-1. You can find keyword : "WP Optimize By xTraffic" in search plugin of WordPress and install automatically.
+1. You can find keyword : "***WP Optimize By xTraffic***" in search plugin of WordPress and install automatically.
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Set options in tab "WP Optimize"
+3. Set options in tab "***WP Optimize***"
 
 == Screenshots ==
 1. Optimize Links setting panel
@@ -63,6 +68,10 @@ To install the plugin "WP Optimize By xTraffic" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 2.2.1 =
+* Add language Vietnamese (vi) - **[Translate by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translate by xTraffic.pep.vn")**
+* Fix & Improve something
 
 = 2.2 =
 * Fix & Improve Optimize Speed

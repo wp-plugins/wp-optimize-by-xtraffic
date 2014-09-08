@@ -10,7 +10,7 @@ if ( !class_exists('WPOptimizeByxTraffic_OptimizeSpeed') ) :
 class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLinks 
 {
 	
-	private $optimize_speed_getUrlContentCacheTimeout = 86400;
+	private $optimize_speed_getUrlContentCacheTimeout = 86400; 
 	
 	private $optimize_speed_loadJsTimeDelay = 1000;//miliseconds
 	private $optimize_speed_loadCssTimeDelay = 10;//miliseconds
@@ -42,14 +42,37 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 		
 		$resultData = array();
 		$resultData['notice']['error'] = array();
+		$resultData['notice']['error_no'] = array();
+		
+		
+		$rsTemp = $this->base_check_system_ready();
+		$resultData = PepVN_Data::mergeArrays(array(
+			$resultData
+			,$rsTemp
+		));
 		
 		
 		if(function_exists('ob_start')) {
 		} else {
-			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : Your server must support "<a href="http://php.net/manual/en/function.ob-start.php" target="_blank"><b>ob_start</b></a>" to use "<b>Optimize Speed</b>" feature</div>';
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must support',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<a href="http://php.net/manual/en/function.ob-start.php" target="_blank"><b>ob_start</b></a>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Speed</b>"</div>';
+			$resultData['notice']['error_no'][] = 30;
+		}
+		//WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH
+		//PepVN_Data::isAllAllowReadAndWriteIfExists();
+		if(
+			isset($this->optimize_speed_UploadsStaticFilesFolderPath)
+			&& $this->optimize_speed_UploadsStaticFilesFolderPath
+			&& file_exists($this->optimize_speed_UploadsStaticFilesFolderPath)
+			&& PepVN_Data::isAllowReadAndWrite($this->optimize_speed_UploadsStaticFilesFolderPath)
+		) {
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$this->optimize_speed_UploadsStaticFilesFolderPath.'</b>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Speed</b>"</div>';
+			$resultData['notice']['error_no'][] = 30;
 		}
 		
+		
 		$resultData['notice']['error'] = array_unique($resultData['notice']['error']);
+		$resultData['notice']['error_no'] = array_unique($resultData['notice']['error_no']);
 		
 		
 		return $resultData;
@@ -222,9 +245,28 @@ setTimeout(function() {
 	public function optimize_speed_process_html_pages($text) 
 	{
 		
-		if ( is_feed() ) {
+		$checkStatus1 = true;
+		
+		$rsTemp = $this->optimize_speed_check_system_ready();
+		if(in_array(30,$rsTemp['notice']['error_no'])) {
+			$checkStatus1 = false; 
+		}
+		
+		
+		if($checkStatus1) {
+			if ( is_feed() ) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		
+		if(!$checkStatus1) {
 			return $text;
 		}
+		
+		
+		
+		
 		
 		$options = $this->get_options();
 		
@@ -1188,16 +1230,18 @@ setTimeout(function() {
 		$nonce = wp_create_nonce( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG );
 		
 		$classSystemReady = '';
-		$rsOne = $this->optimize_speed_check_system_ready();
-		if(!PepVN_Data::isEmptyArray($rsOne['notice']['error'])) {
-			echo implode(' ',$rsOne['notice']['error']);
+		$rsTemp = $this->optimize_speed_check_system_ready();
+		if(!PepVN_Data::isEmptyArray($rsTemp['notice']['error'])) {
+			echo implode(' ',$rsTemp['notice']['error']);
+		}
+		if(in_array(30,$rsTemp['notice']['error_no'])) {
 			$classSystemReady = 'wpoptimizebyxtraffic_disabled';
 		}
 		
 		
-		echo <<<END
+		echo '
 
-<div class="wrap wpoptimizebyxtraffic_admin $classSystemReady" style="">
+<div class="wrap wpoptimizebyxtraffic_admin ',$classSystemReady,'" style="">
 	
 	<h2>WP Optimize By xTraffic (Optimize Speed)</h2>
 				
@@ -1207,27 +1251,27 @@ setTimeout(function() {
 
 			<div class="dbx-content">
 			
-				<form name="WPOptimizeByxTraffic" action="$action_url" method="post">
+				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
 					
-					<input type="hidden" id="_wpnonce" name="_wpnonce" value="$nonce" />
+					<input type="hidden" id="_wpnonce" name="_wpnonce" value="',$nonce,'" />
 					
 					<input type="hidden" name="submitted" value="1" /> 
 					<input type="hidden" name="optimize_speed_submitted" value="1" /> 
 											
-					<div class='xtraffic_tabs_nav'>
-						<a href='#xtraffic_tabs_content1' class="active">Optimize Javascript</a> 
-						<a href='#xtraffic_tabs_content2' class="">Optimize CSS</a>
-						<a href='#xtraffic_tabs_content3' class="">Optimize HTML</a>
+					<div class="xtraffic_tabs_nav">
+						<a href="#xtraffic_tabs_content1" class="active">Optimize Javascript</a> 
+						<a href="#xtraffic_tabs_content2" class="">Optimize CSS</a>
+						<a href="#xtraffic_tabs_content3" class="">Optimize HTML</a>
 					</div>
 					
-					<div id='xtraffic_tabs_content1' class="xtraffic_tabs_contents">
+					<div id="xtraffic_tabs_content1" class="xtraffic_tabs_contents">
 
 						<h3>Optimize Javascript</h3>
 						
 						<ul>
 							
 							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container"  $optimize_speed_optimize_javascript_enable /> &nbsp; Enable Optimize Javascript</h4>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container"  ',$optimize_speed_optimize_javascript_enable,' /> &nbsp; ',__('Enable Optimize Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 							</li>
 							
 						</ul>
@@ -1236,7 +1280,7 @@ setTimeout(function() {
 							<ul>
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_combine_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container2"  $optimize_speed_optimize_javascript_combine_javascript_enable /> &nbsp; Enable Combine Javascript ( Recommended )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_combine_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container2"  ',$optimize_speed_optimize_javascript_combine_javascript_enable,' /> &nbsp; ',__('Enable Combine Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
 									<p class="description"></p>
 									
 								</li> 
@@ -1247,36 +1291,36 @@ setTimeout(function() {
 									
 										<li>
 											
-											<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_minify_javascript_enable" class="" $optimize_speed_optimize_javascript_minify_javascript_enable /> &nbsp; Enable Minify Javascript ( Recommended )</h6>
+											<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_minify_javascript_enable" class="" ',$optimize_speed_optimize_javascript_minify_javascript_enable,' /> &nbsp; ',__('Enable Minify Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
 											<p class="description"></p>
 											
 										</li>
 										
 										<li>
 										
-											<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable" class="" $optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable /> &nbsp; Enable Asynchronous Javascript Loading ( Recommended )</h6>
+											<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable" class="" ',$optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable,' /> &nbsp; ',__('Enable Asynchronous Javascript Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
 											<p class="description"></p>
 											
 										</li>
 										
 										<li style="margin-bottom: 3%;">
 											
-											<h6 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_external_javascript_enable" class="" $optimize_speed_optimize_javascript_exclude_external_javascript_enable /> &nbsp; Exclude external javascript ( Not Recommended )</h6>
-											<p class="description">Plugin will ignore all external javascript files ( Which not scripts in your self-hosted ). <i>You should not enable this feature unless an error occurs</i></p>
+											<h6 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_external_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_external_javascript_enable,' /> &nbsp; ',__('Exclude External Javascript File',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+											<p class="description">',__('Plugin will ignore all external javascript files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Which not scripts in your self-hosted',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ). <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 											
 										</li>
 										
 										<li style="margin-bottom: 3%;">
 											
-											<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" $optimize_speed_optimize_javascript_exclude_inline_javascript_enable /> &nbsp; Exclude inline javascript ( Not Recommended )</h6>
-											<p class="description">Plugin will ignore all javascript code in your html. <i>You should not enable this feature unless an error occurs</i></p>
+											<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_inline_javascript_enable,' /> &nbsp; ',__('Exclude Inline Javascript Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+											<p class="description">',__('Plugin will ignore all javascript code in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 											
 										</li>
 										
 										<li>
-											<h6> Exclude (Contained in url, seperate them by comma)</h6> 
-											<input type="text" name="optimize_speed_optimize_javascript_exclude_url" class="" value="$optimize_speed_optimize_javascript_exclude_url" style="width: 50%;" /> &nbsp;  
-											<p class="description">Plugin will ignore these javascript files urls</p>
+											<h6> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h6> 
+											<input type="text" name="optimize_speed_optimize_javascript_exclude_url" class="" value="',$optimize_speed_optimize_javascript_exclude_url,'" style="width: 50%;" /> &nbsp;  
+											<p class="description">',__('Plugin will ignore these javascript files urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 										</li>
 										
 									</ul>
@@ -1293,14 +1337,14 @@ setTimeout(function() {
 					
 					
 					
-					<div id='xtraffic_tabs_content2' class="xtraffic_tabs_contents">
+					<div id="xtraffic_tabs_content2" class="xtraffic_tabs_contents">
 
-						<h3>Optimize CSS (Style)</h3>
+						<h3>',__('Optimize CSS (Style)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 						
 						<ul>
 							
 							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_css_container"  $optimize_speed_optimize_css_enable /> &nbsp; Enable Optimize CSS</h4>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_css_container"  ',$optimize_speed_optimize_css_enable,' /> &nbsp; ',__('Enable Optimize CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 							</li>
 							
 						</ul>
@@ -1309,7 +1353,7 @@ setTimeout(function() {
 							<ul>
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_combine_css_enable" class="" $optimize_speed_optimize_css_combine_css_enable /> &nbsp; Enable Combine CSS ( Recommended )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_combine_css_enable" class="" ',$optimize_speed_optimize_css_combine_css_enable,' /> &nbsp; ',__('Enable Combine CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
 									<p class="description"></p>
 									
 								</li> 
@@ -1317,7 +1361,7 @@ setTimeout(function() {
 						
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_minify_css_enable" class="" $optimize_speed_optimize_css_minify_css_enable /> &nbsp; Enable Minify CSS ( Recommended )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_minify_css_enable" class="" ',$optimize_speed_optimize_css_minify_css_enable,' /> &nbsp; ',__('Enable Minify CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
 									<p class="description"></p>
 									
 								</li>
@@ -1326,29 +1370,29 @@ setTimeout(function() {
 						
 								<li>
 								
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_asynchronous_css_loading_enable" class="" $optimize_speed_optimize_css_asynchronous_css_loading_enable /> &nbsp; Enable Asynchronous CSS Loading ( Recommended )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_asynchronous_css_loading_enable" class="" ',$optimize_speed_optimize_css_asynchronous_css_loading_enable,' /> &nbsp; ',__('Enable Asynchronous CSS Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
 									<p class="description"></p>
 									
 								</li>
 								
 								<li style="margin-bottom: 3%;">
 									
-									<h5 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_external_css_enable" class="" $optimize_speed_optimize_css_exclude_external_css_enable /> &nbsp; Exclude external CSS ( Not Recommended )</h5>
-									<p class="description">Plugin will ignore all external CSS files ( Which not CSS files in your self-hosted ). <i>You should not enable this feature unless an error occurs</i></p>
+									<h5 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_external_css_enable" class="" ',$optimize_speed_optimize_css_exclude_external_css_enable,' /> &nbsp; ',__('Exclude External CSS Files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<p class="description">',__('Plugin will ignore all external CSS files ( Which not CSS files in your self-hosted )',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 									
 								</li>
 								
 								<li style="margin-bottom: 3%;">
 									
-									<h5 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_inline_css_enable" class="" $optimize_speed_optimize_css_exclude_inline_css_enable /> &nbsp; Exclude inline CSS ( Not Recommended )</h5>
-									<p class="description">Plugin will ignore all style (wrap by &#x3C;style&#x3E;&#x3C;/style&#x3E;) in your html. <i>You should not enable this feature unless an error occurs</i></p>
+									<h5 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_inline_css_enable" class="" ',$optimize_speed_optimize_css_exclude_inline_css_enable,' /> &nbsp; ',__('Exclude Inline CSS Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<p class="description">',__('Plugin will ignore all style (wrap by &#x3C;style&#x3E;&#x3C;/style&#x3E;) in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 									
 								</li> 
 								
 								<li>
-									<h5> Exclude (Contained in url, seperate them by comma)</h5> 
-									<input type="text" name="optimize_speed_optimize_css_exclude_url" class="" $optimize_speed_optimize_css_exclude_url style="width: 50%;" /> &nbsp;  
-									<p class="description">Plugin will ignore these css files urls</p>
+									<h5> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h5> 
+									<input type="text" name="optimize_speed_optimize_css_exclude_url" class="" ',$optimize_speed_optimize_css_exclude_url,' style="width: 50%;" /> &nbsp;  
+									<p class="description">',__('Plugin will ignore these css files urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 								</li>
 								
 								
@@ -1362,14 +1406,14 @@ setTimeout(function() {
 					
 					
 					
-					<div id='xtraffic_tabs_content3' class="xtraffic_tabs_contents">
+					<div id="xtraffic_tabs_content3" class="xtraffic_tabs_contents">
 
-						<h3>Optimize HTML</h3>
+						<h3>',__('Optimize HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 						
 						<ul>
 							
 							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_html_container"  $optimize_speed_optimize_html_enable /> &nbsp; Enable Optimize HTML</h4>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_html_container"  ',$optimize_speed_optimize_html_enable,' /> &nbsp; ',__('Enable Optimize HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 							</li>
 							
 						</ul>
@@ -1379,7 +1423,7 @@ setTimeout(function() {
 								
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_minify_html_enable" class="" $optimize_speed_optimize_html_minify_html_enable /> &nbsp; Enable Minify HTML ( Recommended )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_minify_html_enable" class="" ',$optimize_speed_optimize_html_minify_html_enable,' /> &nbsp; ',__('Enable Minify HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
 									<p class="description"></p>
 									
 								</li>
@@ -1394,7 +1438,7 @@ setTimeout(function() {
 					</div><!-- //xtraffic_tabs_contents -->
 					
 						
-					<div class="submit"><input type="submit" name="Submit" value="Update options" class="button-primary" /></div>
+					<div class="submit"><input type="submit" name="Submit" value="',__('Update Options',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" class="button-primary" /></div>
 					
 				</form>
 			</div>
@@ -1407,7 +1451,7 @@ setTimeout(function() {
 	
 </div>
 
-END;
+';
 		
 		
 	}
