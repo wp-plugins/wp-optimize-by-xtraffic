@@ -24,11 +24,23 @@ class WPOptimizeByxTraffic_Base {
 	function __construct() 
 	{
 		
-		$cacheFilesPath = WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH;
-		if(!file_exists($cacheFilesPath)) {
-			PepVN_Data::createFolder($cacheFilesPath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			PepVN_Data::chmod($cacheFilesPath,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+		$cachePathTemp = WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH;
+		if($cachePathTemp && file_exists($cachePathTemp)) {
+			
+		} else {
+			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
 		}
+		
+		$cachePathTemp = PEPVN_CACHE_DATA_DIR;
+		if($cachePathTemp && file_exists($cachePathTemp)) {
+			
+		} else {
+			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+		}
+		
+		
 		
 	
 	
@@ -106,6 +118,67 @@ class WPOptimizeByxTraffic_Base {
 		//add_action('save_post', array(&$this,'base_clear_data'));
 		
 	}
+	
+	
+	
+	
+	public function base_check_system_ready() 
+	{
+		
+		$resultData = array();
+		$resultData['notice']['error'] = array();
+		$resultData['notice']['error_no'] = array();
+		
+		
+		$cachePathTemp = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH;
+		if(
+			$cachePathTemp
+			&& file_exists($cachePathTemp)
+			&& PepVN_Data::isAllowReadAndWrite($cachePathTemp)
+		) {
+			
+			$cachePathTemp1 = WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH;
+			if(
+				$cachePathTemp1
+				&& file_exists($cachePathTemp1)
+				&& PepVN_Data::isAllowReadAndWrite($cachePathTemp1)
+			) {
+				
+			} else {
+				$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server should set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$cachePathTemp1.'</b>" '.__('to achieve maximum performance',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</div>';
+			}
+			
+			
+			
+			$cachePathTemp1 = PEPVN_CACHE_DATA_DIR;
+			if(
+				$cachePathTemp1
+				&& file_exists($cachePathTemp1)
+				&& PepVN_Data::isAllowReadAndWrite($cachePathTemp1)
+			) {
+				
+			} else {
+				$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server should set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$cachePathTemp1.'</b>" '.__('to achieve maximum performance',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</div>';
+			}
+			
+			
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server should set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$cachePathTemp.'</b>" '.__('to achieve maximum performance',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</div>';
+		}
+		
+		
+		$resultData['notice']['error'] = array_unique($resultData['notice']['error']);
+		$resultData['notice']['error_no'] = array_unique($resultData['notice']['error_no']);
+		
+		
+		return $resultData;
+		
+	}
+	
+	
+	
+	
+	
 	
 		
 	function explode_trim($separator, $text)
@@ -301,12 +374,12 @@ class WPOptimizeByxTraffic_Base {
 		foreach($arrayPaths as $path1) {
 			if($path1) {
 				$pathTemp1 = $path1;
-				$pathTemp1 = realpath($path1);
+				//$pathTemp1 = realpath($path1);
 				if($pathTemp1 && file_exists($pathTemp1)) {
 					PepVN_Data::rrmdir($pathTemp1);
 					
 					$pathTemp1 = $path1;
-					$pathTemp1 = realpath($pathTemp1);
+					//$pathTemp1 = realpath($pathTemp1);
 					if($pathTemp1 && file_exists($pathTemp1)) {
 					} else {
 						PepVN_Data::createFolder($path1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
@@ -338,9 +411,9 @@ class WPOptimizeByxTraffic_Base {
 							
 							
 							if($globPaths && (count($globPaths)>0)) {
-								$timeout1 = 86400 * 3;
+								$timeout1 = 86400 * 3; 
 								foreach ($globPaths as $filename) {
-									$filename = realpath($filename);
+									//$filename = realpath($filename);
 									if($filename && file_exists($filename)) {
 										$deleteStatus1 = true;
 										$filemtimeTemp1 = filemtime($filename);

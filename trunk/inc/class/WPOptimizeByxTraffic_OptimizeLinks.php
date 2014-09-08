@@ -23,6 +23,31 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	
 	
 	
+	public function optimize_links_check_system_ready() 
+	{
+		
+		$resultData = array();
+		$resultData['notice']['error'] = array();
+		$resultData['notice']['error_no'] = array();
+		
+		
+		$rsTemp = $this->base_check_system_ready();
+		$resultData = PepVN_Data::mergeArrays(array(
+			$resultData
+			,$rsTemp
+		));
+		
+		$resultData['notice']['error'] = array_unique($resultData['notice']['error']);
+		$resultData['notice']['error_no'] = array_unique($resultData['notice']['error_no']);
+		
+		
+		return $resultData;
+		
+	}
+	
+	
+	
+	
 	function optimize_links_explode_and_clean_data($input_data) 
 	{
 		$resultData = array();
@@ -429,7 +454,7 @@ LIMIT 0,3
 		
 		$options1 = $this->get_options();
 		
-		$options = Data::mergeArrays(array(
+		$options = PepVN_Data::mergeArrays(array(
 			$options1
 			,$options
 		));
@@ -1070,7 +1095,15 @@ LIMIT 0,3
 		
 		$nonce = wp_create_nonce( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG);
 		
-		echo <<<END
+		
+		$rsTemp = $this->optimize_links_check_system_ready();
+		if(!PepVN_Data::isEmptyArray($rsTemp['notice']['error'])) {
+			echo implode(' ',$rsTemp['notice']['error']);
+		}
+		
+		
+		
+		echo '
 
 <div class="wrap wpoptimizebyxtraffic_admin" style="">
 	<h2>WP Optimize By xTraffic (Optimize Links)</h2>
@@ -1080,46 +1113,46 @@ LIMIT 0,3
 		<div id="mainblock" style="width:710px">
 
 			<div class="dbx-content">
-				<form name="WPOptimizeByxTraffic" action="$action_url" method="post">
-					  <input type="hidden" id="_wpnonce" name="_wpnonce" value="$nonce" />
+				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
+					  <input type="hidden" id="_wpnonce" name="_wpnonce" value="',$nonce,'" />
 						
 						<input type="hidden" name="submitted" value="1" /> 
 						<input type="hidden" name="optimize_links_submitted" value="1" /> 
 						
-						<h2>Overview "Optimize Links"</h2>
+						<h2>',__('Overview',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' "Optimize Links"</h2>
 						
-						<p>"Optimize Links" can automatically link keywords in your posts and comments with your focused links or best related posts.</p>
-						<p>This plugin allows you to set nofollow attribute and open links in a new window.</p>
+						<p>"Optimize Links" ',__('can automatically link keywords in your posts and comments with your focused links or best related posts',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
+						<p>',__('This plugin allows you to set nofollow attribute and open links in a new window',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
 						
-						<h2>Internal Links</h2>
+						<h2>',__('Internal Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h2>
 						
-						<h4>Process Internal Links In Posts/Pages</h4>
+						<h4>',__('Process Internal Links In Posts/Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 						
-						<p>"Optimize Links" can automatically process your posts, pages, comments and feed's content with keywords and links.</p>
+						<p>"Optimize Links" ',__('can automatically process your posts, pages, comments and feed\'s content with keywords and links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
 						
 						<ul>
 							<li>
-								<input type="checkbox" name="optimize_links_process_in_post"  $optimize_links_process_in_post/><label for="optimize_links_process_in_post"> Process Posts's Content</label>
+								<input type="checkbox" name="optimize_links_process_in_post"  ',$optimize_links_process_in_post,' /><label for="optimize_links_process_in_post"> ',__('Process Posts\'s Content',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 						
 							<ul>
 								<li>
-									&nbsp;<input type="checkbox" name="optimize_links_allow_link_to_postself"  $optimize_links_allow_link_to_postself /><label for="optimize_links_allow_link_to_postself"> Allow links to self</label>
+									&nbsp;<input type="checkbox" name="optimize_links_allow_link_to_postself" ',$optimize_links_allow_link_to_postself,' /><label for="optimize_links_allow_link_to_postself"> ',__('Allow links to self',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 								</li>
 							</ul>
 							<li>
-								<input type="checkbox" name="optimize_links_process_in_page"  $optimize_links_process_in_page/><label for="optimize_links_process_in_page"> Process Pages's Content</label>
+								<input type="checkbox" name="optimize_links_process_in_page" ',$optimize_links_process_in_page,' /><label for="optimize_links_process_in_page"> ',__('Process Pages\'s Content',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							<ul>
-								<li>&nbsp;<input type="checkbox" name="optimize_links_allow_link_to_pageself"  $optimize_links_allow_link_to_pageself /><label for="optimize_links_allow_link_to_pageself"> Allow links to self</label></li>
+								<li>&nbsp;<input type="checkbox" name="optimize_links_allow_link_to_pageself" ',$optimize_links_allow_link_to_pageself,' /><label for="optimize_links_allow_link_to_pageself"> ',__('Allow links to self',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label></li>
 							</ul>
 							
 							<li class="">
-								<input type="checkbox" name="optimize_links_process_in_comment"  $optimize_links_process_in_comment /><label for="optimize_links_process_in_comment">Process Comments's Content</label>
+								<input type="checkbox" name="optimize_links_process_in_comment" ',$optimize_links_process_in_comment,' /><label for="optimize_links_process_in_comment">',__('Process Comments\'s Content',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							
 							<li class="">
-								<input type="checkbox" name="optimize_links_process_in_feed" $optimize_links_process_in_feed /><label for="optimize_links_process_in_feed"> Process RSS feeds Content</label>
+								<input type="checkbox" name="optimize_links_process_in_feed" ',$optimize_links_process_in_feed,' /><label for="optimize_links_process_in_feed"> ',__('Process RSS feeds Content',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							
 						</ul>
@@ -1127,97 +1160,98 @@ LIMIT 0,3
 						<br />
 						
 						
-						<h4>Excluding</h4>
-						<input type="checkbox" name="optimize_links_excludeheading"  $optimize_links_excludeheading /><label for="optimize_links_excludeheading">Prevent linking in heading tags (h1,h2,h3,h4,h5,h6).</label>
+						<h4>',__('Excluding',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+						<input type="checkbox" name="optimize_links_excludeheading"  ',$optimize_links_excludeheading,' /><label for="optimize_links_excludeheading">',__('Prevent linking in heading tags (h1,h2,h3,h4,h5,h6)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</label>
 						
-						<h4>Target Links</h4>
+						<h4>',__('Target Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 						
-						<p>The targeted links should be considered. The match will be based on post/page title or category/tag name, case insensitive.</p>
+						<p>',__('The targeted links should be considered. The match will be based on post/page title or category/tag name, case insensitive',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
 						<ul>
 							<li>
-								<input type="checkbox" name="optimize_links_link_to_cats" $optimize_links_link_to_cats /><label for="optimize_links_link_to_cats"> Categories</label>
+								<input type="checkbox" name="optimize_links_link_to_cats" ',$optimize_links_link_to_cats,' /><label for="optimize_links_link_to_cats"> ',__('Categories',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							<li>
-								<input type="checkbox" name="optimize_links_link_to_tags" $optimize_links_link_to_tags /><label for="optimize_links_link_to_tags"> Tags</label><br>
+								<input type="checkbox" name="optimize_links_link_to_tags" ',$optimize_links_link_to_tags,' /><label for="optimize_links_link_to_tags"> ',__('Tags',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label><br>
 							</li>
 							
 							<li>
-								<input type="checkbox" name="optimize_links_link_to_posts" $optimize_links_link_to_posts /><label for="optimize_links_link_to_posts"> Posts</label>
+								<input type="checkbox" name="optimize_links_link_to_posts" ',$optimize_links_link_to_posts,' /><label for="optimize_links_link_to_posts"> ',__('Posts',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							<li>
-								<input type="checkbox" name="optimize_links_link_to_pages" $optimize_links_link_to_pages /><label for="optimize_links_link_to_pages"> Pages</label>
+								<input type="checkbox" name="optimize_links_link_to_pages" ',$optimize_links_link_to_pages,' /><label for="optimize_links_link_to_pages"> ',__('Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 						</ul>
 						
-						<h2>Settings</h2>
+						<h2>',__('Settings',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h2>
 						
-						<p>To reduce database load you can choose "Optimize Links" process only on single posts and pages (for example not on main page or archives).</p>
-						<input type="checkbox" name="optimize_links_onlysingle" $optimize_links_onlysingle /><label for="optimize_links_onlysingle"> Process only single posts and pages</label>  <br>
+						<p>',__('To reduce database load you can choose "Optimize Links" process only on single posts and pages (for example not on main page or archives)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
+						<input type="checkbox" name="optimize_links_onlysingle" ',$optimize_links_onlysingle,' /><label for="optimize_links_onlysingle"> ',__('Process only single posts and pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
 								
-						<p>Set whether matching should be case sensitive.</p>
-						<input type="checkbox" name="optimize_links_casesens" $optimize_links_casesens /><label for="optimize_links_casesens"> Case sensitive matching</label>  <br>
+						<p>',__('Set whether matching should be case sensitive',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
+						<input type="checkbox" name="optimize_links_casesens" ',$optimize_links_casesens,' /><label for="optimize_links_casesens"> ',__('Case sensitive matching',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
 						
-						<h4>Ignore Posts and Pages</h4>	
+						<h4>',__('Ignore Posts and Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>	
 						
-						<p>You may wish to forbid automatically linking on certain posts or pages. Seperate them by comma. (id, slug or name)</p>
-						<input type="text" name="optimize_links_ignorepost" size="255" value="$optimize_links_ignorepost"/> 
+						<p>',__('You may wish to forbid automatically linking on certain posts or pages. Separate them by comma. (id, slug or name)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						<input type="text" name="optimize_links_ignorepost" size="255" value="',$optimize_links_ignorepost,'" /> 
 						<br>
 										 
-						<h4>Custom Keywords/Targets Links</h4>
+						<h4>',__('Custom Keywords/Targets Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
 						
-						<p>Here you can enter manually the extra keywords you want to automatically link. Use comma (,) to seperate keywords and target url. Use a new line for new set of urls and keywords. You can have these keywords link to any urls, not only your site.</p>
-						<p>If you don't set any url with keywords, this plugin will automatically find posts having the best related content and link to these keywords</p>
-						<p>You must use full link with http:// or https:// (example : http://wordpress.org/plugins/ or https://wordpress.org/plugins/)</p>
+						<p>',__('Here you can enter manually the extra keywords you want to automatically link. Use comma (,) to separate keywords and target url. Use a new line for new set of urls and keywords. You can have these keywords link to any urls, not only your site',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
+						<p>',__('If you don\'t set any url with keywords, this plugin will automatically find posts/pages having the best related content and link to these keywords',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						<p>',__('You must use full link with http:// or https:// (example : http://wordpress.org/plugins/ or https://wordpress.org/plugins/)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 						<p>
-							<u>Example</u>:<br />
+							<u>',__('Example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</u>:<br />
 							seo, wordpress, plugin, http://wordpress.org/<br />
 							ads, marketing<br />
 							seo plugin, wordpress plugin,http://wordpress.org/,http://wordpress.org/plugins/<br />
 						</p>
 						
-						<textarea name="optimize_links_customkey" id="optimize_links_customkey" rows="10" cols="90"  >$optimize_links_customkey</textarea>
+						<textarea name="optimize_links_customkey" id="optimize_links_customkey" rows="10" cols="90"  >',$optimize_links_customkey,'</textarea>
 						<br><br>
 
-						<p>Load custom keywords from a URL. (Note: this appends to the list above.)</p>
-						<input type="text" name="optimize_links_customkey_url" size="90" value="$optimize_links_customkey_url" />
+						<p>',__('Load custom keywords & links from a URL. (Note: this appends to the list above.)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						<input type="text" name="optimize_links_customkey_url" size="90" value="',$optimize_links_customkey_url,'" />
 						
 						
 						<ul>
 							<li>
-								<input type="checkbox" name="optimize_links_use_cats_as_keywords"  $optimize_links_use_cats_as_keywords /><label for="optimize_links_use_cats_as_keywords"> Use categories's name as keywords</label>
+								<input type="checkbox" name="optimize_links_use_cats_as_keywords" ',$optimize_links_use_cats_as_keywords,' /><label for="optimize_links_use_cats_as_keywords"> ',__('Use categories\'s name as keywords',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 							
 							<li>
-								<input type="checkbox" name="optimize_links_use_tags_as_keywords"  $optimize_links_use_tags_as_keywords /><label for="optimize_links_use_tags_as_keywords"> Use tags's name as keywords</label>
+								<input type="checkbox" name="optimize_links_use_tags_as_keywords" ',$optimize_links_use_tags_as_keywords,' /><label for="optimize_links_use_tags_as_keywords"> ',__('Use tags\'s name as keywords',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>
 							</li>
 						</ul>
 						
 						<br />
 						
-						<h4>Limits</h4>				
+						<h4>',__('Limits',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>				
 						
-						<p>You can limit the maximum number of different links "Optimize Links" which will generate per post. Set to 0 for no limit. </p>
-						Max Links: <input type="text" name="optimize_links_maxlinks" size="2" value="$optimize_links_maxlinks"/>  
+						<p>',__('You can limit the maximum number of different links "Optimize Links" which will generate per post. Set to 0 for no limit.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						',__('Max Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': <input type="text" name="optimize_links_maxlinks" size="3" value="',$optimize_links_maxlinks,'" />  
 						
 						<br><br>
 						 
-						<h2>External Links</h2>			
-						<p>"Optimize Links" can open external links in new window and add nofollow attribute.</p>
+						<h2>',__('External Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h2>			
+						<p>',__('"Optimize Links" can open external links in new window and add nofollow attribute.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 						
-						<input type="checkbox" name="optimize_links_nofolo" $optimize_links_nofolo /><label for="optimize_links_nofolo"> Add nofollow attribute</label>  <br>
-						<input type="checkbox" name="optimize_links_blanko" $optimize_links_blanko /><label for="optimize_links_blanko"> Open in new window</label>  <br><br>
-						<label for="optimize_links_nofolo_blanko_exclude_urls"> Exclude urls</label><input type="text" name="optimize_links_nofolo_blanko_exclude_urls" size="90" value="$optimize_links_nofolo_blanko_exclude_urls"/><br><br>
+						<input type="checkbox" name="optimize_links_nofolo" ',$optimize_links_nofolo,' /><label for="optimize_links_nofolo"> ',__('Add nofollow attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
+						<input type="checkbox" name="optimize_links_blanko" ',$optimize_links_blanko,' /><label for="optimize_links_blanko"> ',__('Open in new window',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br><br>
+						<label for="optimize_links_nofolo_blanko_exclude_urls"> ',__('Exclude urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label><input type="text" name="optimize_links_nofolo_blanko_exclude_urls" size="90" value="',$optimize_links_nofolo_blanko_exclude_urls,'"/><br><br>
 						
-						<h2>Nofollow Links</h2>	
+						<h2>',__('Nofollow Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h2>	
 						
-						<p>You may wish to add nofollow links (include internal links & external links). Seperate them by comma. (contained in url)</p>
+						<p>',__('You may wish to add nofollow links (include internal links & external links). Separate them by comma. (contained in url)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 						
-						<label for="optimize_links_nofollow_urls"> Add nofollow attribute to urls</label><input type="text" name="optimize_links_nofollow_urls" size="90" value="$optimize_links_nofollow_urls"/><br>
+						<label for="optimize_links_nofollow_urls"> ',__('Add nofollow attribute to urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label><input type="text" name="optimize_links_nofollow_urls" size="90" value="',$optimize_links_nofollow_urls,'"/><br>
 						<br>
 						
 						
 						
-						<div class="submit"><input type="submit" name="Submit" value="Update options" class="button-primary" /></div>
+						<div class="submit"><input type="submit" name="Submit" value="',__('Update Options',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" class="button-primary" /></div>
+						
 				</form>
 			</div>
 
@@ -1229,7 +1263,7 @@ LIMIT 0,3
 	
 </div>
 
-END;
+'; 
 		
 		
 	}

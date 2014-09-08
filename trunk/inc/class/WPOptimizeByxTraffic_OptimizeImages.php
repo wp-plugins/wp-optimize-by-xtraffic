@@ -47,18 +47,125 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			PepVN_Data::chmod($this->pepvn_ImgFolderCachePath,WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_PATH_WP,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 		}
 		
-		$this->fontFolderPath = realpath(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/fonts/').'/';
+		$this->fontFolderPath = WPOPTIMIZEBYXTRAFFIC_PATH.'inc/fonts/';
 		
 		$this->hostHasToolToProcessImage = false;
-		
+		/*
 		if(function_exists('extension_loaded')) {
 			if (extension_loaded('gd') || extension_loaded('gd2')) {
 				$this->hostHasToolToProcessImage = true;
 			}
 		}
-		
+		*/
+		if(function_exists('gd_info')) {
+			$this->hostHasToolToProcessImage = true;
+		}
 		
 	}
+	
+	
+	public function optimize_images_check_system_ready() 
+	{
+		
+		$resultData = array();
+		$resultData['notice']['error'] = array();
+		
+		/*
+		*	20 : error optimize image file - can't process image file
+		*	21 : error preview optimized image file - still can process image file in front end
+		*/
+		$resultData['notice']['error_no'] = array();	
+		
+		
+		
+		
+		$rsTemp = $this->base_check_system_ready();
+		$resultData = PepVN_Data::mergeArrays(array(
+			$resultData
+			,$rsTemp
+		));
+		
+		
+		
+		
+		
+		
+		
+		/*
+		if(function_exists('extension_loaded')) {
+			if (extension_loaded('gd') || extension_loaded('gd2')) {
+				
+			}
+		}
+		*/
+		
+		if(!function_exists('gd_info')) {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server need to install the GD library to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'"<b>Optimize Image File</b>" (<a href="http://php.net/manual/en/book.image.php" target="_blank"><b>'.__('details here',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</b></a>)</div>';
+			$resultData['notice']['error_no'][] = 20;
+		}
+		
+		if(
+			isset($this->pepvn_UploadsImgFolderPath)
+			&& $this->pepvn_UploadsImgFolderPath
+			&& file_exists($this->pepvn_UploadsImgFolderPath)
+			&& PepVN_Data::isAllowReadAndWrite($this->pepvn_UploadsImgFolderPath)
+		) {
+			
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$this->pepvn_UploadsImgFolderPath.'</b>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Image File</b>"</div>';
+			$resultData['notice']['error_no'][] = 20;
+		}
+		
+		
+		if(
+			isset($this->pepvn_ImgFolderCachePath)
+			&& $this->pepvn_ImgFolderCachePath
+			&& file_exists($this->pepvn_ImgFolderCachePath)
+			&& PepVN_Data::isAllowReadAndWrite($this->pepvn_ImgFolderCachePath)
+		) {
+			
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$this->pepvn_ImgFolderCachePath.'</b>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Image File</b>"</div>';
+			$resultData['notice']['error_no'][] = 20;
+		}
+		
+		
+		
+		if(
+			isset($this->fontFolderPath)
+			&& $this->fontFolderPath
+			&& file_exists($this->fontFolderPath)
+			&& PepVN_Data::is_readable($this->fontFolderPath)
+		) {
+			
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$this->fontFolderPath.'</b>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Image File</b>"</div>';
+			$resultData['notice']['error_no'][] = 20;
+		}
+		
+		
+		
+		if(
+			isset($this->pepvn_UploadsPreviewImgFolderPath)
+			&& $this->pepvn_UploadsPreviewImgFolderPath
+			&& file_exists($this->pepvn_UploadsPreviewImgFolderPath)
+			&& PepVN_Data::isAllowReadAndWrite($this->pepvn_UploadsPreviewImgFolderPath)
+		) {
+			
+		} else {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('folder',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>'.$this->pepvn_UploadsPreviewImgFolderPath.'</b>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Preview Optimize Image File</b>"</div>';
+			$resultData['notice']['error_no'][] = 21;
+		}
+		
+		
+		$resultData['notice']['error'] = array_unique($resultData['notice']['error']);
+		$resultData['notice']['error_no'] = array_unique($resultData['notice']['error_no']);
+		
+		
+		return $resultData;
+		
+	}
+	
 	
 	
 	private function optimize_images_getImageFileInfo($file)
@@ -101,34 +208,26 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		$resultData = false;
 		
-		if($fileName) {
-			$fileName = realpath($fileName);
-			if($fileName) {
-				if(file_exists($fileName)) {
-					
-					$rsOne = getimagesize($fileName);
-					if(isset($rsOne[0]) && $rsOne[0]) {
-						$rsOne[0] = (int)$rsOne[0];
-						if($rsOne[0] > 10) {
-							if(isset($rsOne[1]) && $rsOne[1]) {
-								$rsOne[1] = (int)$rsOne[1];
-								if($rsOne[1] > 10) {
-									
-									if(!PepVN_Images::isAnimation($fileName)) {
-										$resultData = true;
-									}
-									
-								}
+		if($fileName && file_exists($fileName)) {
+	
+			$rsOne = getimagesize($fileName);
+			if(isset($rsOne[0]) && $rsOne[0]) {
+				$rsOne[0] = (int)$rsOne[0];
+				if($rsOne[0] > 10) {
+					if(isset($rsOne[1]) && $rsOne[1]) {
+						$rsOne[1] = (int)$rsOne[1];
+						if($rsOne[1] > 10) {
+							
+							if(!PepVN_Images::isAnimation($fileName)) {
+								$resultData = true;
 							}
+							
 						}
-						
 					}
-					
-				
-			
-					
 				}
+				
 			}
+			
 		}
 		
 		return $resultData;
@@ -142,6 +241,20 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$resultData = array();
 		$resultData['image_original_file_path'] = false;
 		$resultData['image_optimized_file_path'] = false;
+		
+		
+		$rsTemp = $this->optimize_images_check_system_ready();
+		if(in_array(20,$rsTemp['notice']['error_no'])) {
+			return $resultData;
+		}
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		$options = $input_parameters['options'];
 		$paramsWatermarkOptions = $input_parameters['paramsWatermarkOptions'];
@@ -301,7 +414,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						$checkStatus1 = false;
 						
 						$imgOptimizedFilePath2 = $imgOptimizedFilePath1.'.'.$value1;
-						$imgOptimizedFilePath2 = realpath($imgOptimizedFilePath2);
+						//$imgOptimizedFilePath2 = realpath($imgOptimizedFilePath2);
 						if($imgOptimizedFilePath2) {
 							if(file_exists($imgOptimizedFilePath2)) {
 								if(filesize($imgOptimizedFilePath2)>0) {
@@ -356,7 +469,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								if($globPaths1 && (count($globPaths1)>0)) {
 									
 									foreach ($globPaths1 as $filename1) {
-										$filename1 = realpath($filename1);
+										//$filename1 = realpath($filename1);
 										if($filename1 && file_exists($filename1)) {
 											if($filename1 !== $resultData['image_optimized_file_path']) {
 												unlink($filename1);
@@ -384,7 +497,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							
 						}
 						
-						$imgFolderCachePath = realpath($imgFolderCachePath);
+						//$imgFolderCachePath = realpath($imgFolderCachePath);
 						
 						if($imgFolderCachePath && file_exists($imgFolderCachePath)  && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($imgFolderCachePath))) {
 							
@@ -755,7 +868,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										}
 										
 										$valueTemp1 = $imgOptimizedFilePath1;
-										$valueTemp1 = realpath($valueTemp1);
+										//$valueTemp1 = realpath($valueTemp1);
 										if($valueTemp1 && file_exists($valueTemp1)) {
 											$valueTemp2 = filesize($valueTemp1);
 											if($valueTemp2 && ($valueTemp2>0)) {
@@ -1522,10 +1635,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							PepVN_Data::createFolder($preview_FolderPath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
 							PepVN_Data::chmod($preview_FolderPath,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 							
-							$preview_FolderPath = realpath($preview_FolderPath);
+							//$preview_FolderPath = realpath($preview_FolderPath);
 							if($preview_FolderPath && file_exists($preview_FolderPath)) {
 								
-								$preview_FolderPath .= '/';
+								//$preview_FolderPath .= '/';
 								
 								
 								$rsProcessImage1 = $this->optimize_images_process_image(array(
@@ -1716,8 +1829,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 				<label for="optimize_images_watermarks_watermark_type"> Text</label> 
 			</li>
 			<li>
-				<input type="checkbox" name="optimize_images_watermarks_watermark_type[]" value="image" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_image_type_container" '.( (false !== stripos($optimize_images_watermarks_watermark_type,'image')) ? ' checked ' : '').' /> &nbsp; 
-				<label for="optimize_images_watermarks_watermark_type"> Image</label> 
+				<input type="checkbox" name="optimize_images_watermarks_watermark_type[]" value="image" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_image_type_container" '.( (false !== stripos($optimize_images_watermarks_watermark_type,'image')) ? ' checked ' : '').' /> &nbsp;  
+				<label for="optimize_images_watermarks_watermark_type"> Image ('.__('Your Logo',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).')</label> 
 			</li>
 		</ul>';
 		
@@ -1733,7 +1846,17 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		';
 		
 		
-		echo <<<END
+		
+		
+		
+		
+		
+		$rsTemp = $this->optimize_images_check_system_ready();
+		if(!PepVN_Data::isEmptyArray($rsTemp['notice']['error'])) {
+			echo implode(' ',$rsTemp['notice']['error']);
+		}
+		
+		echo '
 
 <div class="wrap wpoptimizebyxtraffic_admin" style="">
 	
@@ -1745,8 +1868,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 
 			<div class="dbx-content">
 			
-				<form name="WPOptimizeByxTraffic" action="$action_url" method="post">
-					  <input type="hidden" id="_wpnonce" name="_wpnonce" value="$nonce" />
+				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
+					  <input type="hidden" id="_wpnonce" name="_wpnonce" value="',$nonce,'" />
 						
 						<input type="hidden" name="submitted" value="1" /> 
 						<input type="hidden" name="optimize_images_submitted" value="1" /> 
@@ -1758,77 +1881,77 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						-->
 						
 						
-						<div class='xtraffic_tabs_nav'>
-							<a href='#xtraffic_tabs_content1' class="">Optimize ALT/TITLE</a> 
-							<a href='#xtraffic_tabs_content2' class="active">Optimize Image File</a>
+						<div class="xtraffic_tabs_nav">
+							<a href="#xtraffic_tabs_content1" class="">Optimize ALT/TITLE</a> 
+							<a href="#xtraffic_tabs_content2" class="active">Optimize Image File</a>
 						</div>
 						
-						<div id='xtraffic_tabs_content1' class="xtraffic_tabs_contents">
+						<div id="xtraffic_tabs_content1" class="xtraffic_tabs_contents">
 
 							<h3>Optimize ALT/TITLE</h3>
 							
 							<p>
-								You can enter any text in the field including these special tags :
+								',__('You can enter any text in the field including these special tags',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 							</p>
 							
 							<ul>
-								<li>%title : post title</li>
-								<li>%category : post category</li>
-								<li>%tags : post tags</li>
-								<li>%img_name : image file name (without extension)</li>
-								<li>%img_title : image title attributes</li>
-								<li>%img_alt : image alt attributes</li>
+								<li>%title : ',__('post title',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+								<li>%category : ',__('post category',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+								<li>%tags : ',__('post tags',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+								<li>%img_name : ',__('image file name (without extension)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+								<li>%img_title : ',__('image title attributes',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+								<li>%img_alt : ',__('image alt attributes',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
 							</ul>
 							
 							<p></p>
 							
 							<ul>
 								<li>
-									<label for="optimize_images_alttext"> ALT attribute (example: %img_name %title) </label>&nbsp;<br />
-									<input type="text" name="optimize_images_alttext"  value="$optimize_images_alttext" title="ALT attribute" />
+									<label for="optimize_images_alttext"> ',__('ALT attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': %img_name %title) </label>&nbsp;<br />
+									<input type="text" name="optimize_images_alttext"  value="',$optimize_images_alttext,'" title="',__('ALT attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" />
 								</li>
 								
 								<li>
-									<label for="optimize_images_titletext"> TITLE attribute (example: %img_name photo) </label>&nbsp;<br />
-									<input type="text" name="optimize_images_titletext" value="$optimize_images_titletext" title="TITLE attribute" />
+									<label for="optimize_images_titletext"> ',__('TITLE attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': %img_name photo) </label>&nbsp;<br />
+									<input type="text" name="optimize_images_titletext" value="',$optimize_images_titletext,'" title="',__('TITLE attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" />
 								</li>
 								
 								<li> &nbsp; </li>
 								
 								<li>
-									<input type="checkbox" name="optimize_images_override_alt"  $optimize_images_override_alt /> &nbsp; 
-									<label for="optimize_images_override_alt"> Override default Wordpress image alt tag (recommended) </label> 
+									<input type="checkbox" name="optimize_images_override_alt"  ',$optimize_images_override_alt,' /> &nbsp; 
+									<label for="optimize_images_override_alt"> ',__('Override default Wordpress image alt tag',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),') </label> 
 								</li>
 								
 								<li>
 									
-									<input type="checkbox" name="optimize_images_override_title"  $optimize_images_override_title /> &nbsp; 
-									<label for="optimize_images_override_title"> Override default Wordpress image title </label> 
+									<input type="checkbox" name="optimize_images_override_title" ',$optimize_images_override_title,' /> &nbsp; 
+									<label for="optimize_images_override_title"> ',__('Override default Wordpress image title',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' </label> 
 								</li>
 								
 								
 							</ul>
 							
-							<h4>Example ALT/TITLE</h4>
+							<h4>',__('Example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ALT/TITLE</h4>
 							
-							<p>In a post titled <b>"Landscape Pictures"</b> there is a images named <b>"forest.jpg"</b></p>
+							<p>',__('In a post titled',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"Landscape Pictures"</b> ',__('there is a image named',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"forest.jpg"</b></p>
 
-							<p>Setting alt attribute to <b>"%img_name %title"</b> will set <b>alt="forest Landscape Pictures"</b></p>
-							<p>Setting title attribute to <b>"%img_name image"</b> will set <b>title="forest image"</b></p>
+							<p>',__('Setting alt attribute to',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"%img_name %title"</b> ',__('will set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>alt="forest Landscape Pictures"</b></p>
+							<p>',__('Setting title attribute to',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"%img_name image"</b> ',__('will set',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>title="forest image"</b></p>
 							
 							<br />
 							
 						</div>
 						
-						<div id='xtraffic_tabs_content2' class="xtraffic_tabs_contents">
+						<div id="xtraffic_tabs_content2" class="xtraffic_tabs_contents">
 							
 							<h3>WATERMARK</h3>
 							
 							<ul>
 								
 								<li>
-									<input type="checkbox" name="optimize_images_watermarks_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_container"  $optimize_images_watermarks_enable /> &nbsp; 
-									<label for="optimize_images_watermarks_enable"> Enable Watermark Images</label> 
+									<input type="checkbox" name="optimize_images_watermarks_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_container" ',$optimize_images_watermarks_enable,' /> &nbsp; 
+									<label for="optimize_images_watermarks_enable"> ',__('Enable Watermark Images',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label> 
 								</li>
 								
 							</ul>
@@ -1836,10 +1959,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							<div style="margin-top: 4%;" id="optimize_images_watermarks_container" class="wpoptimizebyxtraffic_show_hide_container">
 								<div>
 									<h5>
-										Watermark Position :
+										',__('Watermark Position',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 									</h5>
 									<div>
-										$watermark_positions_table 
+										',$watermark_positions_table,'
 									</div>
 								</div>							
 								<br />
@@ -1859,7 +1982,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 													
 													id="optimize_images_watermarks_watermark_opacity_value"
 													name="optimize_images_watermarks_watermark_opacity_value" 
-													value="$optimize_images_watermarks_watermark_opacity_value"
+													value="',$optimize_images_watermarks_watermark_opacity_value,'"
 													title="" style="" 
 												/>
 											</li>
@@ -1872,9 +1995,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								
 								
 								<div>
-									<h5>Watermark Type :</h5>
+									<h5>',__('Watermark Type',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h5>
 									<div>
-										$watermark_type_html
+										',$watermark_type_html,'
 									</div>
 								</div>
 								<br /> 
@@ -1882,14 +2005,14 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								
 								<div id="optimize_images_watermarks_watermark_text_type_container" class="wpoptimizebyxtraffic_show_hide_container">
 									<br /><hr /><br />
-									<h5>Type Text Watermark</h5><br />
+									<h5>',__('Type Text Watermark',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5><br />
 									
 									<div>
 										<h6>
-											Watermark text value :
+											',__('Watermark text value',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 										</h6>
 										<div>
-											<input type="text" name="optimize_images_watermarks_watermark_text_value"  value="$optimize_images_watermarks_watermark_text_value" />
+											<input type="text" name="optimize_images_watermarks_watermark_text_value"  value="',$optimize_images_watermarks_watermark_text_value,'" />
 										</div>
 									</div>							
 									<br />
@@ -1899,18 +2022,18 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											Fonts :
 										</h6>
 										<div>
-											$watermark_text_fonts_html
+											',$watermark_text_fonts_html,'
 										</div>
 									</div>							
 									<br />
 									
 									<div>
 										<h6>
-											Text size :
+											',__('Text size',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 										</h6>
 										<div>
-											<input type="text" name="optimize_images_watermarks_watermark_text_size"  value="$optimize_images_watermarks_watermark_text_size" style="width:50px" /> (pt/%)
-											<p class="description">In case you set Text size by percent (Ex: 20%), plugin will create watermark having its width is about 20% of Image's width</p>
+											<input type="text" name="optimize_images_watermarks_watermark_text_size"  value="',$optimize_images_watermarks_watermark_text_size,'" style="width:50px" /> (pt/%)
+											<p class="description">',__('In case you set Text size by percent (Ex: 20%), plugin will create watermark having its width is about 20% of Image\'s width',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 											<br />
 										</div>
 									</div>
@@ -1918,24 +2041,24 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									
 									<div>
 										<h6>
-											Text color :
+											',__('Text color',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 										</h6>
 										<div>
-											# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_color" value="$optimize_images_watermarks_watermark_text_color" /> 
+											# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_color" value="',$optimize_images_watermarks_watermark_text_color,'" /> 
 										</div>
 									</div>
 									<br />
 									
 									
 									<div>
-										<h6>Text Margin :</h6>
+										<h6>',__('Text Margin',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h6>
 										<div>
 											<ul>
 												<li>
-													<label for="optimize_images_watermarks_watermark_text_margin_x"> x : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_text_margin_x"  value="$optimize_images_watermarks_watermark_text_margin_x" title="" style="width: 35px;" />&nbsp;px
+													<label for="optimize_images_watermarks_watermark_text_margin_x"> x : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_text_margin_x"  value="',$optimize_images_watermarks_watermark_text_margin_x,'" title="" style="width: 35px;" />&nbsp;px
 												</li>
 												<li>
-													<label for="optimize_images_watermarks_watermark_text_margin_y"> y : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_text_margin_y"  value="$optimize_images_watermarks_watermark_text_margin_y" title="" style="width: 35px;" />&nbsp;px
+													<label for="optimize_images_watermarks_watermark_text_margin_y"> y : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_text_margin_y"  value="',$optimize_images_watermarks_watermark_text_margin_y,'" title="" style="width: 35px;" />&nbsp;px
 												</li>
 											</ul>
 										</div>
@@ -1944,7 +2067,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									
 									
 									<div>
-										<h6>Text Opacity :</h6>
+										<h6>',__('Text Opacity',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h6>
 										<div>
 											<ul>
 												<li>
@@ -1954,7 +2077,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 														data-slider-range="0,100"
 														id=""
 														name="optimize_images_watermarks_watermark_text_opacity_value" 
-														value="$optimize_images_watermarks_watermark_text_opacity_value" title="" style="" 
+														value="',$optimize_images_watermarks_watermark_text_opacity_value,'" title="" style="" 
 													/>
 												</li>
 											</ul>
@@ -1965,12 +2088,12 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									
 									
 									<div>
-										<h6>Text background :</h6>
+										<h6>',__('Text background',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h6>
 										<div>
 											<ul>
 												<li>
-													<input type="checkbox" name="optimize_images_watermarks_watermark_text_background_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_text_background_container"  $optimize_images_watermarks_watermark_text_background_enable /> &nbsp; 
-													<label for="optimize_images_watermarks_watermark_text_background_enable"> Enable Watermark Text Background</label> 
+													<input type="checkbox" name="optimize_images_watermarks_watermark_text_background_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_text_background_container"  ',$optimize_images_watermarks_watermark_text_background_enable,' /> &nbsp; 
+													<label for="optimize_images_watermarks_watermark_text_background_enable"> ',__('Enable Watermark Text Background',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label> 
 												</li>
 											</ul>
 										</div>
@@ -1982,10 +2105,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									
 										<div>
 											<h6>
-												Background color :
+												',__('Background color',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 											</h6>
 											<div>
-												# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_background_color" value="$optimize_images_watermarks_watermark_text_background_color" /> 
+												# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_background_color" value="',$optimize_images_watermarks_watermark_text_background_color,'" /> 
 											</div>
 										</div>
 										<br />
@@ -2003,7 +2126,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 															data-slider-range="0,100"
 															id=""
 															name="optimize_images_watermarks_watermark_text_background_opacity_value" 
-															value="$optimize_images_watermarks_watermark_text_background_opacity_value" title="" style="" 
+															value="',$optimize_images_watermarks_watermark_text_background_opacity_value,'" title="" style="" 
 														/>
 														
 													</li>
@@ -2026,7 +2149,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										<div>
 											<ul>
 												<li>
-													<input type="checkbox" name="optimize_images_watermarks_watermark_text_outline_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_text_outline_container" $optimize_images_watermarks_watermark_text_outline_enable /> &nbsp; 
+													<input type="checkbox" name="optimize_images_watermarks_watermark_text_outline_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_watermarks_watermark_text_outline_container" ',$optimize_images_watermarks_watermark_text_outline_enable,' /> &nbsp; 
 													<label for="optimize_images_watermarks_watermark_text_outline_enable"> Enable Watermark Text Outline</label> 
 												</li>
 											</ul>
@@ -2041,7 +2164,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 												Outline color :
 											</h6>
 											<div>
-												# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_outline_color" value="$optimize_images_watermarks_watermark_text_outline_color" /> 
+												# <input type="text" class="wpoptimizebyxtraffic_color_picker" name="optimize_images_watermarks_watermark_text_outline_color" value="',$optimize_images_watermarks_watermark_text_outline_color,'" /> 
 											</div>
 										</div>
 										<br />
@@ -2053,7 +2176,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 												Outline width :
 											</h6>
 											<div>
-												<input type="text" name="optimize_images_watermarks_watermark_text_outline_width"  value="$optimize_images_watermarks_watermark_text_outline_width" style="width:50px" /> (px)
+												<input type="text" name="optimize_images_watermarks_watermark_text_outline_width"  value="',$optimize_images_watermarks_watermark_text_outline_width,'" style="width:50px" /> (px)
 											</div>
 										</div>
 										<br />
@@ -2074,14 +2197,14 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								
 								<div id="optimize_images_watermarks_watermark_image_type_container" class="wpoptimizebyxtraffic_show_hide_container">
 									<br /><hr /><br />
-									<h5>Type Image Watermark</h5><br />
+									<h5>',__('Type Image Watermark (Your Logo)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5><br />
 									
 									<div>
 										<h6>
-											Watermark image url :
+											',__('Watermark image url (your logo url)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 										</h6>
 										<div>
-											<input type="text" name="optimize_images_watermarks_watermark_image_url"  value="$optimize_images_watermarks_watermark_image_url" />
+											<input type="text" name="optimize_images_watermarks_watermark_image_url"  value="',$optimize_images_watermarks_watermark_image_url,'" />
 										</div>
 									</div>
 									<br />
@@ -2089,14 +2212,14 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									
 									<div>
 										<h6>
-											Watermark image size :
+											',__('Watermark image size (your logo)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 										</h6>
 										
 										<div>
 											<ul>
 												<li>
-													<label for="optimize_images_watermarks_watermark_image_width"> Width : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_width"  value="$optimize_images_watermarks_watermark_image_width" title="" style="width: 55px;" />&nbsp;(px/%)
-													<p class="description">In the case of you set "Watermark image size" is number percent (Ex: 20%), plugin will resize watermark has width is 20% of Image's width</p>
+													<label for="optimize_images_watermarks_watermark_image_width"> ',__('Width',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_width"  value="',$optimize_images_watermarks_watermark_image_width,'" title="" style="width: 55px;" />&nbsp;(px/%)
+													<p class="description">',__('In the case of you set "Watermark image size" is number percent (Ex: 20%), plugin will resize watermark (your logo) has width is 20% of Image\'s width',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 												</li>
 											</ul>
 										</div>
@@ -2110,10 +2233,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										<div>
 											<ul>
 												<li>
-													<label for="optimize_images_watermarks_watermark_image_margin_x"> x : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_margin_x"  value="$optimize_images_watermarks_watermark_image_margin_x" title="" style="width: 35px;" />&nbsp;px
+													<label for="optimize_images_watermarks_watermark_image_margin_x"> x : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_margin_x"  value="',$optimize_images_watermarks_watermark_image_margin_x,'" title="" style="width: 35px;" />&nbsp;px
 												</li>
 												<li>
-													<label for="optimize_images_watermarks_watermark_image_margin_y"> y : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_margin_y"  value="$optimize_images_watermarks_watermark_image_margin_y" title="" style="width: 35px;" />&nbsp;px
+													<label for="optimize_images_watermarks_watermark_image_margin_y"> y : </label>&nbsp;<input type="text" name="optimize_images_watermarks_watermark_image_margin_y"  value="',$optimize_images_watermarks_watermark_image_margin_y,'" title="" style="width: 35px;" />&nbsp;px
 												</li>
 											</ul>
 										</div>
@@ -2129,11 +2252,11 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							
 							<div class="wpoptimizebyxtraffic_fixed wpoptimizebyxtraffic_bottom_right" id="wpoptimizebyxtraffic_preview_processed_image">
 								<div>
-									<h6>Preview Processed Image ( <a href="#show_hide">Show/Hide</a> )</h6> 
+									<h6>',__('Preview Processed Image',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( <a href="#show_hide">',__('Show/Hide',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</a> )</h6> 
 									<div class="wpoptimizebyxtraffic_preview_processed_image_content">
 										<ul>
 											<li>
-												<label for="optimize_images_watermarks_preview_processed_image_example_image_url"> Example image url : </label><br />
+												<label for="optimize_images_watermarks_preview_processed_image_example_image_url"> ',__('Example image url',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label><br />
 												<input type="text" 
 													name="optimize_images_watermarks_preview_processed_image_example_image_url"  
 													value="http://xtraffic.pep.vn/static-show/xtraffic/marketing/campaign-1/mang-quang-cao-mien-phi-open-free-ad-network-xtraffic-landing-page/img/xtraffic-mang-quang-cao-mien-phi-hieu-qua.jpg" 
@@ -2146,7 +2269,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											</li>
 											
 											<li class="wpoptimizebyxtraffic_preview_process_image_buttons">
-												<button type="button" class="button-primary wpoptimizebyxtraffic_do_preview">Preview</button>
+												<button type="button" class="button-primary wpoptimizebyxtraffic_do_preview">',__('Preview',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</button>
 											</li>
 										</ul>
 									</div>
@@ -2156,7 +2279,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							
 							
 							<hr />
-							<h3>Optimize Image Quality</h3>
+							<h3>',__('Optimize Image Quality',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 							
 							<ul>
 								
@@ -2168,47 +2291,47 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										data-slider-range="10,100"
 										id=""
 										name="optimize_images_image_quality_value" 
-										value="$optimize_images_image_quality_value" title="Image Quality Value (10 to 100)" style="" 
+										value="',$optimize_images_image_quality_value,'" title="',__('Image Quality Value (10 to 100)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" style="" 
 									/>
 								</li>
 							</ul>
-							<p class="description">To reduce the size of image file, you can reduce value in image's Quality Bar above. If you set a value of 100, your image keeps the original quality and file size. ( Best value recommended is from 80 to 90 )</p>
+							<p class="description">',__('To reduce the size of image file, you can reduce value in image\'s Quality Bar above. If you set a value of 100, your image keeps the original quality and file size. ( Best value recommended is from 80 to 90 )',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 							<br />
 							
 							<hr />
 							<div>
-								<h3>Rename Image Filename</h3>
+								<h3>',__('Rename Image Filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 								
 								<p>
-									You can enter any text in the field including these special tags :
+									',__('You can enter any text in the field including these special tags',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :
 								</p>
 								
 								<ul>
-									<li>%title : post title</li>
-									<li>%category : post category</li>
-									<li>%tags : post tags</li>
-									<li>%img_name : image file name (without extension)</li>
-									<li>%img_title : image title attributes</li>
-									<li>%img_alt : image alt attributes</li>
+									<li>%title : ',__('post title',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+									<li>%category : ',__('post category',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+									<li>%tags : ',__('post tags',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+									<li>%img_name : ',__('image file name (without extension)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+									<li>%img_title : ',__('image title attributes',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
+									<li>%img_alt : ',__('image alt attributes',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</li>
 								</ul>
 								
 								<p></p>
 								
 								<ul>
 									<li>
-										<label for="optimize_images_rename_img_filename_value"><b> New Image Filename (example: %img_name %title) </b></label>&nbsp;<br />
-										<input type="text" name="optimize_images_rename_img_filename_value"  value="$optimize_images_rename_img_filename_value" title="ALT attribute" />
-										<p class="description">Leave a blank if you want to keep image's original filename</p>
+										<label for="optimize_images_rename_img_filename_value"><b> ',__('New Image Filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': %img_name %title) </b></label>&nbsp;<br />
+										<input type="text" name="optimize_images_rename_img_filename_value"  value="',$optimize_images_rename_img_filename_value,'" title="',__('ALT attribute',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" />
+										<p class="description">',__('Leave a blank if you want to keep image\'s original filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 									</li>
 									
 								</ul>
 								
-								<h4>Example : </h4>
+								<h4>',__('Example',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </h4> 
 								
-								<p>In a post titled <b>"Landscape Pictures"</b> there is a images named <b>"forest.jpg"</b></p>
+								<p>',__('In a post titled',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"Landscape Pictures"</b> ',__('there is a image named',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"forest.jpg"</b></p>
 
-								<p>Setting New Image Filename to <b>"%title %img_name"</b> will set new image's filename : <b>"Landscape-Pictures-forest.jpg"</b></p>
-								<p>Setting New Image Filename to <b>"xTraffic %img_name %title"</b> will set new image's filename : <b>"xTraffic-forest-Landscape-Pictures.jpg"</b></p>
+								<p>',__('Setting New Image Filename to',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"%title %img_name"</b> ',__('will set new image\'s filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : <b>"Landscape-Pictures-forest.jpg"</b></p>
+								<p>',__('Setting New Image Filename to',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' <b>"xTraffic %img_name %title"</b> ',__('will set new image\'s filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : <b>"xTraffic-forest-Landscape-Pictures.jpg"</b></p>
 								
 								<br />
 								
@@ -2216,22 +2339,22 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							
 							
 							<hr />
-							<h3>Performance</h3>
+							<h3>',__('Performance',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 							
 							<ul>
 								
 								<li>
-									<h5 style="margin-bottom: 10px;margin-top: 20px;">The maximum number of files are handled for each request</h5>
-									<input type="text" name="optimize_images_maximum_files_handled_each_request"  value="$optimize_images_maximum_files_handled_each_request" />
-									<p class="description">In the case of your hosting is in low performance, you should set the maximum number of files handled for each query to avoid overloading your hosting. In case you leave a blank or set a value of  0, plugin will handle all files that are not been handled yet</p>
+									<h5 style="margin-bottom: 10px;margin-top: 20px;">',__('The maximum number of files are handled for each request',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
+									<input type="text" name="optimize_images_maximum_files_handled_each_request"  value="',$optimize_images_maximum_files_handled_each_request,'" />
+									<p class="description">',__('In the case of your hosting is in low performance, you should set the maximum number of files handled for each query to avoid overloading your hosting. In case you leave a blank or set a value of  0, plugin will handle all files that are not been handled yet',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 								</li>
 								
 								<li>
 									<br />
-									<h6 style="margin-bottom: 10px;margin-top: 20px;"><input type="checkbox" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_handle_again_files_different_configuration_enable_container" name="optimize_images_handle_again_files_different_configuration_enable"  $optimize_images_handle_again_files_different_configuration_enable /> &nbsp; Enable to reprocess files which have different configuration with its current configuration</h6>
-									<p class="description">In case you change configuration, plugin will check and reprocess all processed files that are different with the current configuration, by overwriting old file if file has the same filename or create a new file if the filename is different (Set at "Rename Image Filename")</p>
+									<h6 style="margin-bottom: 10px;margin-top: 20px;"><input type="checkbox" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_handle_again_files_different_configuration_enable_container" name="optimize_images_handle_again_files_different_configuration_enable" ',$optimize_images_handle_again_files_different_configuration_enable,' /> &nbsp; ',__('Enable to reprocess files which have different configuration with its current configuration',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description">',__('In case you change configuration, plugin will check and reprocess all processed files that are different with the current configuration, by overwriting old file if file has the same filename or create a new file if the filename is different',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Set at',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' "',__('Rename Image Filename',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'")</p>
 									<div id="optimize_images_handle_again_files_different_configuration_enable_container" class="wpoptimizebyxtraffic_show_hide_container">
-										<h6 style="margin-bottom: 10px;margin-top: 20px;"><input type="checkbox" name="optimize_images_remove_files_available_different_configuration_enable"  $optimize_images_remove_files_available_different_configuration_enable /> &nbsp; Enable to remove old files (if available) that are different with the current configuration</h6>
+										<h6 style="margin-bottom: 10px;margin-top: 20px;"><input type="checkbox" name="optimize_images_remove_files_available_different_configuration_enable" ',$optimize_images_remove_files_available_different_configuration_enable,' /> &nbsp; ',__('Enable to remove old files (if available) that are different with the current configuration',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
 									</div>
 								</li>
 							</ul>
@@ -2244,7 +2367,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						</div><!-- /xtraffic_tabs_contents -->
 						
 							
-						<div class="submit"><input type="submit" name="Submit" value="Update options" class="button-primary" /></div>
+						<div class="submit"><input type="submit" name="Submit" value="',__('Update Options',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" class="button-primary" /></div>
+						
 				</form>
 			</div>
 
@@ -2256,7 +2380,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 	
 </div>
 
-END;
+';
 		
 		
 	}
