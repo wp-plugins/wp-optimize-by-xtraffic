@@ -782,23 +782,20 @@ class PepVN_Data
 	public static function rrmdir($dir) 
 	{
 		if($dir) {
-			//$dir = realpath($dir);
-			if($dir) {
-				if(file_exists($dir)) {
-					if (is_dir($dir)) {
-						$objects = scandir($dir);
-						foreach ($objects as $object) {
-							if ($object != "." && $object != "..") {
-								if (filetype($dir."/".$object) == "dir") {
-									self::rrmdir($dir."/".$object); 
-								} else {
-									unlink   ($dir."/".$object);
-								}
+			if(file_exists($dir)) {
+				if (is_dir($dir)) {
+					$objects = scandir($dir);
+					foreach ($objects as $object) {
+						if ($object != "." && $object != "..") {
+							if (filetype($dir."/".$object) == "dir") {
+								self::rrmdir($dir."/".$object); 
+							} else {
+								unlink   ($dir."/".$object); 
 							}
 						}
-						reset($objects);
-						rmdir($dir);
 					}
+					reset($objects);
+					rmdir($dir);
 				}
 			}
 		}
@@ -1011,7 +1008,7 @@ class PepVN_Data
 		$input_path = self::fixPath($input_path);
 		
 		$pathTemp1 = $input_path;
-		//$pathTemp1 = realpath($pathTemp1);
+		
 		if($pathTemp1 && file_exists($pathTemp1)) {
 			$resultData = $pathTemp1;
 			return $resultData;
@@ -1030,12 +1027,12 @@ class PepVN_Data
 		foreach($arrayPath as $path1) {
 			$folderPath .= DIRECTORY_SEPARATOR . $path1;
 			$pathTemp1 = $folderPath;
-			//$pathTemp1 = realpath($pathTemp1);
+			
 			if($pathTemp1 && file_exists($pathTemp1)) {
 			} else {
 				@mkdir($folderPath, $chmod, true);
 				$pathTemp1 = $folderPath;
-				//$pathTemp1 = realpath($pathTemp1);
+				
 				if($pathTemp1 && file_exists($pathTemp1)) {
 				} else {
 					return $resultData;
@@ -1044,7 +1041,7 @@ class PepVN_Data
 		}
 		
 		if($folderPath) {
-			//$folderPath = realpath($folderPath);
+			
 			if($folderPath && file_exists($folderPath)) {
 				$resultData = $folderPath . DIRECTORY_SEPARATOR;
 				if(isset($pathInfo['extension'])) {
@@ -1065,8 +1062,6 @@ class PepVN_Data
 	public static function checkChmod($input_path, $input_chmod)
 	{
 		$resultData = false;
-		
-		//$input_path = realpath($input_path);
 		
 		if($input_path && file_exists($input_path)) {
 			$pathPerms = substr(sprintf('%o', fileperms($input_path)), -4);
@@ -1102,7 +1097,7 @@ class PepVN_Data
 		foreach($arrayPath as $path1) {
 			$pathNeedChmod .= DIRECTORY_SEPARATOR . $path1;
 			$pathTemp1 = $pathNeedChmod;
-			//$pathTemp1 = realpath($pathTemp1);
+			
 			if($pathTemp1 && file_exists($pathTemp1)) {
 				if(is_readable($input_path) && is_writable($input_path)) {
 					
@@ -1143,7 +1138,7 @@ class PepVN_Data
 	public static function isAllowReadAndWrite($input_path)
 	{
 		$resultData = false;
-		//$input_path = realpath($input_path);
+		
 		if($input_path && file_exists($input_path)) {
 			if(is_readable($input_path)) {
 				if(is_writable($input_path)) {
@@ -1186,7 +1181,7 @@ class PepVN_Data
 		foreach($arrayPath as $path1) {
 			$pathNeedChmod .= DIRECTORY_SEPARATOR . $path1;
 			$pathTemp1 = $pathNeedChmod;
-			//$pathTemp1 = realpath($pathTemp1);
+			
 			if($pathTemp1 && file_exists($pathTemp1)) {
 				if(!self::checkChmod($pathTemp1,$chmod)) {
 					@chmod($pathTemp1, $chmod);
@@ -1196,7 +1191,7 @@ class PepVN_Data
 		}
 		
 		
-		//$pathNeedChmod = realpath($pathNeedChmod);
+		
 		if($pathNeedChmod && file_exists($pathNeedChmod)) {
 			if(self::checkChmod($pathNeedChmod,$chmod)) {
 				

@@ -3,7 +3,7 @@ Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
 Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed
 Requires at least: 2.3
-Tested up to: 3.9.2
+Tested up to: 4.0
 Stable tag: trunk
 
 Plugin "WP Optimize By xTraffic" optimizes your WordPress websites for friendly search engine (SEO) to increase website's ranking.
@@ -68,6 +68,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 2.2.2 =
+* Fix & Improve "Optimize Speed" + "Optimize Links"
 
 = 2.2.1 =
 * Add language Vietnamese (vi) - **[Translate by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translate by xTraffic.pep.vn")**

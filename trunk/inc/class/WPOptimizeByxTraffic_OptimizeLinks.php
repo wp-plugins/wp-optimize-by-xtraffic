@@ -146,14 +146,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$this->enable_db_fulltext();
 		$options = $this->get_options();
 		
-		if(isset($options['db_has_fulltext_status']) && ($options['db_has_fulltext_status'])) {
-			
-		} else {
-			return $resultData;
-		}
-		
-		
-		
 		if(isset($input_parameters['post_types']) && $input_parameters['post_types']) {
 			
 		} else {
@@ -185,49 +177,77 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 			$resultData = array();
 			
-			$queryString1 = '
-SELECT ID , post_title , (
-	( ( MATCH(post_title) AGAINST("'.$keyword.'" IN NATURAL LANGUAGE MODE) ) * 2 )
-	+ ( ( MATCH(post_excerpt) AGAINST("'.$keyword.'" IN NATURAL LANGUAGE MODE) ) * 2 )
-	+ ( ( MATCH(post_content) AGAINST("'.$keyword.'" IN NATURAL LANGUAGE MODE) ) * 1 )
-	+ ( ( MATCH(post_name) AGAINST("'.$keyword.'" IN NATURAL LANGUAGE MODE) ) * 2 )
-	
-) AS wpxtraffic_score
-FROM '.$wpdb->posts.'
-WHERE ( ( post_status = "publish") 
-';
+			
 			$queryString_Where_PostType = array();
 			
 			if(in_array('post',$input_parameters['post_types'])) {
-				$queryString_Where_PostType[] = ' ( post_type = "post" ) ';
+				$queryString_Where_PostType[] = ' ( post_type = \'post\' ) ';
 			}
 			
 			if(in_array('page',$input_parameters['post_types'])) {
-				$queryString_Where_PostType[] = ' ( post_type = "page" ) ';
+				$queryString_Where_PostType[] = ' ( post_type = \'page\' ) ';
 			}
 			
 			$queryString_Where_PostType = implode(' OR ',$queryString_Where_PostType);
 			$queryString_Where_PostType = trim($queryString_Where_PostType);
 			
-			if($queryString_Where_PostType) {
-				$queryString1 .= ' AND ( '.$queryString_Where_PostType.' ) ';
+			
+			if(isset($options['db_has_fulltext_status']) && ($options['db_has_fulltext_status'])) {
+				
+				$queryString1 = '
+	SELECT ID , post_title , (
+		(
+			( ( MATCH(post_title) AGAINST(\''.$keyword.'\' IN NATURAL LANGUAGE MODE) ) * 3 )
+			+ ( ( MATCH(post_excerpt) AGAINST(\''.$keyword.'\' IN NATURAL LANGUAGE MODE) ) * 2 )
+			+ ( ( MATCH(post_content) AGAINST(\''.$keyword.'\' IN NATURAL LANGUAGE MODE) ) * 1 )
+			+ ( ( MATCH(post_name) AGAINST(\''.$keyword.'\' IN NATURAL LANGUAGE MODE) ) * 2 )
+		) / 8
+	) AS wpxtraffic_score
+	FROM '.$wpdb->posts.'
+	WHERE ( ( post_status = \'publish\') 
+	'; 
+				
+				if($queryString_Where_PostType) {
+					$queryString1 .= ' AND ( '.$queryString_Where_PostType.' ) '; 
+				}
+				
+				$queryString1 .= ' ) ';
+				
+				$queryString1 .= ' 
+	ORDER BY wpxtraffic_score DESC 
+	LIMIT 0,3 
+	';
+			} else {
+			
+				$queryString1 = '
+	SELECT ID , post_title , (
+		ID
+	) AS wpxtraffic_score
+	FROM '.$wpdb->posts.'
+	WHERE ( ( post_status = \'publish\') AND ( post_title LIKE \'%'.$keyword.'%\' ) 
+	';
+				
+				if($queryString_Where_PostType) {
+					$queryString1 .= ' AND ( '.$queryString_Where_PostType.' ) ';
+				}
+				
+				$queryString1 .= ' ) ';
+				
+				$queryString1 .= ' 
+	ORDER BY wpxtraffic_score ASC 
+	LIMIT 0,3 
+	';
 			}
-			
-			$queryString1 .= ' ) ';
-			
-			$queryString1 .= ' 
-ORDER BY wpxtraffic_score DESC 
-LIMIT 0,3 
-';
-
+		
 			$rsOne = $wpdb->get_results($queryString1);
+			
 			
 			if($rsOne) {
 				foreach($rsOne as $keyOne => $valueOne) {
 					if($valueOne) {
 						if(isset($valueOne->wpxtraffic_score)) {
 							$valueOne->wpxtraffic_score = (int)$valueOne->wpxtraffic_score;
-							if($valueOne->wpxtraffic_score > 1) {
+							if($valueOne->wpxtraffic_score >= 1) {
 								$postId = (int)$valueOne->ID;
 								
 								if($postId) {
@@ -254,6 +274,8 @@ LIMIT 0,3
 				}
 			}
 			
+		
+		
 			
 			
 			
@@ -307,12 +329,12 @@ LIMIT 0,3
 		
 		
 		
-		$dbFieldsHasFulltext = array();
+		$dbFieldsHasIndexTypes = array();
 		
-		$dbFieldsHasFulltext['post_title'] = false;
-		$dbFieldsHasFulltext['post_excerpt'] = false;
-		$dbFieldsHasFulltext['post_content'] = false;
-		$dbFieldsHasFulltext['post_name'] = false;
+		$dbFieldsHasIndexTypes['post_title'] = array();
+		$dbFieldsHasIndexTypes['post_excerpt'] = array();
+		$dbFieldsHasIndexTypes['post_content'] = array();
+		$dbFieldsHasIndexTypes['post_name'] = array();
 		
 		
 		$rsOne = $wpdb->get_results("SHOW INDEXES FROM {$wpdb->posts}");
@@ -329,7 +351,7 @@ LIMIT 0,3
 						$colName = (string)$colName;
 						$colName = trim($colName);
 						
-						if(isset($dbFieldsHasFulltext[$colName])) {
+						if(isset($dbFieldsHasIndexTypes[$colName])) {
 							
 							if(isset($valueOne->Index_type) && $valueOne->Index_type) {
 								
@@ -338,8 +360,10 @@ LIMIT 0,3
 								$indexType = trim($indexType);
 								$indexType = strtolower($indexType);
 								
+								$dbFieldsHasIndexTypes[$colName][] = $indexType;
+								
 								if($indexType === 'fulltext') {
-									$dbFieldsHasFulltext[$colName] = true;
+									
 								}
 								
 								
@@ -358,13 +382,16 @@ LIMIT 0,3
 		
 		$doAddFulltextIndexStatus = false;
 		
-		foreach($dbFieldsHasFulltext as $keyOne => $valueOne) {
+		foreach($dbFieldsHasIndexTypes as $keyOne => $valueOne) {
 			
-			if(!$valueOne) {
+			if($valueOne && in_array('fulltext',$valueOne)) {
+			} else {
 				$doAddFulltextIndexStatus = true;
 			}
 			
+			
 		}
+		
 		
 		
 		if($doAddFulltextIndexStatus) {
@@ -426,15 +453,25 @@ LIMIT 0,3
 				}
 			}
 			
-			if($canAddFulltextIndexStatus) {
-				
-				foreach($dbFieldsHasFulltext as $keyOne => $valueOne) {
 			
-					if(!$valueOne) {
-						$wpdb->get_results(' ALTER TABLE '.$wpdb->posts.' ADD FULLTEXT `wppepvn_'.$keyOne.'` (`'.$keyOne.'`) ');
+			
+			if($canAddFulltextIndexStatus) { 
+				
+				foreach($dbFieldsHasIndexTypes as $keyOne => $valueOne) {
+			
+					if($valueOne && in_array('fulltext',$valueOne)) {
+					} else {
+						$wpdb->get_results(' ALTER TABLE '.$wpdb->posts.'_ftind ADD FULLTEXT `wppepvn_'.$keyOne.'` (`'.$keyOne.'`) ');
 					}
 					
-					$dbFieldsHasFulltext[$keyOne] = true;
+					$dbFieldsHasIndexTypes[$keyOne] = true;
+				}
+				
+			} else {
+				$keyTemp = 'post_title';
+				if($dbFieldsHasIndexTypes[$keyTemp] && in_array('btree',$dbFieldsHasIndexTypes[$keyTemp])) {
+				} else {
+					$wpdb->get_results(' CREATE INDEX wppepvn_'.$keyTemp.'_btind ON '.$wpdb->posts.' ( '.$keyTemp.'(250) ) ');
 				}
 				
 			}
@@ -443,9 +480,10 @@ LIMIT 0,3
 		
 		$options['db_has_fulltext_status'] = 1;
 		
-		foreach($dbFieldsHasFulltext as $keyOne => $valueOne) {
+		foreach($dbFieldsHasIndexTypes as $keyOne => $valueOne) {
 			
-			if(!$valueOne) {
+			if($valueOne && in_array('fulltext',$valueOne)) {
+			} else {
 				$options['db_has_fulltext_status'] = 0;
 			}
 			
@@ -462,6 +500,8 @@ LIMIT 0,3
 		$options['do_enable_db_fulltext_time'] = time();
 		
 		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
+		
+		
 				
 		return true;
 		
