@@ -57,8 +57,8 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server must support',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<a href="http://php.net/manual/en/function.ob-start.php" target="_blank"><b>ob_start</b></a>" '.__('to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Speed</b>"</div>';
 			$resultData['notice']['error_no'][] = 30;
 		}
-		//WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH
-		//PepVN_Data::isAllAllowReadAndWriteIfExists();
+		
+		
 		if(
 			isset($this->optimize_speed_UploadsStaticFilesFolderPath)
 			&& $this->optimize_speed_UploadsStaticFilesFolderPath
@@ -235,6 +235,7 @@ setTimeout(function() {
 				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" pepvn_data_append_to="'.$input_parameters['append_to'].'" pepvn_data_src="'.($input_parameters['url']).'" pepvn_data_id="'.$input_parameters['id'].'" pepvn_data_file_type="'.$input_parameters['file_type'].'" pepvn_data_media="'.$input_parameters['media'].'" pepvn_data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
 				
 			}
+			
 		}
 		
 		return $resultData;
@@ -464,7 +465,7 @@ setTimeout(function() {
 								if('on' === $options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) {
 									
 									if(isset($matched2[1]) && $matched2[1]) {
-										$arrayDataTextNeedReplace[$value1] = ' <div class="wp-optimize-by-xtraffic-js-loader-inlinejs-data" pepvn_data_src="'.(base64_encode($matched2[1])).'"  style="display:none;" ></div> ';  
+										$arrayDataTextNeedReplace[$value1] = ' <script language="javascript" type="text/javascript"> (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderInlinejsData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderInlinejsData = []; } e.wpOptimizeByxTraffic_JsLoaderInlinejsData.push({ "pepvn_data_src" : "'.(base64_encode($matched2[1])).'"	}); })(window); </script> ';
 									}
 								} else {
 									$rsGetAllJavascripts1[$key1] = $value1;
@@ -624,8 +625,6 @@ setTimeout(function() {
 						}
 						
 						$combinedAllJavascriptsFilesUrl = str_replace($this->optimize_speed_UploadsStaticFilesFolderPath,$this->optimize_speed_UploadsStaticFilesFolderUrl,$combinedAllJavascriptsFilesPath);
-						
-						//$combinedAllJavascriptsFilesUrl = preg_replace('#^https?://#i','',$combinedAllJavascriptsFilesUrl);
 						
 						$combinedAllJavascriptsFilesUrl = PepVN_Data::removeProtocolUrl($combinedAllJavascriptsFilesUrl);
 						

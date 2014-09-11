@@ -127,6 +127,9 @@ class WPOptimizeByxTraffic_Base {
 		
 		$resultData = array();
 		$resultData['notice']['error'] = array();
+		/*
+		*	error_no : 2x - Images ; 3x : Speed
+		*/
 		$resultData['notice']['error_no'] = array();
 		
 		
@@ -374,12 +377,12 @@ class WPOptimizeByxTraffic_Base {
 		foreach($arrayPaths as $path1) {
 			if($path1) {
 				$pathTemp1 = $path1;
-				//$pathTemp1 = realpath($path1);
+				
 				if($pathTemp1 && file_exists($pathTemp1)) {
 					PepVN_Data::rrmdir($pathTemp1);
 					
 					$pathTemp1 = $path1;
-					//$pathTemp1 = realpath($pathTemp1);
+					
 					if($pathTemp1 && file_exists($pathTemp1)) {
 					} else {
 						PepVN_Data::createFolder($path1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
@@ -413,7 +416,7 @@ class WPOptimizeByxTraffic_Base {
 							if($globPaths && (count($globPaths)>0)) {
 								$timeout1 = 86400 * 3; 
 								foreach ($globPaths as $filename) {
-									//$filename = realpath($filename);
+									
 									if($filename && file_exists($filename)) {
 										$deleteStatus1 = true;
 										$filemtimeTemp1 = filemtime($filename);

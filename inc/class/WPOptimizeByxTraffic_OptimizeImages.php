@@ -414,7 +414,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						$checkStatus1 = false;
 						
 						$imgOptimizedFilePath2 = $imgOptimizedFilePath1.'.'.$value1;
-						//$imgOptimizedFilePath2 = realpath($imgOptimizedFilePath2);
+						
 						if($imgOptimizedFilePath2) {
 							if(file_exists($imgOptimizedFilePath2)) {
 								if(filesize($imgOptimizedFilePath2)>0) {
@@ -469,7 +469,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								if($globPaths1 && (count($globPaths1)>0)) {
 									
 									foreach ($globPaths1 as $filename1) {
-										//$filename1 = realpath($filename1);
+										
 										if($filename1 && file_exists($filename1)) {
 											if($filename1 !== $resultData['image_optimized_file_path']) {
 												unlink($filename1);
@@ -496,8 +496,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							PepVN_Data::chmod($imgFolderCachePath,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 							
 						}
-						
-						//$imgFolderCachePath = realpath($imgFolderCachePath);
 						
 						if($imgFolderCachePath && file_exists($imgFolderCachePath)  && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($imgFolderCachePath))) {
 							
@@ -868,7 +866,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										}
 										
 										$valueTemp1 = $imgOptimizedFilePath1;
-										//$valueTemp1 = realpath($valueTemp1);
+										
 										if($valueTemp1 && file_exists($valueTemp1)) {
 											$valueTemp2 = filesize($valueTemp1);
 											if($valueTemp2 && ($valueTemp2>0)) {
@@ -1635,11 +1633,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							PepVN_Data::createFolder($preview_FolderPath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
 							PepVN_Data::chmod($preview_FolderPath,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 							
-							//$preview_FolderPath = realpath($preview_FolderPath);
+							
 							if($preview_FolderPath && file_exists($preview_FolderPath)) {
-								
-								//$preview_FolderPath .= '/';
-								
 								
 								$rsProcessImage1 = $this->optimize_images_process_image(array(
 									'optimized_image_folder_path' => $preview_FolderPath
