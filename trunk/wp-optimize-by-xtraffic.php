@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 2.2.2
+Version: 2.2.3
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -10,7 +10,7 @@ Description: WP Optimize By xTraffic provides automatically optimize your wordpr
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '2.2.2' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '2.2.3' );
 }
 
 
@@ -47,7 +47,6 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PATH' ) ) {
 }
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CACHE_PATH' ) ) {
-	//define( 'WPOPTIMIZEBYXTRAFFIC_CACHE_PATH', realpath(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/cache/').'/' ); 
 	define( 'WPOPTIMIZEBYXTRAFFIC_CACHE_PATH', WPOPTIMIZEBYXTRAFFIC_PATH.'inc/cache/' ); 
 }
 
@@ -215,7 +214,7 @@ function wpOptimizeByxTraffic_process_html_pages($input_html)
 if ( is_admin() ) {
 	
 } else {
-	add_action('wp_loaded','wpOptimizeByxTraffic_start_load_html_pages',0);
+	add_action('wp_loaded','wpOptimizeByxTraffic_start_load_html_pages',0); 
 }
 
 

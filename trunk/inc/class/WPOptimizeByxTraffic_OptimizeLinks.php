@@ -1149,7 +1149,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	<h2>WP Optimize By xTraffic (Optimize Links)</h2>
 				
 	<div id="poststuff" style="margin-top:10px;">
-
+		',$this->base_get_sponsorsblock('vertical_01'),'
 		<div id="mainblock" style="width:710px">
 
 			<div class="dbx-content">
@@ -1233,7 +1233,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						<h4>',__('Ignore Posts and Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>	
 						
 						<p>',__('You may wish to forbid automatically linking on certain posts or pages. Separate them by comma. (id, slug or name)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
-						<input type="text" name="optimize_links_ignorepost" size="255" value="',$optimize_links_ignorepost,'" /> 
+						<input type="text" name="optimize_links_ignorepost" size="255" value="',$optimize_links_ignorepost,'" style="max-width:660px;" /> 
 						<br>
 										 
 						<h4>',__('Custom Keywords/Targets Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>

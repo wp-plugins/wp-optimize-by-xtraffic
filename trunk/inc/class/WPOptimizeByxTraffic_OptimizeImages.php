@@ -1858,7 +1858,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 	<h2>WP Optimize By xTraffic (Optimize Images)</h2>
 				
 	<div id="poststuff" style="margin-top:10px;">
-		
+		',$this->base_get_sponsorsblock('vertical_01'),'
 		<div id="mainblock" style="width:710px">
 
 			<div class="dbx-content">

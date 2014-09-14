@@ -180,6 +180,18 @@ class WPOptimizeByxTraffic_Base {
 	
 	
 	
+	function base_get_sponsorsblock($input_type='vertical_01')
+	{
+		$resultData = '';
+		
+		if('statistics' === $input_type) {
+			
+		} else if('vertical_01' === $input_type) {
+			$resultData .= '<div id="sideblock" style="float:right;width:290px;margin-left:10px;"><iframe width="290" height="1000" frameborder="0" src="http://static.pep.vn/library/pepvn/wp-optimize-by-xtraffic/client/vertical_01.html?utm_source=plugin&utm_medium=plugin&utm_campaign=WP+Optimize+By+xTraffic"></iframe></div>';
+		}
+		
+		return $resultData;
+	}
 	
 	
 	
