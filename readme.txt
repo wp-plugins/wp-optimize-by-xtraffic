@@ -38,21 +38,30 @@ Everything is done completely automatically, and you can change the options from
   * *Optimize Image Quality* : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
   * *Rename Image Filename* : Rename your image's filename for friendly SEO
 * ***Optimize Speed*** : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
-  * *Optimize Javascript* :
+  * Optimize Javascript :
     * Combine Javascript
     * Minify Javascript
     * Asynchronous Javascript Loading
-  * *Optimize CSS (Style)* :
+  * Optimize CSS (Style) :
     * Combine CSS
     * Minify CSS
     * Asynchronous CSS Loading
-  * *Optimize HTML*
+  * Optimize HTML
     * Minify HTML
 	
 = Languages : =
 * English (default)
-* Vietnamese (vi) - **[Translate by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translate by xTraffic.pep.vn")**
-	
+* Vietnamese (vi) - **[Translated by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translated by xTraffic.pep.vn")**
+
+= What Others Say About Us : =
+* [WP Optimize By xTraffic Plugin For WordPress](http://www.awesomebryner.com/wp-optimize-by-xtraffic-plugin-for-wordpress/ "WP Optimize By xTraffic Plugin For WordPress")
+* [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
+* [Best New WordPress Plugins](http://www.prelovac.com/vladimir/wordpress-plugins-rising-stars "Best New WordPress Plugins")
+* [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
+* [Best WordPress Plugins for August 2014](http://codegeekz.com/best-wordpress-plugins-for-august-2014/ "Best WordPress Plugins for August 2014")
+* [8 Amazing WordPress Plugins for Internal Link Building](http://www.indexwp.com/internal-link-building/ "8 Amazing WordPress Plugins for Internal Link Building")
+Thank the authors who talked about us :) . We always try to do it better in the future!
+
 == Installation ==
 
 To install the plugin "***WP Optimize By xTraffic***" and get it working :
@@ -68,6 +77,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 2.2.3 =
+* Fix & Improve "Optimize Speed" consistent with application/ld+json
 
 = 2.2.2 =
 * Fix & Improve "Optimize Speed" + "Optimize Links"
