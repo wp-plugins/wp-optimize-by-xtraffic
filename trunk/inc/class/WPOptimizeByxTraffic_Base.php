@@ -746,14 +746,29 @@ class WPOptimizeByxTraffic_Base {
 				
 				foreach($arrayFields1 as $key1 => $value1) {
 					if(isset($_POST[$value1])) {
-						$options[$value1] = $_POST[$value1];
+						$options[$value1] = $this->header_footer_encode_option($_POST[$value1]);
 					} else {
-						$options[$value1] = '';
+						$options[$value1] = ''; 
+					}
+				}
+				
+				
+			}
+		
+		
+		
+			
+			$arrayFields1 = array(
+				'optimize_images_watermarks_watermark_position'
+				,'optimize_images_watermarks_watermark_type'
+			);
+			foreach($arrayFields1 as $key1 => $value1) {
+				if(isset($options[$value1]) && $options[$value1]) {
+					if(is_array($options[$value1])) {
+						$options[$value1] = array_unique($options[$value1]);
 					}
 				}
 			}
-		
-			
 			
 			update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 			

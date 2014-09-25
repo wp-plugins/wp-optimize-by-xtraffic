@@ -89,6 +89,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 3.0.1 =
+* Fix & Improve "Header & Footer"
+
 = 3.0.0 =
 * Support "Custom Post Types" & "Custom Taxonomies"
 * Added feature "Header & Footer"
