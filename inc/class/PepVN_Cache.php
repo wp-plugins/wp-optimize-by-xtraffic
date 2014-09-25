@@ -53,7 +53,16 @@ class PepVN_Cache
 		}
 		
 		if($this->cache_path && file_exists($this->cache_path) && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($this->cache_path))) {
-			@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', gzcompress(serialize($data),2));
+			$data = @serialize($data);
+			if($data) {
+				$data = @gzcompress($data,5);
+				if($data) {
+					$filename = $this->get_filepath($label);
+					//@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', $data); 
+					@file_put_contents($filename, $data);
+				}
+			}
+			//@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', gzcompress(serialize($data),2));
 		}
 		
 	}
@@ -61,9 +70,19 @@ class PepVN_Cache
 	public function get_cache($label)
 	{
 		if($this->is_cached($label)){
-            $filename = $this->cache_path . $this->safe_filename($label) .'.cache';
-			
-			return unserialize(gzuncompress(file_get_contents($filename)));
+            //$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
+			$filename = $this->get_filepath($label);
+			$data = @file_get_contents($filename);
+			if($data) {
+				$data = @gzuncompress($data);
+				if($data) {
+					$data = @unserialize($data);
+					if($data) {
+						return $data;
+					}
+				}
+			}
+			//return unserialize(gzuncompress(file_get_contents($filename)));
 		}
 
 		return false;
@@ -73,9 +92,11 @@ class PepVN_Cache
 	{
 		$resultData = false;
 		
-		$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
-
-		if($filename && file_exists($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
+		//$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
+		
+		$filename = $this->get_filepath($label);
+		
+		if($filename && file_exists($filename) && PepVN_Data::is_readable($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
 			$resultData = true;
 		}
 		
@@ -87,7 +108,13 @@ class PepVN_Cache
 	{
 		return preg_replace('/[^0-9a-z\.\_\-]/i','', strtolower($filename)); 
 	}
-
+	
+	public function get_filepath($label)
+	{
+		$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
+		
+		return $filename;
+	}
 
 
 

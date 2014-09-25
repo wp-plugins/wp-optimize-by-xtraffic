@@ -1,7 +1,7 @@
 === WP Optimize By xTraffic ===
 Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
-Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed
+Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer
 Requires at least: 2.3
 Tested up to: 4.0
 Stable tag: trunk
@@ -16,6 +16,16 @@ Plugin **[WP Optimize By xTraffic](http://blog-xtraffic.pep.vn/wordpress-optimiz
 This plugin also optimizes post's images for friendly SEO, reduce your images size and allows you to automatically bulk watermark images
 
 Everything is done completely automatically, and you can change the options from the administration settings panel.
+
+= What Others Say About Us : =
+
+* [Best 10 Free WordPress Plugins of the Month – September 2014](https://managewp.com/best-free-wordpress-plugins-september-2014 "Best 10 Free WordPress Plugins of the Month – September 2014")
+* [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
+* [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
+* [Best WordPress Plugins for August 2014](http://codegeekz.com/best-wordpress-plugins-for-august-2014/ "Best WordPress Plugins for August 2014")
+* [8 Amazing WordPress Plugins for Internal Link Building](http://www.indexwp.com/internal-link-building/ "8 Amazing WordPress Plugins for Internal Link Building")
+
+Thank the authors who talked about us :) . We always try to do it better in the future!
 
 = Features include : =
 
@@ -50,17 +60,18 @@ Everything is done completely automatically, and you can change the options from
     * Minify HTML
 	
 = Languages : =
+
 * English (default)
 * Vietnamese (vi) - **[Translated by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translated by xTraffic.pep.vn")**
 
-= What Others Say About Us : =
-* [WP Optimize By xTraffic Plugin For WordPress](http://www.awesomebryner.com/wp-optimize-by-xtraffic-plugin-for-wordpress/ "WP Optimize By xTraffic Plugin For WordPress")
-* [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
-* [Best New WordPress Plugins](http://www.prelovac.com/vladimir/wordpress-plugins-rising-stars "Best New WordPress Plugins")
-* [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
-* [Best WordPress Plugins for August 2014](http://codegeekz.com/best-wordpress-plugins-for-august-2014/ "Best WordPress Plugins for August 2014")
-* [8 Amazing WordPress Plugins for Internal Link Building](http://www.indexwp.com/internal-link-building/ "8 Amazing WordPress Plugins for Internal Link Building")
-Thank the authors who talked about us :) . We always try to do it better in the future!
+= Official community channels : =
+
+If you have any questions or suggestions when using the plugin, please contact us through these official channels :
+
+* Google+ : **[https://plus.google.com/116170992813429623472/posts](https://plus.google.com/116170992813429623472/posts "https://plus.google.com/116170992813429623472/posts")**
+* Facebook : **[https://www.facebook.com/wpoptimizebyxtraffic](https://www.facebook.com/wpoptimizebyxtraffic "https://www.facebook.com/wpoptimizebyxtraffic")**
+
+Thanks you very much :)
 
 == Installation ==
 
@@ -78,6 +89,10 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 3.0.0 =
+* Support "Custom Post Types" & "Custom Taxonomies"
+* Added feature "Header & Footer"
+
 = 2.2.3 =
 * Fix & Improve "Optimize Speed" consistent with application/ld+json
 
@@ -89,18 +104,18 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 * Fix & Improve something
 
 = 2.2 =
-* Fix & Improve Optimize Speed
-* Fix & Improve Optimize Images
+* Fix & Improve "Optimize Speed"
+* Fix & Improve "Optimize Images"
 
 = 2.1 =
-* Fix & Improve Optimize Speed
+* Fix & Improve "Optimize Speed"
 
 = 2.0 =
-* Added feature Optimize Speed make page speed load amazingly fast
+* Added feature "Optimize Speed" make page speed load amazingly fast
 
 = 1.1.1 =
 * Fix some errors of watermark images
-* Improve Optimize Links
+* Improve "Optimize Links"
 
 = 1.1 =
 * Fix error cache & search (Optimize Links)

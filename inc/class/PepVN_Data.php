@@ -396,6 +396,10 @@ class PepVN_Data
 		$input_delimiter = $input_delimiter;
 		if(preg_match('#[,;]+#i',$input_delimiter)) {
 			$input_delimiter = preg_replace('#[;,]+#i',';',$input_delimiter);
+			
+			$input_data = (array)$input_data;
+			$input_data = implode(';',$input_data);
+		
 		}
 		
 		$input_data = explode($input_delimiter,$input_data);

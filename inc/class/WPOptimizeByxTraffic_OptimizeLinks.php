@@ -144,7 +144,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$resultData = array();
 		
 		$this->enable_db_fulltext();
-		$options = $this->get_options();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
 		
 		if(isset($input_parameters['post_types']) && $input_parameters['post_types']) {
 			
@@ -155,7 +157,14 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			);
 		}
 		
-		$input_parameters['post_types'] = (array)$input_parameters['post_types'];
+		
+		$input_parameters['post_types'] = PepVN_Data::cleanArray($input_parameters['post_types']);
+		if($input_parameters['post_types'] && (count($input_parameters['post_types'])>0)) {
+		
+		} else {
+			return $resultData;
+		}
+		//$input_parameters['post_types'] = (array)$input_parameters['post_types'];
 		
 		$keyword = $input_parameters['keyword'];
 		
@@ -180,6 +189,17 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 			$queryString_Where_PostType = array();
 			
+			foreach($input_parameters['post_types'] as $keyOne => $valueOne) {
+				if($valueOne) {
+					$valueOne = trim($valueOne);
+					if($valueOne) {
+						$queryString_Where_PostType[] = ' ( post_type = \''.$valueOne.'\' ) ';
+					}
+				}
+				
+			}
+			
+			/*
 			if(in_array('post',$input_parameters['post_types'])) {
 				$queryString_Where_PostType[] = ' ( post_type = \'post\' ) ';
 			}
@@ -187,6 +207,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			if(in_array('page',$input_parameters['post_types'])) {
 				$queryString_Where_PostType[] = ' ( post_type = \'page\' ) ';
 			}
+			*/
 			
 			$queryString_Where_PostType = implode(' OR ',$queryString_Where_PostType);
 			$queryString_Where_PostType = trim($queryString_Where_PostType);
@@ -299,7 +320,22 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	{
 		global $wpdb;
 		
-		$options = $this->get_options();
+		
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+		));
+		
+		if(isset($this->baseCacheData[$keyCache1]['got_options_status']) && $this->baseCacheData[$keyCache1]['got_options_status']) {
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+		} else {
+			$options = $this->get_options();
+			$this->baseCacheData[$keyCache1]['got_options_status'] = 1;
+		}
+		
+		
+		
 		
 		
 		$checkStatus1 = true;
@@ -464,7 +500,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						$wpdb->get_results(' ALTER TABLE '.$wpdb->posts.'_ftind ADD FULLTEXT `wppepvn_'.$keyOne.'` (`'.$keyOne.'`) ');
 					}
 					
-					$dbFieldsHasIndexTypes[$keyOne] = true;
+					$dbFieldsHasIndexTypes[$keyOne][] = 'fulltext';
 				}
 				
 			} else {
@@ -548,7 +584,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		$patternsEscaped = array();
 		
-		$options = $this->get_options();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
 		
 		//$options['do_enable_db_fulltext_time'] = 0;update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 		
@@ -558,14 +596,23 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		if (is_feed() && !$options['optimize_links_process_in_feed']) {
 			return $text;
-		} else if ($options['optimize_links_onlysingle'] && !(is_single() || is_page())) {
-			return $text;
+		} else if ($options['optimize_links_onlysingle']) {
+			if(is_single() || is_page() || is_singular()) {
+			} else {
+				return $text;
+			}
+			
 		}
 			
-		$arrignorepost = $this->explode_trim(",", ($options['optimize_links_ignorepost']));
+		//$arrignorepost = $this->explode_trim(",", ($options['optimize_links_ignorepost']));
 		
-		if (is_page($arrignorepost) || is_single($arrignorepost)) {
-			return $text;
+		$arrignorepost = PepVN_Data::explode(',',$options['optimize_links_ignorepost']);
+		$arrignorepost = PepVN_Data::cleanArray($arrignorepost);
+		
+		if($arrignorepost && (count($arrignorepost)>0)) {
+			if (is_page($arrignorepost) || is_single($arrignorepost)) {
+				return $text;
+			}
 		}
 		
 		
@@ -601,12 +648,27 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$optimize_links_maxsingleurl = ($options['optimize_links_maxsingleurl']>0) ? $options['optimize_links_maxsingleurl'] : 0;
 		$optimize_links_minusage = ($options['optimize_links_minusage']>0) ? $options['optimize_links_minusage'] : 1;
 		
-		$optimize_links_maxlinks = (int)$optimize_links_maxlinks;
+		$optimize_links_maxlinks = abs((int)$optimize_links_maxlinks);
 
 		$urls = array();
-			
 		
-		$arrignore = PepVN_Data::explode(',',$options['optimize_links_ignore']);
+		$array_base_custom_post_types = PepVN_Data::explode(',',$options['base_custom_post_types']);
+		$array_base_custom_post_types = PepVN_Data::cleanArray($array_base_custom_post_types);
+		
+		$array_base_custom_taxonomies = PepVN_Data::explode(',',$options['base_custom_taxonomies']);
+		$array_base_custom_taxonomies = PepVN_Data::cleanArray($array_base_custom_taxonomies);
+		
+		
+		if ($options['optimize_links_link_to_posts']) {
+			$array_base_custom_post_types[] = 'post';
+		}
+		
+		if ($options['optimize_links_link_to_pages']) {
+			$array_base_custom_post_types[] = 'page';
+		}
+		
+		
+		//$arrignore = PepVN_Data::explode(',',$options['optimize_links_ignore']);
 		
 		if ($options['optimize_links_excludeheading'] == 'on') {
 			//escape a and h1 -> h6
@@ -807,19 +869,11 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 							
 							if(!$targetLink2) {
 								
-								if ($options['optimize_links_link_to_posts'] || $options['optimize_links_link_to_pages']) {
+								if ($array_base_custom_post_types && (count($array_base_custom_post_types)>0)) {
+								
 									$parametersTemp2 = array();
 									$parametersTemp2['keyword'] = $key1;
-									$parametersTemp2['post_types'] = array();
-									
-									if ($options['optimize_links_link_to_posts']) {
-										$parametersTemp2['post_types'][] = 'post';
-									}
-									
-									if ($options['optimize_links_link_to_pages']) {
-										$parametersTemp2['post_types'][] = 'page'; 
-										
-									}
+									$parametersTemp2['post_types'] = $array_base_custom_post_types;
 									
 									$rsTwo = $this->search_posts($parametersTemp2);
 									
@@ -1102,7 +1156,11 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$optimize_links_link_to_pages=$options['optimize_links_link_to_pages']=='on'?'checked':'';
 		$optimize_links_link_to_cats=$options['optimize_links_link_to_cats']=='on'?'checked':'';
 		$optimize_links_link_to_tags=$options['optimize_links_link_to_tags']=='on'?'checked':'';
-		$optimize_links_ignore=$options['optimize_links_ignore'];
+		
+		$base_custom_post_types=$options['base_custom_post_types'];
+		$base_custom_taxonomies=$options['base_custom_taxonomies'];
+		
+		//$optimize_links_ignore=$options['optimize_links_ignore'];
 		$optimize_links_ignorepost=$options['optimize_links_ignorepost'];
 		$optimize_links_maxlinks=$options['optimize_links_maxlinks'];
 		$optimize_links_maxsingle=$options['optimize_links_maxsingle'];
@@ -1230,6 +1288,8 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						<p>',__('Set whether matching should be case sensitive',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
 						<input type="checkbox" name="optimize_links_casesens" ',$optimize_links_casesens,' /><label for="optimize_links_casesens"> ',__('Case sensitive matching',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
 						
+						
+						
 						<h4>',__('Ignore Posts and Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>	
 						
 						<p>',__('You may wish to forbid automatically linking on certain posts or pages. Separate them by comma. (id, slug or name)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
@@ -1270,7 +1330,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						<h4>',__('Limits',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>				
 						
 						<p>',__('You can limit the maximum number of different links "Optimize Links" which will generate per post. Set to 0 for no limit.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
-						',__('Max Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': <input type="text" name="optimize_links_maxlinks" size="3" value="',$optimize_links_maxlinks,'" />  
+						',__('Max Links',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : <input type="text" name="optimize_links_maxlinks" size="3" value="',$optimize_links_maxlinks,'" />  (Recomend from 2 to 5 links)
 						
 						<br><br>
 						 
