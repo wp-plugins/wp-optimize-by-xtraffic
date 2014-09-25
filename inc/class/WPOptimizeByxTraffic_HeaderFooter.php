@@ -61,11 +61,11 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 		if(!isset($options['header_footer_code_add_before_articles_all'])) {
 			$options['header_footer_code_add_before_articles_all'] = '';
 		}
-		$options['header_footer_code_add_before_articles_all'] = trim($options['header_footer_code_add_before_articles_all']);
+		$options['header_footer_code_add_before_articles_all'] = trim($this->header_footer_decode_option($options['header_footer_code_add_before_articles_all']));
 		if(!isset($options['header_footer_code_add_after_articles_all'])) {
 			$options['header_footer_code_add_after_articles_all'] = '';
 		}
-		$options['header_footer_code_add_after_articles_all'] = trim($options['header_footer_code_add_after_articles_all']);
+		$options['header_footer_code_add_after_articles_all'] = trim($this->header_footer_decode_option($options['header_footer_code_add_after_articles_all']));
 		
 		if($options['header_footer_code_add_before_articles_all'] || $options['header_footer_code_add_after_articles_all']) {
 			
@@ -95,12 +95,12 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 		if(!isset($options['header_footer_code_add_head_home'])) {
 			$options['header_footer_code_add_head_home'] = '';
 		}
-		$options['header_footer_code_add_head_home'] = trim($options['header_footer_code_add_head_home']);
+		$options['header_footer_code_add_head_home'] = trim($this->header_footer_decode_option($options['header_footer_code_add_head_home']));
 		
 		if(!isset($options['header_footer_code_add_head_all'])) {
 			$options['header_footer_code_add_head_all'] = '';
 		}
-		$options['header_footer_code_add_head_all'] = trim($options['header_footer_code_add_head_all']);
+		$options['header_footer_code_add_head_all'] = trim($this->header_footer_decode_option($options['header_footer_code_add_head_all']));
 		
 		if($options['header_footer_code_add_head_home'] || $options['header_footer_code_add_head_all']) {
 			
@@ -129,12 +129,12 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 		if(!isset($options['header_footer_code_add_footer_home'])) {
 			$options['header_footer_code_add_footer_home'] = '';
 		}
-		$options['header_footer_code_add_footer_home'] = trim($options['header_footer_code_add_footer_home']);
+		$options['header_footer_code_add_footer_home'] = trim($this->header_footer_decode_option($options['header_footer_code_add_footer_home']));
 		
 		if(!isset($options['header_footer_code_add_footer_all'])) {
 			$options['header_footer_code_add_footer_all'] = '';
 		}
-		$options['header_footer_code_add_footer_all'] = trim($options['header_footer_code_add_footer_all']);
+		$options['header_footer_code_add_footer_all'] = trim($this->header_footer_decode_option($options['header_footer_code_add_footer_all']));
 		
 		if($options['header_footer_code_add_footer_home'] || $options['header_footer_code_add_footer_all']) {
 			
@@ -153,6 +153,22 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 	}
 	
 	
+	
+	public function header_footer_encode_option($option) 
+	{
+		$option = stripslashes_deep($option);
+		$option = @base64_encode($option);
+		return $option;
+	}
+	
+	
+	public function header_footer_decode_option($option) 
+	{
+		$option = @base64_decode($option);
+		$option = stripslashes_deep($option);
+		return $option;
+	}
+	
 
 	public function header_footer_handle_options()
 	{
@@ -163,13 +179,15 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 	
 
 		$action_url = $_SERVER['REQUEST_URI'];	
+		
+		
 
-		$header_footer_code_add_head_home = $options['header_footer_code_add_head_home'];
-		$header_footer_code_add_footer_home = $options['header_footer_code_add_footer_home'];
-		$header_footer_code_add_head_all = $options['header_footer_code_add_head_all'];
-		$header_footer_code_add_footer_all = $options['header_footer_code_add_footer_all'];
-		$header_footer_code_add_before_articles_all = $options['header_footer_code_add_before_articles_all'];
-		$header_footer_code_add_after_articles_all = $options['header_footer_code_add_after_articles_all'];
+		$header_footer_code_add_head_home = $this->header_footer_decode_option($options['header_footer_code_add_head_home']);
+		$header_footer_code_add_footer_home = $this->header_footer_decode_option($options['header_footer_code_add_footer_home']);
+		$header_footer_code_add_head_all = $this->header_footer_decode_option($options['header_footer_code_add_head_all']);
+		$header_footer_code_add_footer_all = $this->header_footer_decode_option($options['header_footer_code_add_footer_all']);
+		$header_footer_code_add_before_articles_all = $this->header_footer_decode_option($options['header_footer_code_add_before_articles_all']);
+		$header_footer_code_add_after_articles_all = $this->header_footer_decode_option($options['header_footer_code_add_after_articles_all']);
 		
 		
 		$nonce = wp_create_nonce( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG);
@@ -201,11 +219,11 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 						<h3>Header</h3>
 						
 						<h6>',__('Code to be added on HEAD tag of the HOME PAGE ONLY',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </h6>
-						<textarea name="header_footer_code_add_head_home" id="header_footer_code_add_head_home" rows="10" cols="90"  >',$header_footer_code_add_head_home,'</textarea>
+						<textarea name="header_footer_code_add_head_home" id="header_footer_code_add_head_home" rows="10" cols="90" wrap="off" >',$header_footer_code_add_head_home,'</textarea>
 						<br /><hr/><br />
 						
 						<h6>',__('Code to be added on HEAD tag of EVERY PAGES',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </h6>
-						<textarea name="header_footer_code_add_head_all" id="header_footer_code_add_head_all" rows="10" cols="90"  >',$header_footer_code_add_head_all,'</textarea>
+						<textarea name="header_footer_code_add_head_all" id="header_footer_code_add_head_all" rows="10" cols="90"  wrap="off"  >',$header_footer_code_add_head_all,'</textarea>
 						<br /><hr/><br />
 						
 						
@@ -214,12 +232,12 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 						<h3>Footer</h3>
 						
 						<h6>',__('Code to be added BEFORE THE END of the HOME PAGE ONLY',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </h6>
-						<textarea name="header_footer_code_add_footer_home" id="header_footer_code_add_footer_home" rows="10" cols="90"  >',$header_footer_code_add_footer_home,'</textarea>
+						<textarea name="header_footer_code_add_footer_home" id="header_footer_code_add_footer_home" rows="10" cols="90"  wrap="off"  >',$header_footer_code_add_footer_home,'</textarea>
 						<br /><hr/><br />
 						
 						
 						<h6>',__('Code to be added BEFORE THE END of EVERY PAGES',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </h6>
-						<textarea name="header_footer_code_add_footer_all" id="header_footer_code_add_footer_all" rows="10" cols="90"  >',$header_footer_code_add_footer_all,'</textarea>
+						<textarea name="header_footer_code_add_footer_all" id="header_footer_code_add_footer_all" rows="10" cols="90"  wrap="off"  >',$header_footer_code_add_footer_all,'</textarea>
 						<br /><hr/><br />
 						
 						
@@ -228,11 +246,11 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 						<h3>Article</h3>
 						
 						<h6>',__('Code to be inserted BEFORE each ARTICLE',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (Posts/Pages) : </h6>
-						<textarea name="header_footer_code_add_before_articles_all" id="header_footer_code_add_before_articles_all" rows="10" cols="90"  >',$header_footer_code_add_before_articles_all,'</textarea>
+						<textarea name="header_footer_code_add_before_articles_all" id="header_footer_code_add_before_articles_all" rows="10" cols="90"  wrap="off"  >',$header_footer_code_add_before_articles_all,'</textarea>
 						<br /><hr/><br />
 						
 						<h6>',__('Code to be inserted AFTER each ARTICLE',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (Posts/Pages) : </h6>
-						<textarea name="header_footer_code_add_after_articles_all" id="header_footer_code_add_after_articles_all" rows="10" cols="90"  >',$header_footer_code_add_after_articles_all,'</textarea>
+						<textarea name="header_footer_code_add_after_articles_all" id="header_footer_code_add_after_articles_all" rows="10" cols="90"  wrap="off"  >',$header_footer_code_add_after_articles_all,'</textarea>
 						<br /><hr/><br />
 						
 						<div class="submit"><input type="submit" name="Submit" value="',__('Update Options',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" class="button-primary" /></div>
