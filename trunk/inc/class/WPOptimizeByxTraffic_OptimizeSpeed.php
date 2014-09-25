@@ -273,6 +273,13 @@ setTimeout(function() {
 			}
 		}
 		
+		if($checkStatus1) {
+			if ( is_admin() ) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		
 		
 		if(!$checkStatus1) {
 			return $text;
@@ -361,6 +368,15 @@ setTimeout(function() {
 			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
 		}
 		$rsOne = false;
+		
+		
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'pre');
+		$text = $rsOne['content'];
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
+		}
+		$rsOne = false;
+		
 		
 		
 		$textAppendToBody = '';
@@ -1341,8 +1357,8 @@ setTimeout(function() {
 										
 										<li style="margin-bottom: 3%;">
 											
-											<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_inline_javascript_enable,' /> &nbsp; ',__('Exclude Inline Javascript Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
-											<p class="description">',__('Plugin will ignore all javascript code in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
+											<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_inline_javascript_enable,' /> &nbsp; ',__('Exclude Inline Javascript Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+											<p class="description">',__('Plugin will ignore all javascript code in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 											
 										</li>
 										

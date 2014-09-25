@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 2.2.3
+Version: 3.0.0
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -10,7 +10,7 @@ Description: WP Optimize By xTraffic provides automatically optimize your wordpr
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '2.2.3' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '3.0.0' );
 }
 
 
@@ -106,14 +106,15 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH' ) ) {
 
 
 
-require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php');
+
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_HeaderFooter.php');
 
 
 
 if ( !class_exists('WPOptimizeByxTraffic') ) :
 
 
-class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_OptimizeSpeed 
+class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_HeaderFooter 
 {
 	
 	
@@ -190,7 +191,7 @@ add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_
 
 
 // Minify HTML codes when page is output.
-function wpOptimizeByxTraffic_start_load_html_pages(){
+function wpOptimizeByxTraffic_start_load_html_pages() {
 	/** 
 	* use wpOptimizeByxTraffic_start_load_html_pages($html) function to minify html codes.
 	*/
