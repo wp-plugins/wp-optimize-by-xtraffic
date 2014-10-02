@@ -22,6 +22,8 @@ class PepVN_Data
 	public static $defaultParams = false;
 	public static $cacheData = array();
 	
+	public static $cacheObject = false;
+	
 	function __construct()
 	{
 		self::setDefaultParams(); 
@@ -33,6 +35,11 @@ class PepVN_Data
 		if(!self::$defaultParams) {
 			
 			self::$defaultParams['status'] = 1;
+			
+				
+			self::$cacheObject = new PepVN_Cache();
+			self::$cacheObject->cache_time = 86400;
+			
 			
 			unset($arrayVietnameseChar);
 			$arrayVietnameseChar = array(
@@ -143,16 +150,16 @@ class PepVN_Data
 	
 	
 	
-	public static function strtolower($input_text) 
+	public static function strtolower($input_text,$input_encoding = 'UTF-8') 
 	{
-		return mb_convert_case($input_text, MB_CASE_LOWER, 'UTF-8');
+		return mb_convert_case($input_text, MB_CASE_LOWER, $input_encoding);
 		
 	}
 	
 	
-	public static function strtoupper($input_text) 
+	public static function strtoupper($input_text,$input_encoding = 'UTF-8') 
 	{
-		return mb_convert_case($input_text, MB_CASE_UPPER, 'UTF-8');
+		return mb_convert_case($input_text, MB_CASE_UPPER, $input_encoding);
 		
 	}
 	
@@ -199,6 +206,23 @@ class PepVN_Data
 		return $rgb; // returns an array with the rgb values
 	}
 
+	
+	public static function mb_substr($input_str, $input_start, $input_length = 0, $input_encoding = 'UTF-8')
+	{
+		return mb_substr($input_str, $input_start, $input_length, $input_encoding);
+	}
+	
+	public static function mb_strlen($input_str, $input_encoding = 'UTF-8')
+	{
+		return mb_strlen($input_str, $input_encoding);
+	}
+	
+	public static function countWords($input_str) 
+	{
+		$input_str = trim($input_str);
+		$input_str = explode(' ',$input_str);
+		return count($input_str);
+	}
 	
 	
 	public static function minifyHtml($input_data)
@@ -581,7 +605,7 @@ class PepVN_Data
 		
 		$checkStatus1 = false;
 		if($input_options['pattern']) {
-			if(!PepVN_Data::isEmptyArray($input_options['target_patterns'])) {
+			if(!self::isEmptyArray($input_options['target_patterns'])) { 
 				$checkStatus1 = true;
 			}
 			
@@ -1214,6 +1238,237 @@ class PepVN_Data
 	{
 		return preg_quote($input_text,'#');
 	}
+	
+	public static function decodeText($input_text)
+	{
+		$input_text = rawurldecode($input_text);
+		$input_text = html_entity_decode($input_text, ENT_QUOTES, 'UTF-8');
+		return $input_text;
+	}
+	
+	
+	
+	static function analysisKeyword_RemovePunctuations($input_text, $input_excepts = false)
+	{
+	
+		$punctuations = array(
+			',', ')', '(',"'", '"',
+			'<', '>', '!', '?',
+			'[', ']', '+', '=', '#', '$', ';'
+			,':','-','.','–','-'
+			,'$', '&quot;', '&copy;', '&gt;', '&lt;', 
+			'&nbsp;', '&trade;', '&reg;', ';', 
+			chr(10), chr(13), chr(9)
+		);
+		
+		if($input_excepts) {
+			$input_excepts = (array)$input_excepts;
+			$punctuations1 = array();
+			foreach($punctuations as $key1 => $value1) {
+				if(!in_array($value1,$input_excepts)) {
+					$punctuations1[] = $value1;
+				}
+			}
+			$punctuations = $punctuations1;$punctuations1 = false;
+		}
+		
+		
+		$punctuations = array_unique($punctuations);
+		
+		$input_text = str_replace($punctuations, ' ', $input_text);
+		
+		return $input_text;
+		
+	}
+	
+	
+	static function analysisKeyword_PrepareContents($input_parameters)
+	{
+		
+		if(isset($input_parameters['contents'])) {
+			$input_parameters['contents'] = self::decodeText($input_parameters['contents']);
+			$input_parameters['contents'] = strip_tags($input_parameters['contents']);
+			
+			$input_parameters['contents'] = self::strtolower($input_parameters['contents']);
+			
+			$input_parameters['contents'] = self::analysisKeyword_RemovePunctuations($input_parameters['contents']);
+			
+			$input_parameters['contents'] = self::reduceSpace($input_parameters['contents']);
+			
+			return $input_parameters;
+		}
+		
+		return false;
+	}
+	
+	
+	
+	public static function analysisKeyword_OccureFilter($array_count_values, $min_occur)
+	{
+		$min_occur_sub = $min_occur - 1;
+		
+		$occur_filtered = false;
+		
+		foreach($array_count_values as $word => $occured) {
+			if($occured > $min_occur_sub) {
+				$occur_filtered[$word] = $occured;
+			}
+		}
+
+		return $occur_filtered;
+	}
+	
+	
+	
+	public static function analysisKeyword_GetKeywordsFromText($input_parameters)
+	{
+		//ini_set('max_execution_time', 10);
+		$resultData = array();
+		$resultData['data'] = false;
+		
+		$inputExplodedContents = false;
+		$resultAnalysis = false;
+		$common = array();
+		
+		$checkStatusOne = false;  
+		
+		$keyCache1 = self::createKey(array(
+			__METHOD__
+			,$input_parameters
+		));
+		
+		$resultData = self::$cacheObject->get_cache($keyCache1);
+		$resultData = false;//test
+		if(!$resultData) {
+			$resultData = array();
+			$resultData['data'] = false;
+		
+			if(isset($input_parameters['contents'])) {
+				$input_parameters['contents'] = (array)$input_parameters['contents'];
+				$input_parameters['contents'] = implode(' ',$input_parameters['contents']);
+				$input_parameters['contents'] = trim($input_parameters['contents']);
+				if($input_parameters['contents']) {
+					$inputExplodedContents = self::analysisKeyword_PrepareContents($input_parameters);
+					if(isset($inputExplodedContents['contents']) && $inputExplodedContents['contents']) {
+						$inputExplodedContents = explode(' ', $inputExplodedContents['contents']);
+						unset($input_parameters['contents']);  
+						$checkStatusOne = true;
+					}
+				}
+			}
+			
+			if($checkStatusOne) {
+				$inputMinWord = 0;
+				$inputMaxWord = 0;
+				$inputMinOccur = 0;
+				$inputMinCharEachWord = 0;
+				
+				if(isset($input_parameters['min_word']) && $input_parameters['min_word']) {
+					$inputMinWord =  $input_parameters['min_word'];
+				}
+				
+				if(isset($input_parameters['max_word']) && $input_parameters['max_word']) {
+					$inputMaxWord =  $input_parameters['max_word'];
+				}
+				
+				if(isset($input_parameters['min_occur']) && $input_parameters['min_occur']) {
+					$inputMinOccur =  $input_parameters['min_occur'];
+				}
+				
+				if(isset($input_parameters['min_char_each_word']) && $input_parameters['min_char_each_word']) {
+					$inputMinCharEachWord =  $input_parameters['min_char_each_word'];
+				}
+				
+				$inputMinWord = (int)$inputMinWord;
+				$inputMaxWord = (int)$inputMaxWord;
+				$inputMinOccur = (int)$inputMinOccur;
+				$inputMinCharEachWord = (int)$inputMinCharEachWord;
+				
+				if(!$inputMinWord) {
+					$inputMinWord = 1;//min word each keyword
+				}
+				if(!$inputMaxWord) {
+					$inputMaxWord = 3;//max word each keyword
+				}
+				if(!$inputMinOccur) {
+					$inputMinOccur = 2;//number appear
+				}
+				if(!$inputMinCharEachWord) {
+					$inputMinCharEachWord = 3;// min char each word
+				}
+				
+				if($inputMinWord>$inputMaxWord) {
+					$inputMinWord = $inputMaxWord;
+				}
+			}
+			
+			if($checkStatusOne) { 
+				$countExplodedContents = count($inputExplodedContents);
+				for($iOne = 0; $iOne < $countExplodedContents; ++$iOne) {
+					
+					for($iTwo = $inputMinWord; $iTwo <= $inputMaxWord; ++$iTwo) {
+						$minCharOfPhrase = ($inputMinCharEachWord * $iTwo) + ($iTwo - 1);
+						
+						$phraseNeedAnalysis = '';
+						$maxIThree = $iOne + $iTwo;
+						for($iThree = $iOne; $iThree < $maxIThree; ++$iThree) {
+							if(isset($inputExplodedContents[$iThree])) {
+								$wordTemp = trim($inputExplodedContents[$iThree]);
+								if(isset($wordTemp[0])) {
+									$phraseNeedAnalysis .= ' '.$wordTemp;
+								}
+							} else {
+								break 2;
+							}
+						}
+						
+						$phraseNeedAnalysis = trim($phraseNeedAnalysis);
+						
+						if((mb_strlen($phraseNeedAnalysis, 'UTF-8') >= $minCharOfPhrase)  && (!isset($common[$phraseNeedAnalysis]))  && (!is_numeric($phraseNeedAnalysis))) {
+							$resultAnalysis[$iTwo][] = $phraseNeedAnalysis;
+							
+						}
+					}
+					
+				}
+			}
+			
+			if(is_array($resultAnalysis)) {
+				reset($resultAnalysis);
+				foreach($resultAnalysis as $keyOne => $valueOne) {
+					$valueOne = array_count_values($valueOne);
+					
+					if($inputMinOccur>1) {
+						$valueOne = self::analysisKeyword_OccureFilter($valueOne, $inputMinOccur);
+					}
+					
+					if(is_array($valueOne)) {
+						arsort($valueOne);
+						$resultAnalysis[$keyOne] = $valueOne;
+					} else {
+						unset($resultAnalysis[$keyOne]);
+					}
+				}
+				krsort($resultAnalysis);
+			}
+			
+			$resultData['data'] = $resultAnalysis; 
+			
+			
+			self::$cacheObject->set_cache($keyCache1, $resultData);
+			
+			
+		}
+		
+		return $resultData;
+		
+	}
+	
+	
+	
+	
+	
+	
 	
 	
 	

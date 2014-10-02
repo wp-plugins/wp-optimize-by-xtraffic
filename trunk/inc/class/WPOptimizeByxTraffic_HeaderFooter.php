@@ -47,6 +47,22 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 	
 	
 	
+	public function header_footer_get_xtrafficjsscriptconfigs() 
+	{
+		$resultData = '';
+		
+		$resultData .= '
+<script language="javascript" type="text/javascript">
+	var wpOptimizeByxTraffic_Plugin_Url = "'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'";
+	var wpOptimizeByxTraffic_Admin_Ajax_Url = "'.WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL.'";
+	var wpOptimizeByxTraffic_AjaxLoadingTag = "<div class=\'wpoptimizebyxtraffic_ajax_loading\' style=\'display:inline-block;width:100%;height:auto;padding:16px;text-align: center;\'><img src=\'http://static.pep.vn/images/icon/ajax-loader.gif\' /></div>";
+</script>';
+
+
+		return $resultData;
+	}
+	
+	
 	
 	public function header_footer_the_content_filter($text) 
 	{
@@ -85,12 +101,27 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 	
 	
 	
+	
+	public function header_footer_the_admin_head_filter() 
+	{
+		
+		echo $this->header_footer_get_xtrafficjsscriptconfigs();
+		
+	}
+	
+	
+	
 	public function header_footer_the_head_filter() 
 	{
+		
+		
+		echo $this->header_footer_get_xtrafficjsscriptconfigs();
+		
 		
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
+		
 		
 		if(!isset($options['header_footer_code_add_head_home'])) {
 			$options['header_footer_code_add_head_home'] = '';
@@ -210,8 +241,9 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 		<div id="mainblock" style="width:710px">
 
 			<div class="dbx-content">
-				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
-					  <input type="hidden" id="_wpnonce" name="_wpnonce" value="',$nonce,'" />
+				<form name="WPOptimizeByxTraffic" class="wpoptimizebyxtraffic_form_header_footer" action="',$action_url,'" method="post">
+						
+						<input type="hidden" id="_wpnonce" name="_wpnonce" value="',$nonce,'" />
 						
 						<input type="hidden" name="submitted" value="1" /> 
 						<input type="hidden" name="header_footer_submitted" value="1" /> 
