@@ -393,6 +393,7 @@ setTimeout(function() {
 		
 			$patternJavascriptExcludeUrl = array(
 				'wp\-admin'
+				,'stats.wp.com'
 			);
 			//cleanPregPatternsArray
 			if($options['optimize_speed_optimize_javascript_exclude_url']) {
@@ -511,7 +512,11 @@ setTimeout(function() {
 								if('on' === $options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) {
 									
 									if(isset($matched2[1]) && $matched2[1]) {
-										$arrayDataTextNeedReplace[$value1] = ' <script language="javascript" type="text/javascript"> (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderInlinejsData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderInlinejsData = []; } e.wpOptimizeByxTraffic_JsLoaderInlinejsData.push({ "pepvn_data_src" : "'.(base64_encode($matched2[1])).'"	}); })(window); </script> ';
+										if(preg_match('#\s*?st_go\(\{.+#is',$matched2[1],$matched3)) { 
+										
+										} else {
+											$arrayDataTextNeedReplace[$value1] = ' <script language="javascript" type="text/javascript"> (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderInlinejsData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderInlinejsData = []; } e.wpOptimizeByxTraffic_JsLoaderInlinejsData.push({ "pepvn_data_src" : "'.(base64_encode($matched2[1])).'"	}); })(window); </script> ';
+										}
 									}
 								} else {
 									$rsGetAllJavascripts1[$key1] = $value1;
@@ -531,7 +536,7 @@ setTimeout(function() {
 					$combinedAllJavascriptsFilesPath1 = $this->optimize_speed_UploadsStaticFilesFolderPath . $keyCacheAllJavascripts.'.js';
 					
 					if(file_exists($combinedAllJavascriptsFilesPath1)) {
-						if(filesize($combinedAllJavascriptsFilesPath1)) {
+						if(filesize($combinedAllJavascriptsFilesPath1)>0) {
 							$combinedAllJavascriptsFilesPath = $combinedAllJavascriptsFilesPath1;
 						} else {
 							$filemtimeTemp1 = filemtime($combinedAllJavascriptsFilesPath1);
@@ -548,6 +553,8 @@ setTimeout(function() {
 						
 					}
 					
+					
+					
 					if($combinedAllJavascriptsFilesPath1 && !$combinedAllJavascriptsFilesPath) {
 						if(PepVN_Data::is_writable($this->optimize_speed_UploadsStaticFilesFolderPath)) {
 							
@@ -560,10 +567,12 @@ setTimeout(function() {
 							foreach($rsGetAllJavascripts as $key1 => $value1) {
 								
 								$jsContent1 = '';
-								
+								$value1 = trim($value1);
 								if($value1) {
 									
-									if(preg_match('#src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+									//if(preg_match('#src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+									if(preg_match('#<script[^><]*?src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+									
 									
 										if(isset($matched2[2]) && $matched2[2]) {
 											
@@ -579,9 +588,12 @@ setTimeout(function() {
 											
 											$matched2[2] = preg_replace('#^https?:#i','',$matched2[2]);
 											
+											
+											
 											$jsContent2 = $this->quickGetUrlContent($protocol1.$matched2[2], array(
 												'cache_timeout' => $this->optimize_speed_getUrlContentCacheTimeout
 											));
+											
 											
 											if($jsContent2) {
 												
@@ -601,7 +613,11 @@ setTimeout(function() {
 									} else if(preg_match('/<script[^><]*>(.*?)<\/script>/is',$value1,$matched2)) {
 										
 										if(isset($matched2[1]) && $matched2[1]) {
-											$jsContent1 = $matched2[1];
+											if(preg_match('#\s*?st_go\(\{.+#is',$matched2[1],$matched3)) {
+											
+											} else {
+												$jsContent1 = $matched2[1];
+											}
 										}
 									}
 									
@@ -622,8 +638,9 @@ setTimeout(function() {
 											)
 											,'wrap_target_patterns' => '+'
 										));
-																				
-										$rsOne['content'] = PepVN_JSMin::minify($rsOne['content']);
+										
+										$pepVN_JavaScriptPacker = false;$pepVN_JavaScriptPacker = new PepVN_JavaScriptPacker($rsOne['content'], 'Normal', true, false);
+										$rsOne['content'] = $pepVN_JavaScriptPacker->pack();unset($pepVN_JavaScriptPacker);$pepVN_JavaScriptPacker=false;
 										
 										if(!PepVN_Data::isEmptyArray($rsOne['patterns'])) {
 											$rsOne['content'] = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$rsOne['content']);
@@ -637,7 +654,7 @@ setTimeout(function() {
 									$jsContent1 = $this->optimize_speed_fix_javascript_code($jsContent1);
 									
 									$jsContent1 = ' try { '.$jsContent1.' } catch(err) { } ';
-									
+																		
 									$combinedAllJavascriptsFilesContents .= PHP_EOL . ' ' . $jsContent1;
 									
 									
@@ -705,6 +722,8 @@ setTimeout(function() {
 			
 			
 		}
+		
+		
 		
 		if($processCssStatus) {
 			
@@ -1302,7 +1321,14 @@ setTimeout(function() {
 					
 					<input type="hidden" name="submitted" value="1" /> 
 					<input type="hidden" name="optimize_speed_submitted" value="1" /> 
-											
+					
+					
+					<h3>',__('Overview "Optimize Speed"',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
+					<div class="wpoptimizebyxtraffic_green_block">
+						<p>',__('Although we have tried and optimal features "Optimize Javascript" & "Optimize CSS" operate effectively on many websites, they make your website load faster and have higher scores on the measure tools.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						<p>',__('But there are some exceptions make website\'s layout is broken or not running properly like before. If your website is in the unfortunate case, you just simply turn off only 2 features "Optimize Javascript" & "Optimize CSS" and experience other features, because they operate independently of each other.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+					</div>
+					
 					<div class="xtraffic_tabs_nav">
 						<a href="#xtraffic_tabs_content1" class="active">Optimize Javascript</a> 
 						<a href="#xtraffic_tabs_content2" class="">Optimize CSS</a>

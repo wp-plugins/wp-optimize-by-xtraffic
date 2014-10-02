@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 3.0.1
+Version: 4.0.0
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -10,7 +10,7 @@ Description: WP Optimize By xTraffic provides automatically optimize your wordpr
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '3.0.1' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.0.0' );
 }
 
 
@@ -69,7 +69,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL' ) ) {
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_KEY_DATA_REQUEST' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_KEY_DATA_REQUEST', 'wpxtrdtecv'); 
+	define( 'WPOPTIMIZEBYXTRAFFIC_KEY_DATA_REQUEST', 'pepvndtecv'); 
 }
 
 
@@ -107,14 +107,14 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH' ) ) {
 
 
 
-require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_HeaderFooter.php');
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php');
 
 
 
 if ( !class_exists('WPOptimizeByxTraffic') ) :
 
 
-class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_HeaderFooter 
+class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_OptimizeTraffic 
 {
 	
 	
@@ -128,7 +128,8 @@ class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_HeaderFooter
 	
 	
 	// Set up everything
-	function activation() {
+	function activation() 
+	{
 		$this->wpOptimizeByxTraffic_options = $this->get_options();		
 		
 		
@@ -150,7 +151,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 	if (isset($wpOptimizeByxTraffic)) {
 		register_activation_hook( __FILE__, array(&$wpOptimizeByxTraffic, 'activation') );
 		
-		add_action( 'wp_ajax_wpoptimizebyxtraffic_preview_processed_image_action', 'wpoptimizebyxtraffic_preview_processed_image_action' );
+		
 		
 		function wpoptimizebyxtraffic_preview_processed_image_action() 
 		{
@@ -168,23 +169,187 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			
 		}
 		
+		
+		
+		
+		
+		
+		
+		function wpoptimizebyxtraffic_base_process_ajax_action() 
+		{
+			/*
+			if ( !wp_verify_nonce( $_REQUEST['nonce'], WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG)) {
+				//echo 'error';exit();
+			}
+			*/
+			
+			
+			
+			global $wpdb; // this is how you get access to the database
+			global $wpOptimizeByxTraffic;
+			
+			$wpOptimizeByxTraffic->base_process_ajax();
+			
+			exit(); die(); // this is required to return a proper result
+			
+		}
+		
+		add_action( 'wp_ajax_wpoptimizebyxtraffic_base_process_ajax_action', 'wpoptimizebyxtraffic_base_process_ajax_action' ); 
+		
+		add_action( 'wp_ajax_wpoptimizebyxtraffic_preview_processed_image_action', 'wpoptimizebyxtraffic_preview_processed_image_action' );
+		
+		
 	}
 	
 endif;
 
 
 
-function wpOptimizeByxTraffic_load_custom_wp_admin_styles() {        
-	wp_register_style( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG, plugins_url( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/admin_styles.min.css' ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
-	wp_enqueue_style( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG );
+
+$wpOptimizeByxTraffic_wp_register_style_status = false;
+function wpOptimizeByxTraffic_wp_register_style() 
+{
+	global $wpOptimizeByxTraffic_wp_register_style_status;
+	if(!$wpOptimizeByxTraffic_wp_register_style_status) {
+		$wpOptimizeByxTraffic_wp_register_style_status = true;
+		
+		
+		
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/pepvn_libs.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/pepvn_libs.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+		wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
+		
+		
+			
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/admin_styles.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/admin_styles.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'admin_styles';
+		wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
+		
+		
+		
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/optimize_traffic.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/optimize_traffic.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+		wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
+		
+	}
 }
 
 
 
-function wpOptimizeByxTraffic_load_custom_wp_admin_scripts() {
-	wp_register_script( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG, plugins_url( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/admin_scripts.min.js' ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
-	wp_enqueue_script( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG );
+$wpOptimizeByxTraffic_wp_register_script_status = false;
+function wpOptimizeByxTraffic_wp_register_script() 
+{
+	global $wpOptimizeByxTraffic_wp_register_script_status;
+	
+	if(!$wpOptimizeByxTraffic_wp_register_script_status) {
+		$wpOptimizeByxTraffic_wp_register_script_status = true;
+		
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/pepvn_libs.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/pepvn_libs.js?__ts='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+		wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
+		
+		
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/admin_scripts.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/admin_scripts.js?__ts='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'admin_scripts';
+		wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
+		
+		
+		$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/optimize_traffic.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
+		//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/optimize_traffic.js?__ts='.time().mt_rand();//test
+		$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+		wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
+		
+	}
+	
+	
 }
+
+
+
+
+
+
+function wpOptimizeByxTraffic_load_custom_wp_admin_styles() 
+{
+	wpOptimizeByxTraffic_wp_register_style();
+	
+	wp_enqueue_style( 'wp-pointer' );
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+	wp_enqueue_style( $handleRegister );
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'admin_styles';
+	wp_enqueue_style( $handleRegister );
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+	wp_enqueue_style( $handleRegister );
+	
+}
+
+
+
+function wpOptimizeByxTraffic_load_custom_wp_admin_scripts() 
+{
+	wpOptimizeByxTraffic_wp_register_script();
+	
+	
+	wp_enqueue_script( 'jquery' );
+	wp_enqueue_script( 'wp-pointer' );
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+	wp_enqueue_script( $handleRegister ); 
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+	wp_enqueue_script( $handleRegister ); 
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'admin_scripts';
+	wp_enqueue_script( $handleRegister ); 
+	
+	
+	
+	
+	
+}
+
+
+
+function wpOptimizeByxTraffic_load_custom_wp_styles() 
+{
+	wpOptimizeByxTraffic_wp_register_style();
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+	wp_enqueue_style( $handleRegister ); 
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+	wp_enqueue_style( $handleRegister ); 
+	
+	//wp_enqueue_style( 'core', 'style.css', false ); 
+}
+
+function wpOptimizeByxTraffic_load_custom_wp_scripts() 
+{
+	wpOptimizeByxTraffic_wp_register_script();
+	
+	
+	wp_enqueue_script( 'jquery' );
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'pepvn_libs';
+	wp_enqueue_script( $handleRegister ); 
+	
+	$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'optimize_traffic';
+	wp_enqueue_script( $handleRegister ); 
+	
+	
+	//wp_enqueue_script( 'my-js', 'filename.js', false );
+}
+
+add_action( 'wp_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_styles' );
+add_action( 'wp_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_scripts' );
 
 add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_styles' );
 add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_scripts' ); 
@@ -215,7 +380,7 @@ function wpOptimizeByxTraffic_process_html_pages($input_html)
 if ( is_admin() ) {
 	
 } else {
-	add_action('wp_loaded','wpOptimizeByxTraffic_start_load_html_pages',0); 
+	add_action('wp_loaded','wpOptimizeByxTraffic_start_load_html_pages',0.0000000001); 
 }
 
 

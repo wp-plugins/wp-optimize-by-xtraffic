@@ -225,7 +225,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		) / 8
 	) AS wpxtraffic_score
 	FROM '.$wpdb->posts.'
-	WHERE ( ( post_status = \'publish\') 
+	WHERE ( ( post_status = \'publish\') AND ( post_password = \'\') 
 	'; 
 				
 				if($queryString_Where_PostType) {
@@ -245,7 +245,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		ID
 	) AS wpxtraffic_score
 	FROM '.$wpdb->posts.'
-	WHERE ( ( post_status = \'publish\') AND ( post_title LIKE \'%'.$keyword.'%\' ) 
+	WHERE ( ( post_status = \'publish\') AND ( post_password = \'\') AND ( post_title LIKE \'%'.$keyword.'%\' ) 
 	';
 				
 				if($queryString_Where_PostType) {
@@ -927,7 +927,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 									$patterns2 .= 'i';
 								}
 								
-								$replace2 = '\1<a href="'.$targetLink2.'" target="_bank" title="';
+								$replace2 = '\1<a href="'.$targetLink2.'" '.($options['optimize_links_open_autolink_new_window'] ? ' target="_bank" ' : '').' title="';
 								
 								if($targetLinkTitle2) {
 									$targetLinkTitle2 = PepVN_Data::cleanKeyword($targetLinkTitle2);
@@ -1182,6 +1182,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$optimize_links_nofollow_urls=$options['optimize_links_nofollow_urls'];
 		$optimize_links_nofolo_blanko_exclude_urls=$options['optimize_links_nofolo_blanko_exclude_urls'];
 		
+		$optimize_links_open_autolink_new_window = $options['optimize_links_open_autolink_new_window']=='on'?'checked':'';
 		
 		
 
@@ -1288,6 +1289,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						<p>',__('Set whether matching should be case sensitive',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
 						<input type="checkbox" name="optimize_links_casesens" ',$optimize_links_casesens,' /><label for="optimize_links_casesens"> ',__('Case sensitive matching',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
 						
+								
+						<p>',__('Set open autolinks in new window',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'.</p>
+						<input type="checkbox" name="optimize_links_open_autolink_new_window" ',$optimize_links_open_autolink_new_window,' /><label for="optimize_links_open_autolink_new_window"> ',__('Open autolinks in new window',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label>  <br>
 						
 						
 						<h4>',__('Ignore Posts and Pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>	

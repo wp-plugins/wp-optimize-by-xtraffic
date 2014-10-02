@@ -1,8 +1,9 @@
 <?php
 
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
 
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Data.php');
-require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
+
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Images.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_CSSmin.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_JSMin.php'); 
@@ -22,6 +23,8 @@ class WPOptimizeByxTraffic_Base {
 	protected $baseCacheData = array();
 	
 	protected $adminNoticesData = array();
+	
+	protected $http_UserAgent = 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36';
 	
 	function __construct() 
 	{
@@ -47,9 +50,11 @@ class WPOptimizeByxTraffic_Base {
 		$priorityFirst = 0 + (mt_rand() / 1000000000);
 		$priorityFirst = (float)$priorityFirst;
 		
-		$priorityLast = 999999999.999999999 + (mt_rand() / 1000000000);
+		$priorityLast = 99999999.999999999 + (mt_rand() / 1000000000);
 		$priorityLast = (float)$priorityLast;
 		
+		$priorityLast2 = $priorityLast + 9;
+		$priorityLast3 = $priorityLast2 + 9;
 	
 	
 		$doActions = array();
@@ -74,12 +79,16 @@ class WPOptimizeByxTraffic_Base {
 			}
 			
 			
+			add_filter('the_content',  array(&$this, 'optimize_traffic_the_content_filter'), $priorityLast2);
+			
 			
 			
 			add_filter('wp_head',  array(&$this, 'header_footer_the_head_filter'), $priorityLast);
 			add_filter('wp_footer',  array(&$this, 'header_footer_the_footer_filter'), $priorityLast);
 			add_filter('the_content',  array(&$this, 'header_footer_the_content_filter'), $priorityLast);
 			
+			
+			add_filter('admin_head',  array(&$this, 'header_footer_the_admin_head_filter'), $priorityLast);
 			
 			
 			
@@ -137,7 +146,7 @@ class WPOptimizeByxTraffic_Base {
 		
 		add_action('admin_notices', array(&$this,'admin_notice'));
 		
-		//add_action('save_post', array(&$this,'base_clear_data'));
+		add_action('save_post', array(&$this,'base_clear_data'));
 		
 	}
 	
@@ -192,6 +201,11 @@ class WPOptimizeByxTraffic_Base {
 		}
 		
 		
+		if(!function_exists('mb_strlen')) {
+			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server need support "Multibyte String" to use this plugin',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' - <a href="http://php.net/manual/en/mbstring.installation.php" target="_blank"><b>'.__('Read more here',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</b></a></div>';
+		}
+		
+		
 		$resultData['notice']['error'] = array_unique($resultData['notice']['error']);
 		$resultData['notice']['error_no'] = array_unique($resultData['notice']['error_no']);
 		
@@ -209,7 +223,140 @@ class WPOptimizeByxTraffic_Base {
 		if('statistics' === $input_type) {
 			
 		} else if('vertical_01' === $input_type) {
-			$resultData .= '<div id="sideblock" style="float:right;width:290px;margin-left:10px;"><iframe width="290" height="1000" frameborder="0" src="//static.pep.vn/library/pepvn/wp-optimize-by-xtraffic/client/vertical_01.html?utm_source='.rawurlencode($this->fullDomainName).'&utm_medium=plugin-wp-optimize-by-xtraffic&utm_campaign=WP+Optimize+By+xTraffic"></iframe></div>';
+			$resultData .= '<div id="sideblock" style="float:right;width:290px;margin-left:10px;"><iframe width="290" height="1000" frameborder="0" src="//static.pep.vn/library/pepvn/wp-optimize-by-xtraffic/client/vertical_01.html?utm_source='.rawurlencode($this->fullDomainName).'&utm_medium=plugin-wp-optimize-by-xtraffic-v-'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&utm_campaign=WP+Optimize+By+xTraffic"></iframe></div>';
+		}
+		
+		return $resultData;
+	}
+	
+	
+	
+	public function base_get_categories($input_term_id = 0)
+	{
+	
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,$input_term_id
+		));
+		
+		$resultData = $this->cacheObj->get_cache($keyCache1);
+		if(!$resultData) {
+			$resultData = array();
+			
+			$categories = get_categories();
+			if ($categories) {
+				foreach($categories as $category) {
+					if($category) {
+						if(isset($category->term_id) && $category->term_id) {
+							$category->term_id = (int)$category->term_id;
+							$resultData[$category->name] = array(
+								'name' => $category->name
+								,'term_id' => $category->term_id
+								,'link' => get_category_link($category->term_id)
+							);
+							
+						}
+					}
+				}
+			}
+			
+			
+			$this->cacheObj->set_cache($keyCache1, $resultData);
+			
+			
+		}
+		
+		return $resultData;
+	}
+	
+	
+	
+	
+	public function base_get_tags($input_term_id = 0)
+	{
+	
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,$input_term_id 
+		));
+		
+		$resultData = $this->cacheObj->get_cache($keyCache1);
+		if(!$resultData) {
+			$resultData = array();
+			
+			$tags = get_tags();
+			if ($tags) {
+				foreach($tags as $tag) {
+					if($tag) {
+						if(isset($tag->term_id) && $tag->term_id) {
+							$tag->term_id = (int)$tag->term_id;
+							$resultData[$tag->name] = array(
+								'name' => $tag->name
+								,'term_id' => $tag->term_id
+								,'link' => get_tag_link($tag->term_id)
+							);
+							
+						}
+					}
+				}
+			}
+			
+			$this->cacheObj->set_cache($keyCache1, $resultData);
+			
+			
+		}
+		
+		return $resultData;
+	}
+	
+	
+	
+	public function base_get_terms_by_post_id($input_post_id)
+	{
+	
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,$input_post_id 
+		));
+		
+		$resultData = $this->cacheObj->get_cache($keyCache1);
+		if(!$resultData) {
+			$resultData = array();
+			
+			$groupsTerms = array();
+			
+			$groupsTerms['tags'] = get_the_tags((int)$input_post_id);
+			$groupsTerms['category'] = get_the_category((int)$input_post_id);
+			foreach($groupsTerms as $keyOne => $valueOne) {
+				if ($valueOne) {
+					foreach($valueOne as $valueTwo) {
+						if($valueTwo) {
+							if(isset($valueTwo->term_id) && $valueTwo->term_id) {
+								$valueTwo->term_id = (int)$valueTwo->term_id;
+								$linkTerm = '';
+								if('tags' === $keyOne) {
+									$linkTerm = get_tag_link($valueTwo->term_id);
+								} else if('category' === $keyOne) {
+									$linkTerm = get_category_link($valueTwo->term_id);
+								}
+								
+								$resultData[$valueTwo->name] = array(
+									'name' => $valueTwo->name
+									,'term_id' => $valueTwo->term_id
+									,'link' => $linkTerm
+								);
+								
+							}
+						}
+					}
+				}
+			}
+			
+			
+			
+			$this->cacheObj->set_cache($keyCache1, $resultData);
+			
+			
 		}
 		
 		return $resultData;
@@ -229,6 +376,316 @@ class WPOptimizeByxTraffic_Base {
 		return $ret;
 	}
 	
+	
+	
+	public function base_get_clean_raw_text_for_process_search($input_text)
+	{
+		$input_text = (array)$input_text;
+		$input_text = implode(' ',$input_text);
+		$input_text = PepVN_Data::decodeText($input_text);
+		$input_text = strip_tags($input_text);
+		$input_text = PepVN_Data::strtolower($input_text);
+		$input_text = PepVN_Data::analysisKeyword_RemovePunctuations($input_text);
+		$input_text = PepVN_Data::reduceSpace($input_text);
+		
+		return $input_text;
+	}
+	
+	
+	
+	public function base_get_results_by_query($input_query, $input_options = false) 
+	{
+		global $wpdb;
+		
+		$resultData = false;
+		
+		if(!$input_options) {
+			$input_options = array();
+		}
+		$input_options = (array)$input_options;
+		
+		$keyCache1 = false;
+		
+		if(isset($input_options['cache_status']) && $input_options['cache_status']) {
+			$keyCache1 = PepVN_Data::createKey(array(
+				__METHOD__
+				,$input_query
+			));
+			
+			$resultData = $this->cacheObj->get_cache($keyCache1);
+			
+			if($resultData) {
+				return $resultData;
+			}
+		}
+		
+		
+		$resultData = $wpdb->get_results($input_query);
+		if($resultData) {
+			if($keyCache1) {
+				$this->cacheObj->set_cache($keyCache1, $resultData);
+			}
+		}
+		
+		
+		
+		
+		
+		return $resultData;
+	}
+	
+	
+	public function base_search_posts_by_fulltext($input_parameters) 
+	{
+		global $wpdb;
+		
+		$resultData = array();
+		
+		$this->enable_db_fulltext();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
+		if(isset($options['db_has_fulltext_status']) && ($options['db_has_fulltext_status'])) {
+		} else {
+			return false;
+		}
+		
+		if(isset($input_parameters['post_types']) && $input_parameters['post_types']) {
+			
+		} else {
+			$input_parameters['post_types'] = array(
+				'post'
+				,'page'
+			);
+		}
+		
+		
+		$input_parameters['post_types'] = PepVN_Data::cleanArray($input_parameters['post_types']);
+		if($input_parameters['post_types'] && (count($input_parameters['post_types'])>0)) {
+		
+		} else {
+			return $resultData;
+		}
+		//$input_parameters['post_types'] = (array)$input_parameters['post_types'];
+		/*
+			input_parameters['keywords'] = array(
+				keyword a => (float)w
+			);
+		*/
+		$keywords = array();
+		
+		$valueTemp = (array)$input_parameters['keywords'];
+		foreach($valueTemp as $key1 => $value1) {
+			$key1 = preg_replace('#[\'\"\\\]+#i',' ',$key1);
+			$key1 = preg_replace('#[\s]+#is',' ',$key1);
+			$key1 = $this->base_get_clean_raw_text_for_process_search($key1);
+			$key1 = trim($key1);
+			if($key1) {
+				$keywords[$key1] = (float)$value1;
+			}
+		}
+		
+		if(count($keywords)>0) {
+			
+		} else {
+			return $resultData;
+		}
+		
+		$keywords = array_slice($keywords,0,30);
+		$input_parameters['keywords'] = $keywords;
+		
+		if(!isset($input_parameters['limit'])) {
+			$input_parameters['limit'] = 10; 
+		}
+		$input_parameters['limit'] = (int)$input_parameters['limit'];
+		
+		
+		
+		if(!isset($input_parameters['exclude_posts_ids'])) {
+			$input_parameters['exclude_posts_ids'] = array();
+		}
+		$input_parameters['exclude_posts_ids'] = (array)$input_parameters['exclude_posts_ids'];
+		foreach($input_parameters['exclude_posts_ids'] as $key1 => $value1) {
+			$input_parameters['exclude_posts_ids'][$key1] = (int)$value1;
+		}
+		$input_parameters['exclude_posts_ids'] = array_unique($input_parameters['exclude_posts_ids']);
+		arsort($input_parameters['exclude_posts_ids']);
+		$input_parameters['exclude_posts_ids'] = array_values($input_parameters['exclude_posts_ids']);
+		
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,$input_parameters
+		));
+		
+		$resultData = $this->cacheObj->get_cache($keyCache1);
+		
+		if(!$resultData) {
+			
+			$resultData = array();
+			
+			$combinedKeywords = array(
+				'kw' => ''
+				,'w' => 0
+			);
+			foreach($input_parameters['keywords'] as $key1 => $value1) {
+				$combinedKeywords['kw'] .= ' '.$key1;
+				$combinedKeywords['w'] += $value1;
+			}
+			
+			$combinedKeywords['kw'] = trim($combinedKeywords['kw']);
+			if($combinedKeywords['kw']) {
+				$combinedKeywords['w'] = $combinedKeywords['w'] / count($input_parameters['keywords']);
+				$input_parameters['keywords'][$combinedKeywords['kw']] = $combinedKeywords['w'];
+			}
+			
+			
+			
+			$queryString_Where_PostType = array();
+			
+			foreach($input_parameters['post_types'] as $keyOne => $valueOne) {
+				if($valueOne) {
+					$valueOne = trim($valueOne);
+					if($valueOne) {
+						$queryString_Where_PostType[] = ' ( post_type = \''.$valueOne.'\' ) ';
+					}
+				}
+				
+			}
+			
+			$queryString_Where_PostType = implode(' OR ',$queryString_Where_PostType);
+			$queryString_Where_PostType = trim($queryString_Where_PostType);
+			
+			$totalWeight = 1;
+			
+			$queryString_MatchAgainstKeywords = array();
+			foreach($input_parameters['keywords'] as $key1 => $value1) {
+				
+				
+				$queryString_MatchAgainstKeywords[] = '
+					(
+						(
+							( ( MATCH(post_title) AGAINST(\''.$key1.'\' IN NATURAL LANGUAGE MODE) ) * 3 )
+							+ ( ( MATCH(post_excerpt) AGAINST(\''.$key1.'\' IN NATURAL LANGUAGE MODE) ) * 2 )
+							+ ( ( MATCH(post_content) AGAINST(\''.$key1.'\' IN NATURAL LANGUAGE MODE) ) * 10 )
+							+ ( ( MATCH(post_name) AGAINST(\''.$key1.'\' IN NATURAL LANGUAGE MODE) ) * 2 )
+						) * '.(float)$value1.'
+					)
+				';
+				
+				
+				$totalWeight += $value1;
+			}
+			
+			$totalWeight = (float)$totalWeight;
+			
+			
+			$queryString1 = '
+	SELECT ID , post_title , post_content, (
+		(
+			'.implode(' + ',$queryString_MatchAgainstKeywords).'
+		)
+	) AS wpxtraffic_score
+	FROM '.$wpdb->posts.'
+	WHERE ( ( post_status = \'publish\') AND ( post_password = \'\') 
+	'; 
+				
+				if($queryString_Where_PostType) {
+					$queryString1 .= ' AND ( '.$queryString_Where_PostType.' ) '; 
+				}
+				
+				if(count($input_parameters['exclude_posts_ids'])>0) {
+					$queryString1 .= ' AND ( '.$wpdb->posts.'.ID NOT IN ('.implode(',',$input_parameters['exclude_posts_ids']).') ) '; 
+				}
+				
+				
+				$queryString1 .= ' ) ';
+				
+				$queryString1 .= ' 
+	ORDER BY wpxtraffic_score DESC 
+	LIMIT 0,'.($input_parameters['limit']).' 
+	';
+			
+			$rsOne = $this->base_get_results_by_query($queryString1, array(
+				'cache_status' => 1
+			));
+			
+			
+			if($rsOne) {
+				foreach($rsOne as $keyOne => $valueOne) {
+					if($valueOne) {
+						if(isset($valueOne->wpxtraffic_score)) {
+							$valueOne->wpxtraffic_score = (float)$valueOne->wpxtraffic_score / $totalWeight;
+							if($valueOne->wpxtraffic_score >= 1) {
+								$postId = (int)$valueOne->ID;
+								
+								if($postId) {
+									
+									$foundKeywordStatus = false;
+									
+									//*
+									$valueTemp1 = $valueOne->post_title;
+									$valueTemp1 = $this->base_get_clean_raw_text_for_process_search($valueTemp1);
+									foreach($input_parameters['keywords'] as $key1 => $value1) {
+										if(false !== stripos($valueTemp1, $key1)) {
+											$foundKeywordStatus = true;
+											break;
+										}
+									}
+									
+									if(!$foundKeywordStatus) {
+										$valueTemp1 = $valueOne->post_content;
+										$valueTemp1 = PepVN_Data::mb_substr($valueTemp1, 0 ,500);
+										$valueTemp1 = $this->base_get_clean_raw_text_for_process_search($valueTemp1);
+										foreach($input_parameters['keywords'] as $key1 => $value1) {
+											if(false !== stripos($valueTemp1, $key1)) {
+												$foundKeywordStatus = true;
+												break;
+											}
+										}
+									}
+									//*/
+									
+									if($foundKeywordStatus) {
+									
+										$postLink = get_permalink( $postId, false );
+										if($postLink) {
+											
+											$postLink = trailingslashit($postLink);
+											
+											$resultData[$postId] = array(
+												'post_id' => $postId,
+												'post_title' => $valueOne->post_title,
+												'post_link' => $postLink,
+												'wpxtraffic_score' => $valueOne->wpxtraffic_score
+												
+											);
+										}
+										
+									}
+								}
+								
+								
+							}
+							
+						}
+					}
+				}
+			}
+			
+		
+		
+			
+			
+			
+			$this->cacheObj->set_cache($keyCache1, $resultData);
+		}
+		
+		
+		
+		return $resultData;
+		
+	}
 	
 	
 	
@@ -301,6 +758,7 @@ class WPOptimizeByxTraffic_Base {
 			//'optimize_links_blankn' =>'',
 			'optimize_links_blanko' =>'',
 			'optimize_links_onlysingle' => 'on',
+			'optimize_links_open_autolink_new_window' => 'on',
 			'optimize_links_casesens' =>'',
 			'optimize_links_process_in_feed' => '',
 			'optimize_links_maxsingleurl' => '1',
@@ -324,6 +782,9 @@ class WPOptimizeByxTraffic_Base {
 			
 			'optimize_images_override_alt' => 'on',//on
 			'optimize_images_override_title' => '',//on
+			
+			
+			'optimize_images_optimize_image_file_enable' => 'on',//on
 			
 			//watermark image
 			'optimize_images_watermarks_enable' => '',//on
@@ -610,6 +1071,7 @@ class WPOptimizeByxTraffic_Base {
 					,'optimize_links_nofollow_urls'
 					,'optimize_links_nofolo_blanko_exclude_urls'
 					
+					,'optimize_links_open_autolink_new_window'
 					
 				);
 				
@@ -640,7 +1102,10 @@ class WPOptimizeByxTraffic_Base {
 					,'optimize_images_override_title'
 					
 					
+					,'optimize_images_optimize_image_file_enable'
+					
 					//watermark image
+					
 					,'optimize_images_watermarks_enable'
 					,'optimize_images_watermarks_watermark_position'
 					,'optimize_images_watermarks_watermark_opacity_value'
@@ -727,7 +1192,40 @@ class WPOptimizeByxTraffic_Base {
 				$options['optimize_speed_optimize_css_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_css_exclude_url']);
 				
 			}
-		
+			
+			
+			
+			//optimize_traffic
+			if ( isset($_POST['optimize_traffic_submitted']) ) {
+				
+				$arrayFields1 = array(
+					'optimize_traffic_modules'
+				);
+				
+				
+				foreach($arrayFields1 as $key1 => $value1) {
+					if(isset($_POST[$value1])) {
+						$options[$value1] = (array)$_POST[$value1];
+					} else {
+						$options[$value1] = array();
+					}
+				}
+				
+				
+				$arrayModuleTypePosAdded = array();
+				foreach($options['optimize_traffic_modules'] as $key1 => $value1) {
+					if(isset($value1['module_type']) && $value1['module_type']) {
+						$keyTemp = $value1['module_type'].'_'.$value1['module_position'];
+						if(!in_array($keyTemp,$arrayModuleTypePosAdded)) {
+							$arrayModuleTypePosAdded[] = $keyTemp;
+						} else {
+							unset($options['optimize_traffic_modules'][$key1]);
+						}
+					}
+				}
+				
+			}
+			
 		
 			
 			//header_footer
@@ -842,7 +1340,14 @@ class WPOptimizeByxTraffic_Base {
 						<input type="hidden" name="submitted" value="1" /> 
 						<input type="hidden" name="base_dashboard_submitted" value="1" /> 
 						
-						<h2>',__('Settings',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h2>
+						<h3>',__('Overview "'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'"',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
+						<div class="wpoptimizebyxtraffic_green_block">
+							<h6>',__('Thank you for your interest and use plugin "'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'"',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :)</h6>
+							<p>',__('We created this plugin with the highest goal is to make WordPress website more powerful and utilities through it\'s functions',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+							<p>',__('There is one thing you should know is that all the functionality of this plugin include : "Optimize Links", "Optimize Images", "Optimize Speed", "Optimize Traffic", "Header & Footer" operate independently. You can turn on/off one of these functions without affecting other functions.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+						</div>
+						
+						<h3>',__('Settings',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 						
 						<br />
 												
@@ -946,6 +1451,17 @@ class WPOptimizeByxTraffic_Base {
 			
 			, array( 
 				'wpoptimizebyxtraffic_dashboard' //parent_slug
+				, 'Optimize Traffic'	//page_title
+				, 'Optimize Traffic'	//menu_title
+				, 'manage_options'	//capability
+				, 'wpoptimizebyxtraffic_optimize_traffic'	//menu_slug
+				, array( $this, 'optimize_traffic_handle_options' )	//function
+				, null
+			)
+			
+			
+			, array( 
+				'wpoptimizebyxtraffic_dashboard' //parent_slug
 				, 'Header & Footer'	//page_title
 				, 'Header & Footer'	//menu_title
 				, 'manage_options'	//capability
@@ -968,7 +1484,169 @@ class WPOptimizeByxTraffic_Base {
 	}
 	
 	
-	function quickGetUrlContent($input_url, $input_args = false) 
+	public function base_get_post_by_id($post_id) 
+	{
+		$resultData = false;
+		
+		if($post_id) {
+			$post_id = (int)$post_id;
+			if($post_id>0) {
+				$resultData = get_post($post_id);
+				if($resultData) {
+					if(isset($resultData->ID) && $resultData->ID) {
+						if(isset($resultData->post_content) && $resultData->post_content) {
+							
+							$resultData->pepvn_PostImages = array();
+							
+							$resultData->pepvn_PostContentRawText = $resultData->post_content;
+							$resultData->pepvn_PostContentRawText = strip_tags($resultData->pepvn_PostContentRawText);
+							$resultData->pepvn_PostContentRawText = PepVN_Data::reduceSpace($resultData->pepvn_PostContentRawText);
+							
+							$resultData->pepvn_PostPermalink = '';
+							$postLink1 = get_permalink( $resultData->ID, false );
+							if($postLink1) {
+								$resultData->pepvn_PostPermalink = $postLink1;
+							}
+							
+							
+							$resultData->pepvn_PostThumbnailId = 0;
+							$resultData->pepvn_PostThumbnailUrl = '';
+							
+							$post_thumbnail_id1 = get_post_thumbnail_id($resultData->ID);
+							if($post_thumbnail_id1) {
+								$resultData->pepvn_PostThumbnailId = $post_thumbnail_id1;
+								$post_thumbnail_url1 = wp_get_attachment_url($post_thumbnail_id1);
+								if($post_thumbnail_url1) {
+									$resultData->pepvn_PostThumbnailUrl = $post_thumbnail_url1;
+									$resultData->pepvn_PostImages[] = $post_thumbnail_url1;
+								}
+							}
+							$resultData->pepvn_PostThumbnailId = (int)$resultData->pepvn_PostThumbnailId;
+							$resultData->pepvn_PostThumbnailUrl = trim($resultData->pepvn_PostThumbnailUrl);
+							
+							
+							
+							if(isset($resultData->post_excerpt) && $resultData->post_excerpt) {
+							} else {
+								$resultData->post_excerpt = '';
+							}
+							
+							$resultData->post_excerpt = strip_tags($resultData->post_excerpt);
+							$resultData->post_excerpt = PepVN_Data::reduceSpace($resultData->post_excerpt);
+							
+							
+							
+							$valueTemp = $resultData->post_content;
+							if(preg_match_all('#<img[^>]+\\\?>#i', $valueTemp, $matched1)) {
+				
+								if(isset($matched1[0]) && is_array($matched1[0]) && (count($matched1[0])>0)) {
+									
+									foreach($matched1[0] as $keyOne => $valueOne) {
+										if(preg_match('#src=(\'|")(https?://[^"\']+)\1#i',$valueOne,$matched2)) {
+											if(isset($matched2[2]) && $matched2[2]) {
+												$resultData->pepvn_PostImages[] = trim($matched2[2]);
+											}
+											
+										}
+									}
+								}
+								
+							}
+							
+							$resultData->pepvn_PostImages = array_unique($resultData->pepvn_PostImages);
+							
+						}
+					}
+				}
+			}
+		}
+		
+		
+		return $resultData;
+	}
+	
+	public function base_process_ajax() 
+	{
+	
+		
+		$resultData = array(
+			'status' => 1
+		);
+		
+		$checkStatus1 = false;
+		
+		$dataSent = PepVN_Data::getDataSent();
+		
+		if($dataSent && isset($dataSent['localTimeSent']) && $dataSent['localTimeSent']) {
+			
+			if(isset($dataSent['preview_optimize_traffic_modules']) && $dataSent['preview_optimize_traffic_modules']) {
+				
+				
+				$rsOne = $this->optimize_traffic_preview_optimize_traffic_modules($dataSent);
+				
+				$resultData = PepVN_Data::mergeArrays(array(
+					$resultData
+					,$rsOne
+				));
+			}
+		}
+		
+		echo PepVN_Data::encodeResponseData($resultData);
+		
+	
+	
+	
+	}
+	
+	
+	
+	
+	public function quickGetUrlContent_ViaCurl($input_url, $input_args = false) 
+	{
+		$resultData = '';
+		
+		if(function_exists('curl_init')) {
+			$connect_timeout = 6;
+			
+			$opts_Headers = array();
+			$opts_Headers['user-agent'] = 'User-Agent: '.$this->http_UserAgent;
+			$opts_Headers['accept'] = 'Accept: */*;';
+			$opts_Headers['accept-encoding'] = 'Accept-Encoding: gzip,deflate';
+			$opts_Headers['accept-charset'] = 'Accept-Charset: UTF-8,*;';
+			$opts_Headers['keep-alive'] = 'Keep-Alive: 300';
+			$opts_Headers['connection'] = 'Connection: keep-alive';
+			
+		
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $input_url);
+			curl_setopt($ch, CURLOPT_HEADER, false);curl_setopt($ch, CURLINFO_HEADER_OUT, false);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_USERAGENT, $this->http_UserAgent);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $opts_Headers);
+			curl_setopt($ch, CURLOPT_ENCODING, 'utf-8');
+			curl_setopt($ch, CURLOPT_TIMEOUT, $connect_timeout);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+			curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+			curl_setopt($ch, CURLOPT_COOKIESESSION, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, 6); 
+			
+			
+			
+			$resultData = curl_exec($ch);curl_close($ch);
+			if(!$resultData) {
+				$resultData = '';
+			}
+			
+		}
+		
+		return $resultData;
+		
+		
+	}
+	
+	public function quickGetUrlContent($input_url, $input_args = false) 
 	{
 		if(!$input_args) {
 			$input_args = array();
@@ -1002,50 +1680,71 @@ class WPOptimizeByxTraffic_Base {
 			}
 		}
 		
-		$args1 = array(
-			'timeout'     => 6,
-			'redirection' => 9,
-			//'httpversion' => '1.0',
-			'user-agent'  => 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36',//'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
-			'blocking'    => true,
-			'headers'     => array(),
-			'cookies'     => array(),
-			//'body'        => null,
-			'compress'    => true,
-			'decompress'  => true,
-			'sslverify'   => false,
-			//'stream'      => false,
-			//'filename'    => null
-		);
 		
-		foreach($input_args as $key1 => $value1) {
-			$args1[$key1] = $value1;
+		$isHasCurlStatus = false;
+		/*
+		if(function_exists('curl_init')) {
+			$isHasCurlStatus = true; 
 		}
-		
-		$objWPHttp = new WP_Http_Streams();
-		$resultData = $objWPHttp->request($input_url, $args1);
+		//*/
 		
 		
-		if($resultData && is_array($resultData)) {
-			if(isset($resultData['body']) && $resultData['body']) {
-				$isOkStatus = true;
-				if(isset($resultData['response']['code']) && $resultData['response']['code']) {
-					$resultData['response']['code'] = (int)$resultData['response']['code'];
-					if(200 !== $resultData['response']['code']) {
-						$isOkStatus = false;
-					}
+		if($isHasCurlStatus) {
+			$resultData = $this->quickGetUrlContent_ViaCurl($input_url, $input_args);
+			if($resultData) {
+				if($cacheTimeout > 0) {
+					$this->cacheObj->set_cache($keyCache1, $resultData);
 				}
-				
-				if($isOkStatus) {
-					if($cacheTimeout > 0) {
-						$this->cacheObj->set_cache($keyCache1, $resultData['body']);
-					}
-					return $resultData['body'];  
-				}
-				
 			}
+			
+			return $resultData;
+		} else {
+			//$this->http_UserAgent,
+			$args1 = array(
+				'timeout'     => 6,
+				'redirection' => 9,
+				//'httpversion' => '1.0',
+				'user-agent'  => 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36',//'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+				'blocking'    => true,
+				'headers'     => array(),
+				'cookies'     => array(),
+				//'body'        => null,
+				'compress'    => true,
+				'decompress'  => true,
+				'sslverify'   => false,
+				//'stream'      => false,
+				//'filename'    => null
+			);
+			
+			foreach($input_args as $key1 => $value1) {
+				$args1[$key1] = $value1;
+			}
+			
+			$objWPHttp = new WP_Http_Streams();
+			$resultData = $objWPHttp->request($input_url, $args1);
+			
+			
+			if($resultData && is_array($resultData)) {
+				if(isset($resultData['body']) && $resultData['body']) {
+					$isOkStatus = true;
+					if(isset($resultData['response']['code']) && $resultData['response']['code']) {
+						$resultData['response']['code'] = (int)$resultData['response']['code'];
+						if(200 !== $resultData['response']['code']) {
+							$isOkStatus = false;
+						}
+					}
+					
+					if($isOkStatus) {
+						if($cacheTimeout > 0) {
+							$this->cacheObj->set_cache($keyCache1, $resultData['body']);
+						}
+						return $resultData['body'];  
+					}
+					
+				}
+			}
+			
 		}
-		
 		
 		
 		$resultData = '';

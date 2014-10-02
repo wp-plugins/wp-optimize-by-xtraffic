@@ -20,10 +20,13 @@ Everything is done completely automatically, and you can change the options from
 = What Others Say About Us : =
 
 * [Best 10 Free WordPress Plugins of the Month – September 2014](https://managewp.com/best-free-wordpress-plugins-september-2014 "Best 10 Free WordPress Plugins of the Month – September 2014")
-* [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
-* [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
 * [Best WordPress Plugins for August 2014](http://codegeekz.com/best-wordpress-plugins-for-august-2014/ "Best WordPress Plugins for August 2014")
 * [8 Amazing WordPress Plugins for Internal Link Building](http://www.indexwp.com/internal-link-building/ "8 Amazing WordPress Plugins for Internal Link Building")
+* [12 Fresh Free WordPress Widgets for Watermark](http://pixelpetal.com/wordpress/wordpress-widgets-for-watermark/ "12 Fresh Free WordPress Widgets for Watermark")
+* [Топ 10 WordPress плагинов за сентябрь 2014](http://wpnice.ru/top-10-wordpress-plaginov-za-sentyabr-2014/ "Топ 10 WordPress плагинов за сентябрь 2014")
+* [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
+* [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
+
 
 Thank the authors who talked about us :) . We always try to do it better in the future!
 
@@ -58,6 +61,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
     * Asynchronous CSS Loading
   * Optimize HTML
     * Minify HTML
+* ***Optimize Traffic*** : this feature help reduce website's bounce rate, increase Time on Site, increase Pageviews per Visitor.
 	
 = Languages : =
 
@@ -88,6 +92,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.0.0 =
+* Added feature "Optimize Traffic" help reduce website's bounce rate, increase Time on Site, increase Pageviews per Visitor.
 
 = 3.0.1 =
 * Fix & Improve "Header & Footer"
