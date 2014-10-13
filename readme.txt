@@ -30,7 +30,17 @@ Everything is done completely automatically, and you can change the options from
 
 Thank the authors who talked about us :) . We always try to do it better in the future!
 
-= Features include : =
+= The main features : =
+* ***Internal Link Building*** : Build automatically internal link with your focused links or best related posts
+* ***Optimize Images*** : Watermark images + Reduce image's size + Optimize image's Alt/Title + Rename image's filename
+* ***Optimize Speed*** : Make your WordPress website load faster from 80% or more
+* ***Optimize Traffic*** : create a list of related posts in the middle of article content to do : 
+  * Reduce website's bounce rate;
+  * Keep your website users to stay longer;
+  * Increase Pageviews for the site; 
+  * Increase user experience;
+
+= Details features include : =
 
 * ***Optimize Links*** : automatically link keywords in your posts and comments with your focused links or best related posts. This plugin allows you to set nofollow attribute and open links in a new window.
   * Make external links open in new window and add nofollow attribute
@@ -92,6 +102,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.0 =
+* Added feature "Optimize Cache" help WordPress website load faster from 80% or more.
 
 = 4.0.0 =
 * Added feature "Optimize Traffic" help reduce website's bounce rate, increase Time on Site, increase Pageviews per Visitor.

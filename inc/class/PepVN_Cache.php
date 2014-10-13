@@ -31,7 +31,8 @@ class PepVN_Cache
 	//Length of time to cache a file in seconds
 	public $cache_time = 3600;
 	
-	function __construct() {
+	function __construct() 
+	{
 		$this->cache_path = PEPVN_CACHE_DATA_DIR.'s'.DIRECTORY_SEPARATOR;
 		$this->cache_time = 3600;
 		
@@ -96,8 +97,11 @@ class PepVN_Cache
 		
 		$filename = $this->get_filepath($label);
 		
-		if($filename && file_exists($filename) && PepVN_Data::is_readable($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
-			$resultData = true;
+		if($filename && file_exists($filename)) {
+			$this->cache_time = abs((int)$this->cache_time);
+			if(PepVN_Data::is_readable($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
+				$resultData = true;
+			}
 		}
 		
 		return $resultData;
@@ -116,6 +120,19 @@ class PepVN_Cache
 		return $filename;
 	}
 
+	public function get_filemtime($label)
+	{
+		$rsFilemtime = 0;
+		
+		$filename = $this->get_filepath($label);
+		if($filename && file_exists($filename) && PepVN_Data::is_readable($filename)) {
+			$rsFilemtime = filemtime($filename);
+		}
+		
+		$rsFilemtime = (int)$rsFilemtime;
+		
+		return $rsFilemtime;
+	}
 
 
 }//class PepVN_Cache

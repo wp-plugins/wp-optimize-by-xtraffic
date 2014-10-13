@@ -1,18 +1,25 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.0.0
+Version: 4.1.0
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
 Description: WP Optimize By xTraffic provides automatically optimize your wordpress site
 */
 
+if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) : 
 
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.0.0' );
-}
 
+
+
+define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.0' );
+
+global $wpOptimizeByxTraffic; $wpOptimizeByxTraffic = false;
+
+
+
+define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART', microtime(true));
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG' ) ) {
 	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG', 'wp-optimize-by-xtraffic' );
@@ -355,11 +362,43 @@ add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_
 add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_scripts' ); 
 
 
+
+
+
+function wpOptimizeByxTraffic_wp_init_first() 
+{
+	global $wpOptimizeByxTraffic;
+	
+	$wpOptimizeByxTraffic->optimize_speed_optimize_cache_check_and_get_page_cache();
+}
+
+
+function wpOptimizeByxTraffic_wp_init_last() 
+{
+	wpOptimizeByxTraffic_start_load_html_pages();
+}
+
+
+
+
+function wpOptimizeByxTraffic_wp_shutdown_last() 
+{
+	global $wpOptimizeByxTraffic;
+	
+	$wpOptimizeByxTraffic->base_do_before_wp_shutdown();
+	
+}
+
+
+
+
 // Minify HTML codes when page is output.
-function wpOptimizeByxTraffic_start_load_html_pages() {
+function wpOptimizeByxTraffic_start_load_html_pages() 
+{
 	/** 
 	* use wpOptimizeByxTraffic_start_load_html_pages($html) function to minify html codes.
 	*/
+	
 	if(function_exists('ob_start')) {
 		ob_start('wpOptimizeByxTraffic_process_html_pages');
 	}
@@ -380,7 +419,39 @@ function wpOptimizeByxTraffic_process_html_pages($input_html)
 if ( is_admin() ) {
 	
 } else {
-	add_action('wp_loaded','wpOptimizeByxTraffic_start_load_html_pages',0.0000000001); 
+	/*
+	* @wp_loaded
+	* After WordPress is fully loaded.
+	*/
+	//add_action('wp_loaded','wpOptimizeByxTraffic_wp_init', 999999999.0000000001);
+	
+	
+	/*
+	* @init 
+	* Runs after WordPress has finished loading but before any headers are sent. Useful for intercepting $_GET or $_POST triggers.
+	*/
+	//add_action( 'init', 'wpOptimizeByxTraffic_wp_init', 999999999.0000000001 );
+	
+	
+	/*
+	* @wp 
+	* This action hook runs immediately after the global WP class object is set up. The $wp object is passed to the hooked function as a reference (no return is necessary).
+	* This hook is one effective place to perform any high-level filtering or validation, following queries, but before WordPress does any routing, processing, or handling.
+	*/
+	add_action( 'wp', 'wpOptimizeByxTraffic_wp_init_first', 0.0000000001 );
+	
+	add_action( 'wp', 'wpOptimizeByxTraffic_wp_init_last', 999999999.0000000001 );
+	
+	
+	
+	
+	
+	
+	
+	//add_action( 'shutdown', 'wpOptimizeByxTraffic_wp_shutdown_last', 999999999.0000000001 );
+	
+	
+	
 }
 
 
@@ -399,4 +470,7 @@ function wpOptimizeByxTraffic_init()
 // Add actions
 add_action('init', 'wpOptimizeByxTraffic_init');
 
-?>
+
+
+
+endif;//
