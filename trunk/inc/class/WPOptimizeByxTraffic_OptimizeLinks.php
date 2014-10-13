@@ -347,7 +347,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		if($checkStatus1) {
 			if(isset($options['do_enable_db_fulltext_time']) && $options['do_enable_db_fulltext_time']) {
 				$options['do_enable_db_fulltext_time'] = (int)$options['do_enable_db_fulltext_time'];
-				if((time() - $options['do_enable_db_fulltext_time']) <= 86400) {
+				if((time() - $options['do_enable_db_fulltext_time']) <= 300) {
 					$checkStatus1 = false;
 				}
 				
@@ -398,10 +398,11 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 								
 								$dbFieldsHasIndexTypes[$colName][] = $indexType;
 								
+								/*
 								if($indexType === 'fulltext') {
 									
 								}
-								
+								*/
 								
 							}
 							
@@ -1005,7 +1006,10 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	
 	function optimize_links_attributes_links($text) 
 	{
-		$options = $this->get_options();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
 		$link = parse_url(get_bloginfo('wpurl'));
 		$host = 'http://'.$link['host'];
 		

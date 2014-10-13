@@ -394,7 +394,8 @@ class PepVN_Data
 	 *
 	 * @return bool True if SSL, false if not used.
 	 */
-	public static function is_ssl() {
+	public static function is_ssl() 
+	{
 		if ( isset($_SERVER['HTTPS']) ) {
 			if ( 'on' == strtolower($_SERVER['HTTPS']) )
 				return true;
@@ -1051,6 +1052,15 @@ class PepVN_Data
 			array_pop($arrayPath);
 		}
 		
+		
+		$pathTemp1 = implode(DIRECTORY_SEPARATOR,$arrayPath);
+		@mkdir($pathTemp1, $chmod, true);
+		if($pathTemp1 && file_exists($pathTemp1)) {
+			return $input_path;
+		}
+		
+		
+		
 		$folderPath = '';
 		foreach($arrayPath as $path1) {
 			$folderPath .= DIRECTORY_SEPARATOR . $path1;
@@ -1338,7 +1348,7 @@ class PepVN_Data
 		));
 		
 		$resultData = self::$cacheObject->get_cache($keyCache1);
-		$resultData = false;//test
+		
 		if(!$resultData) {
 			$resultData = array();
 			$resultData['data'] = false;

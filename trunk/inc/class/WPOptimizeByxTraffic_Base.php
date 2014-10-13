@@ -8,6 +8,8 @@ require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Images.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_CSSmin.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_JSMin.php'); 
 
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Mobile_Detect.php');
+
 
 if ( !class_exists('WPOptimizeByxTraffic_Base') ) :
 
@@ -18,11 +20,17 @@ class WPOptimizeByxTraffic_Base {
 	protected $wpOptimizeByxTraffic_DB_option = WPOPTIMIZEBYXTRAFFIC_PLUGIN_NS;
 	protected $wpOptimizeByxTraffic_options; 
 	
-	protected $cacheObj;
+	public $cacheObj;
+	
+	protected $mobileDetectObject;
+	
+	protected $currentUserId = false;
 	
 	protected $baseCacheData = array();
 	
 	protected $adminNoticesData = array();
+	
+	protected $urlFullRequest = '';
 	
 	protected $http_UserAgent = 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36';
 	
@@ -42,9 +50,8 @@ class WPOptimizeByxTraffic_Base {
 			
 		} else {
 			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);  
 		}
-		
 		
 		
 		$priorityFirst = 0 + (mt_rand() / 1000000000);
@@ -59,10 +66,16 @@ class WPOptimizeByxTraffic_Base {
 	
 		$doActions = array();
 		
+		$this->mobileDetectObject = new PepVN_Mobile_Detect;
+		
 		$this->cacheObj = new PepVN_Cache();
 		$this->cacheObj->cache_time = 86400;
 		
-		$options = $this->get_options();
+		
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
 		if ($options) {
 			
 			if ($options['optimize_links_process_in_post'] || $options['optimize_links_process_in_page']) {	
@@ -143,6 +156,8 @@ class WPOptimizeByxTraffic_Base {
 			$this->urlProtocol = 'https:';
 		}
 		
+		$this->urlFullRequest = $this->urlProtocol.'//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		
 		
 		add_action('admin_notices', array(&$this,'admin_notice'));
 		
@@ -151,6 +166,17 @@ class WPOptimizeByxTraffic_Base {
 	}
 	
 	
+	
+	public function base_get_current_user_id() 
+	{
+		if(false === $this->currentUserId) {
+			$this->currentUserId = get_current_user_id();
+			$this->currentUserId = (int)$this->currentUserId;
+		}
+		
+		return $this->currentUserId;
+		
+	}
 	
 	
 	public function base_check_system_ready() 
@@ -228,6 +254,18 @@ class WPOptimizeByxTraffic_Base {
 		
 		return $resultData;
 	}
+	
+	
+	
+	
+	public function base_gmdate_gmt($input_timestamp)
+	{
+		$input_timestamp = (int)$input_timestamp;
+		$formatStringGMDate = 'D, d M Y H:i:s';
+		$resultData = gmdate($formatStringGMDate, $input_timestamp).' GMT';
+		return $resultData;
+	}
+	
 	
 	
 	
@@ -374,6 +412,16 @@ class WPOptimizeByxTraffic_Base {
 		  $ret[] = trim($e);        
 		}
 		return $ret;
+	}
+	
+	
+	
+	
+	
+	public function base_do_before_wp_shutdown()
+	{
+		
+		
 	}
 	
 	
@@ -828,6 +876,20 @@ class WPOptimizeByxTraffic_Base {
 			* Optimize Speed Setting
 			*/
 			
+			//optimize_cache
+			'optimize_speed_optimize_cache_enable' => '',//on
+			
+			'optimize_speed_optimize_cache_browser_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_front_page_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_feed_page_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_ssl_request_cache_enable' => '',//on
+			'optimize_speed_optimize_cache_mobile_device_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_url_get_query_cache_enable' => '',//on
+			'optimize_speed_optimize_cache_logged_users_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_database_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_cachetimeout' => 86400,//int 
+			
+			
 			
 			//optimize_javascript
 			'optimize_speed_optimize_javascript_enable' => '',//on
@@ -884,15 +946,18 @@ class WPOptimizeByxTraffic_Base {
 			'last_time_clear_cache' => 0
 		);
 
-		$saved = get_option($this->wpOptimizeByxTraffic_DB_option); 
-
-
+		$saved = get_option($this->wpOptimizeByxTraffic_DB_option);
+		
 		if (!empty($saved)) {
+			$saved = $this->base_fix_options($saved);
+			
 			foreach ($saved as $key => $option) {
 				$options[$key] = $option;
 			}
 		}
-
+		
+		$options = $this->base_fix_options($options);
+		
 		if ($saved != $options)	{
 			update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 		}
@@ -995,6 +1060,31 @@ class WPOptimizeByxTraffic_Base {
 		
 		
 	}
+	
+	
+	
+	
+	
+	public function base_fix_options($options)
+	{
+		
+		$arrayFields1 = array(
+			'optimize_images_watermarks_watermark_position'
+			,'optimize_images_watermarks_watermark_type'
+		);
+		foreach($arrayFields1 as $key1 => $value1) {
+			if(isset($options[$value1]) && $options[$value1]) {
+				if(is_array($options[$value1])) {
+					$options[$value1] = array_unique($options[$value1]);
+				}
+			}
+		}
+		
+		
+		return $options;
+		
+	}
+	
 	
 	public function handle_options()
 	{
@@ -1178,6 +1268,20 @@ class WPOptimizeByxTraffic_Base {
 					,'optimize_speed_optimize_html_enable'
 					,'optimize_speed_optimize_html_minify_html_enable'
 					
+					
+					
+					//optimize_cache
+					,'optimize_speed_optimize_cache_enable'
+					,'optimize_speed_optimize_cache_browser_cache_enable'
+					,'optimize_speed_optimize_cache_front_page_cache_enable'
+					,'optimize_speed_optimize_cache_feed_page_cache_enable'
+					,'optimize_speed_optimize_cache_ssl_request_cache_enable'
+					,'optimize_speed_optimize_cache_mobile_device_cache_enable'
+					,'optimize_speed_optimize_cache_url_get_query_cache_enable'
+					,'optimize_speed_optimize_cache_logged_users_cache_enable'
+					,'optimize_speed_optimize_cache_database_cache_enable'
+					,'optimize_speed_optimize_cache_cachetimeout'
+					
 				);
 				
 				foreach($arrayFields1 as $key1 => $value1) {
@@ -1190,6 +1294,8 @@ class WPOptimizeByxTraffic_Base {
 				
 				$options['optimize_speed_optimize_javascript_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_javascript_exclude_url']);
 				$options['optimize_speed_optimize_css_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_css_exclude_url']);
+				
+				$options['optimize_speed_optimize_cache_cachetimeout'] = abs((int)$options['optimize_speed_optimize_cache_cachetimeout']);
 				
 			}
 			
@@ -1253,20 +1359,7 @@ class WPOptimizeByxTraffic_Base {
 				
 			}
 		
-		
-		
-			
-			$arrayFields1 = array(
-				'optimize_images_watermarks_watermark_position'
-				,'optimize_images_watermarks_watermark_type'
-			);
-			foreach($arrayFields1 as $key1 => $value1) {
-				if(isset($options[$value1]) && $options[$value1]) {
-					if(is_array($options[$value1])) {
-						$options[$value1] = array_unique($options[$value1]);
-					}
-				}
-			}
+			$options = $this->base_fix_options($options);
 			
 			update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 			
@@ -1760,6 +1853,3 @@ class WPOptimizeByxTraffic_Base {
 
 endif;
 
-
-
-?>

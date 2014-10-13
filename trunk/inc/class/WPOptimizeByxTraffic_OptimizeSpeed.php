@@ -17,6 +17,10 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 	
 	private $optimize_speed_numberLoadCssAsync = 0;
 	
+	
+	public $optimize_speed_optimize_cache_cacheObject = 0;
+	
+	
 	public function __construct() 
 	{
 	
@@ -32,7 +36,8 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			PepVN_Data::chmod($this->optimize_speed_UploadsStaticFilesFolderPath,WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 		}
 		
-		
+		$this->optimize_speed_optimize_cache_cacheObject = new PepVN_Cache();
+		$this->optimize_speed_optimize_cache_cacheObject->cache_time = 86400;
 		
 	}
 	
@@ -289,7 +294,9 @@ setTimeout(function() {
 		
 		
 		
-		$options = $this->get_options();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
 		
 		
 		//Check can process
@@ -570,7 +577,7 @@ setTimeout(function() {
 								$value1 = trim($value1);
 								if($value1) {
 									
-									//if(preg_match('#src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+									
 									if(preg_match('#<script[^><]*?src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
 									
 									
@@ -1237,19 +1244,417 @@ setTimeout(function() {
 		}
 		
 		
-		$valueTemp = PHP_EOL . '<!-- This website has been optimized by "WP Optimize By xTraffic". Learn more : http://wordpress.org/plugins/wp-optimize-by-xtraffic/ -->';
-		$text = PepVN_Data::appendTextToTagBodyOfHtml($valueTemp,$text);
+		
+		$textAppendToEndBodyTagHtml = PHP_EOL . '<!-- '
+		. PHP_EOL . '+ This website has been optimized by plugin "WP Optimize By xTraffic".'
+		. PHP_EOL . '+ Served from : '.$this->fullDomainName.' @ '.date('Y-m-d H:i:s').' by "WP Optimize By xTraffic".'
+		//. PHP_EOL . '+ Page Caching using disk.'
+		//. PHP_EOL . '+ Processing time before use cache : '.number_format(microtime(true) - WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART, 10, '.', '').' seconds.'
+		. PHP_EOL . '+ Learn more here : http://wordpress.org/plugins/wp-optimize-by-xtraffic/ '
+		. PHP_EOL . ' -->';
+		
+		$text = PepVN_Data::appendTextToTagBodyOfHtml($textAppendToEndBodyTagHtml,$text);
 		
 		$text = trim($text);
 		
 		$this->cacheObj->set_cache($keyCacheProcessMain,$text);
+		
+			
+		$this->optimize_speed_optimize_cache_check_and_create_page_cache(array(
+			'content' => $text
+		));
+		
+		
 		
 		return $text;
 		
 	}
 
 	
-
+	
+	
+	public function optimize_speed_optimize_cache_get_filenamecache_current_request()
+	{
+		
+		$currentRequestId = '';
+		
+		if ( $this->mobileDetectObject->isTablet() ) {
+			$currentRequestId .= '-device-tablet';
+		} else if ( $this->mobileDetectObject->isMobile() ) {
+			$currentRequestId .= '-device-mobile';
+		} else {
+			$currentRequestId .= '-device-computer';
+		}
+		
+		$currentRequestId .= '-user-'.$this->base_get_current_user_id();
+		
+		$currentRequestId .= '-url-'.$this->urlFullRequest;
+		
+		return 'cp-'.md5($currentRequestId).'-pc';
+	}
+	
+	
+	public function optimize_speed_optimize_cache_get_hash_current_request()
+	{
+		$resultData = array();
+		
+		$queried_object = get_queried_object();
+		
+		$resultData['fullDomainName'] = array(
+			$this->fullDomainName => PepVN_Data::mcrc32($this->fullDomainName)
+		);
+		
+		$resultData['urlFullRequest'] = array(
+			$this->urlFullRequest => PepVN_Data::mcrc32($this->urlFullRequest)
+		);
+		
+		
+		
+		$author = get_the_author();
+		$authorObjId = 'author-'.$author;
+		
+		$resultData['authorObjId'] = array(
+			$authorObjId => PepVN_Data::mcrc32($authorObjId)
+		);
+		
+		
+		
+		$taxObjId = 'tax-';
+		
+		if($queried_object) {
+			$term_id = $queried_object->term_id;
+			if(is_category()) {
+				$taxObjId = 'cat-'.get_cat_ID();
+			} else if(is_tag()) {
+				$taxObjId = 'tag-'.$term_id;
+			} else if(is_tax()) {
+				$taxObjId = 'tax-'.$term_id;
+			}
+		}
+		
+		$resultData['taxObjId'] = array(
+			$taxObjId => PepVN_Data::mcrc32($taxObjId)
+		);
+		
+	}
+	
+	
+	
+	
+	
+	
+	public function optimize_speed_optimize_cache_flush_http_headers_cache($input_parameters)
+	{
+		
+		header('X-Powered-By: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
+		header('Server: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
+		
+		if(isset($input_parameters['content_type'])) {
+			header('Content-Type: '.$input_parameters['content_type'],true);
+		}
+		
+		if(isset($input_parameters['cache_timeout']) && $input_parameters['cache_timeout']) {
+			header('Cache-Control: public, max-age='.$input_parameters['cache_timeout'],true);
+			header('Pragma: public',true);
+		}
+		
+		
+		if(isset($input_parameters['cache_timeout']) && $input_parameters['cache_timeout']) {
+			
+			if(isset($input_parameters['etag'])) {
+				header('Etag: '.$input_parameters['etag'],true);
+			}
+			
+			$lastModifiedTime = time();
+			if(isset($input_parameters['last_modified_time']) && $input_parameters['last_modified_time']) {
+				if($input_parameters['last_modified_time'] > 0) {
+					$lastModifiedTime = $input_parameters['last_modified_time'];
+				}
+			}
+			$lastModifiedTime = (int)$lastModifiedTime;
+			
+			header('Expires: '.$this->base_gmdate_gmt($lastModifiedTime + $input_parameters['cache_timeout']),true);
+			header('Last-Modified: '.$this->base_gmdate_gmt($lastModifiedTime),true);
+		}
+		
+		
+		if(isset($input_parameters['isNotModifiedStatus'])) {
+			
+			header('HTTP/1.1 304 Not Modified',true,304);
+			ob_end_flush();exit();
+			
+		}
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	public function optimize_speed_optimize_cache_isCacheable()
+	{
+		
+		
+		$keyCache1 = array(
+			__METHOD__
+			,'optimize_speed_optimize_cache_isCacheable'
+		);
+		
+		$keyCache1 = PepVN_Data::createKey($keyCache1);
+		
+		$rsCache = $this->cacheObj->get_cache($keyCache1); 
+		
+		if(!$rsCache) {
+			
+			$rsCache = array();
+			
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+			
+			$isCacheStatus = false;
+			
+			if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
+				$isCacheStatus = true;
+			}
+			
+			if($isCacheStatus) {
+				if(is_single() || is_page() || is_singular() || is_feed()) {
+				} else {
+					
+					if(isset($options['optimize_speed_optimize_cache_front_page_cache_enable']) && $options['optimize_speed_optimize_cache_front_page_cache_enable']) {
+					
+					} else {
+						$isCacheStatus = false;
+					}
+					
+				}
+				
+			}
+			
+			if($isCacheStatus) {
+				if(isset($options['optimize_speed_optimize_cache_feed_page_cache_enable']) && $options['optimize_speed_optimize_cache_feed_page_cache_enable']) {
+				
+				} else {
+					if(is_feed()) {
+						$isCacheStatus = false; 
+					}
+				}
+			}
+			
+			
+			if($isCacheStatus) {
+				if(isset($options['optimize_speed_optimize_cache_ssl_request_cache_enable']) && $options['optimize_speed_optimize_cache_ssl_request_cache_enable']) {
+				
+				} else {
+					if(PepVN_Data::is_ssl()) {
+						$isCacheStatus = false; 
+					}
+				}
+			}
+			
+			
+			
+			if($isCacheStatus) {
+				if(isset($options['optimize_speed_optimize_cache_mobile_device_cache_enable']) && $options['optimize_speed_optimize_cache_mobile_device_cache_enable']) {
+				
+				} else {
+					if ( $this->mobileDetectObject->isMobile() ) {
+						$isCacheStatus = false; 
+					}
+				}
+			}
+			
+			
+			
+			if($isCacheStatus) {
+				if(isset($options['optimize_speed_optimize_cache_url_get_query_cache_enable']) && $options['optimize_speed_optimize_cache_url_get_query_cache_enable']) {
+				
+				} else {
+					if ( preg_match('#.+\?+.*?#i', $this->urlFullRequest) ) {
+						$isCacheStatus = false; 
+					}
+				}
+			}
+			
+			
+			if($isCacheStatus) {
+				if(isset($options['optimize_speed_optimize_cache_logged_users_cache_enable']) && $options['optimize_speed_optimize_cache_logged_users_cache_enable']) {
+				
+				} else {
+					if($this->currentUserId > 0) {
+						$isCacheStatus = false; 
+					}
+				}
+			}
+						
+			$rsCache['status'] = $isCacheStatus;
+			
+			$this->cacheObj->set_cache($keyCache1,$rsCache);
+			
+		}
+		
+		if($rsCache['status']) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	
+	
+	public function optimize_speed_optimize_cache_check_and_get_page_cache()
+	{
+		
+		
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
+		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
+		
+		if($isCacheStatus) {
+			
+			$isBrowserCacheStatus = false;
+			if(isset($options['optimize_speed_optimize_cache_browser_cache_enable']) && $options['optimize_speed_optimize_cache_browser_cache_enable']) {
+				$isBrowserCacheStatus = true;
+			}
+			
+			if(!isset($options['optimize_speed_optimize_cache_cachetimeout'])) {
+				$options['optimize_speed_optimize_cache_cachetimeout'] = 0;
+			}
+			
+			$options['optimize_speed_optimize_cache_cachetimeout'] = (int)$options['optimize_speed_optimize_cache_cachetimeout'];
+			if($options['optimize_speed_optimize_cache_cachetimeout'] < 300) {
+				$options['optimize_speed_optimize_cache_cachetimeout'] = 300;
+			}
+			$this->optimize_speed_optimize_cache_cacheObject->cache_time = $options['optimize_speed_optimize_cache_cachetimeout'];
+			
+			
+			
+			$filenamecache = $this->optimize_speed_optimize_cache_get_filenamecache_current_request();
+			$rsGetFilemtime = $this->optimize_speed_optimize_cache_cacheObject->get_filemtime($filenamecache);
+			
+			$etag = $filenamecache.'?etag='.ceil($rsGetFilemtime / $options['optimize_speed_optimize_cache_cachetimeout']);
+			$etag = md5($etag);
+			
+			$contentType = 'text/html; charset=UTF-8';
+			if(is_feed()) {
+				$contentType = 'application/xml; charset=UTF-8';
+			}
+			
+			
+			$isNotModifiedStatus = false;
+			
+			if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH']) {
+				if(trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+					$isNotModifiedStatus = true;
+				}
+			}
+			
+			if(!$isNotModifiedStatus) {
+			
+				if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
+					if($rsGetFilemtime > 0) {
+						if(strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $rsGetFilemtime) {
+							$isNotModifiedStatus = true;
+						}
+					}
+					
+				}
+				
+			}
+			
+			
+			
+			if($isNotModifiedStatus) {
+				$parametersTemp = array();
+				$parametersTemp['isNotModifiedStatus'] = true;
+				$parametersTemp['content_type'] = $contentType; 
+				$parametersTemp['etag'] = $etag;
+				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
+				$parametersTemp['cache_timeout'] = 0;
+				if($isBrowserCacheStatus) {
+					$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
+				}
+				
+				$this->optimize_speed_optimize_cache_flush_http_headers_cache($parametersTemp);
+				$parametersTemp = 0;
+			}
+			
+			$pageCacheContent = $this->optimize_speed_optimize_cache_cacheObject->get_cache($filenamecache);
+			if($pageCacheContent) {
+				
+				$parametersTemp = array();
+				$parametersTemp['etag'] = $etag;
+				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
+				$parametersTemp['content_type'] = $contentType;
+				$parametersTemp['cache_timeout'] = 0;
+				if($isBrowserCacheStatus) {
+					$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
+				}
+				
+				$this->optimize_speed_optimize_cache_flush_http_headers_cache($parametersTemp);
+				$parametersTemp = 0;
+				
+				echo $pageCacheContent;
+				ob_end_flush();exit();
+			}
+			
+			
+		}
+		
+		
+	}
+	
+	
+	
+	public function optimize_speed_optimize_cache_check_and_create_page_cache($input_parameters = false)
+	{
+		
+		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
+		
+		if($isCacheStatus) {
+			
+			$filenamecache = $this->optimize_speed_optimize_cache_get_filenamecache_current_request();
+			
+			$this->optimize_speed_optimize_cache_cacheObject->set_cache($filenamecache, $input_parameters['content']);
+		}
+	}
+	
+	
+	
+	public function optimize_speed_optimize_cache_check_and_create_database_cache()
+	{
+		
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
+		$isCacheStatus = false;
+		
+		if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
+			if(isset($options['optimize_speed_optimize_cache_database_cache_enable']) && $options['optimize_speed_optimize_cache_database_cache_enable']) {
+				$isCacheStatus = true;
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			
+		}
+		
+	}
+	
+	
+	
 	public function optimize_speed_handle_options()
 	{
 		
@@ -1259,6 +1664,24 @@ setTimeout(function() {
 	
 
 		$action_url = $_SERVER['REQUEST_URI'];
+		
+		
+		
+		//Optimize Cache Options
+		$optimize_speed_optimize_cache_enable = $options['optimize_speed_optimize_cache_enable'] == 'on' ? 'checked':'';
+		
+		$optimize_speed_optimize_cache_browser_cache_enable = $options['optimize_speed_optimize_cache_browser_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_front_page_cache_enable = $options['optimize_speed_optimize_cache_front_page_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_database_cache_enable = $options['optimize_speed_optimize_cache_database_cache_enable'] == 'on' ? 'checked':'';
+		
+		$optimize_speed_optimize_cache_feed_page_cache_enable = $options['optimize_speed_optimize_cache_feed_page_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_ssl_request_cache_enable = $options['optimize_speed_optimize_cache_ssl_request_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_mobile_device_cache_enable = $options['optimize_speed_optimize_cache_mobile_device_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_url_get_query_cache_enable = $options['optimize_speed_optimize_cache_url_get_query_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_logged_users_cache_enable = $options['optimize_speed_optimize_cache_logged_users_cache_enable'] == 'on' ? 'checked':'';
+		
+		$optimize_speed_optimize_cache_cachetimeout = abs((int)$options['optimize_speed_optimize_cache_cachetimeout']);
+		
 		
 		
 		
@@ -1330,12 +1753,122 @@ setTimeout(function() {
 					</div>
 					
 					<div class="xtraffic_tabs_nav">
-						<a href="#xtraffic_tabs_content1" class="active">Optimize Javascript</a> 
-						<a href="#xtraffic_tabs_content2" class="">Optimize CSS</a>
-						<a href="#xtraffic_tabs_content3" class="">Optimize HTML</a>
+						<a href="#xtraffic_tabs_content1" class="active">Optimize Cache</a>
+						<a href="#xtraffic_tabs_content2" class="">Optimize Javascript</a> 
+						<a href="#xtraffic_tabs_content3" class="">Optimize CSS</a>
+						<a href="#xtraffic_tabs_content4" class="">Optimize HTML</a>
+						
 					</div>
 					
+					
+					
+					
+					
+					
+					
+					
+					
 					<div id="xtraffic_tabs_content1" class="xtraffic_tabs_contents">
+
+						<h3>Optimize Cache</h3>
+						
+						<ul>
+							
+							<li>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_cache_container"  ',$optimize_speed_optimize_cache_enable,' /> &nbsp; ',__('Enable Optimize Cache',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h4>
+							</li>
+							
+						</ul>
+						
+						<div style="margin-top: 0;" id="optimize_speed_optimize_cache_container" class="wpoptimizebyxtraffic_show_hide_container">
+							<ul>
+								
+								
+								<li>
+									
+									<h6><input type="checkbox" name="optimize_speed_optimize_cache_front_page_cache_enable" class="" ',$optimize_speed_optimize_cache_front_page_cache_enable,' /> &nbsp; ',__('Enable Cache Front Page',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p style="margin-bottom: 3%;" class="description">',__('Front Page include : Home page, category page, tag page, author page, date page, archives page,...',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+									
+								</li> 
+								
+								<li>
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_feed_page_cache_enable" class="" ',$optimize_speed_optimize_cache_feed_page_cache_enable,' /> &nbsp; ',__('Enable Cache Feed (RSS/Atom) Page',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								<li>
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_browser_cache_enable" class="" ',$optimize_speed_optimize_cache_browser_cache_enable,' /> &nbsp; ',__('Enable Browser Cache',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								<li style="display:none;"> 
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_database_cache_enable" class="" ',$optimize_speed_optimize_cache_database_cache_enable,' /> &nbsp; ',__('Enable Database Cache',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								
+								<li>
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_ssl_request_cache_enable" class="" ',$optimize_speed_optimize_cache_ssl_request_cache_enable,' /> &nbsp; ',__('Enable Cache SSL (https) Requests',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								<li>
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_mobile_device_cache_enable" class="" ',$optimize_speed_optimize_cache_mobile_device_cache_enable,' /> &nbsp; ',__('Enable Cache For Mobile Device',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								<li>
+									
+									<h6 style=""><input type="checkbox" name="optimize_speed_optimize_cache_url_get_query_cache_enable" class="" ',$optimize_speed_optimize_cache_url_get_query_cache_enable,' /> &nbsp; ',__('Enable Cache URIs with GET query string variables',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description" style="margin-bottom: 3%;">',__('Ex : "/?s=query..." at the end of a url',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+									
+								</li> 
+								
+								
+								
+								<li>
+									
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_logged_users_cache_enable" class="" ',$optimize_speed_optimize_cache_logged_users_cache_enable,' /> &nbsp; ',__('Enable Cache For Logged Users',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description"></p>
+									
+								</li> 
+								
+								
+						
+								<li>
+									<h6> ',__('Cache Timeout',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'&nbsp;:&nbsp;<input type="text" name="optimize_speed_optimize_cache_cachetimeout" class="" value="',$optimize_speed_optimize_cache_cachetimeout,'" style="width: 100px;" />&nbsp;seconds </h6> 
+									<p class="description">',__('How long should cached pages remain fresh? You should set this value from 21600 seconds (6 hours) to 86400 seconds (24 hours).',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+								</li>
+								
+								
+								
+								
+								
+							</ul>						
+							<br />
+							
+						</div>
+						
+					</div><!-- //xtraffic_tabs_contents -->  
+					
+					
+					
+					
+					
+					
+					
+					
+					<div id="xtraffic_tabs_content2" class="xtraffic_tabs_contents">
 
 						<h3>Optimize Javascript</h3>
 						
@@ -1408,7 +1941,7 @@ setTimeout(function() {
 					
 					
 					
-					<div id="xtraffic_tabs_content2" class="xtraffic_tabs_contents">
+					<div id="xtraffic_tabs_content3" class="xtraffic_tabs_contents">
 
 						<h3>',__('Optimize CSS (Style)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 						
@@ -1477,7 +2010,7 @@ setTimeout(function() {
 					
 					
 					
-					<div id="xtraffic_tabs_content3" class="xtraffic_tabs_contents">
+					<div id="xtraffic_tabs_content4" class="xtraffic_tabs_contents">
 
 						<h3>',__('Optimize HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h3>
 						
@@ -1536,6 +2069,7 @@ setTimeout(function() {
 }//class WPOptimizeByxTraffic
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )
+
 
 
 
