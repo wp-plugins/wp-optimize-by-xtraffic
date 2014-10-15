@@ -22,7 +22,7 @@ class WPOptimizeByxTraffic_Base {
 	
 	public $cacheObj;
 	
-	protected $mobileDetectObject;
+	protected $mobileDetectObject = false;
 	
 	protected $currentUserId = false;
 	
@@ -65,8 +65,6 @@ class WPOptimizeByxTraffic_Base {
 	
 	
 		$doActions = array();
-		
-		$this->mobileDetectObject = new PepVN_Mobile_Detect;
 		
 		$this->cacheObj = new PepVN_Cache();
 		$this->cacheObj->cache_time = 86400;
@@ -161,22 +159,12 @@ class WPOptimizeByxTraffic_Base {
 		
 		add_action('admin_notices', array(&$this,'admin_notice'));
 		
-		add_action('save_post', array(&$this,'base_clear_data'));
+		
 		
 	}
 	
 	
 	
-	public function base_get_current_user_id() 
-	{
-		if(false === $this->currentUserId) {
-			$this->currentUserId = get_current_user_id();
-			$this->currentUserId = (int)$this->currentUserId;
-		}
-		
-		return $this->currentUserId;
-		
-	}
 	
 	
 	public function base_check_system_ready() 
@@ -242,6 +230,8 @@ class WPOptimizeByxTraffic_Base {
 	
 	
 	
+	
+	
 	public function base_get_sponsorsblock($input_type='vertical_01')
 	{
 		$resultData = '';
@@ -255,6 +245,130 @@ class WPOptimizeByxTraffic_Base {
 		return $resultData;
 	}
 	
+	
+	
+	public function base_get_current_user_id() 
+	{
+		if(false === $this->currentUserId) {
+			$this->currentUserId = 0;
+			
+			$valueTemp = get_current_user_id();
+			if($valueTemp) {
+				$valueTemp = (int)$valueTemp;
+				if($valueTemp > 0) {
+					$this->currentUserId = $valueTemp;
+				}
+			}
+			
+			$this->currentUserId = (int)$this->currentUserId;
+		}
+		
+		return $this->currentUserId;
+		
+	}
+	
+	
+	
+	public function base_is_mobile() 
+	{
+		
+		if(!isset($this->baseCacheData['rs_base_is_mobile'])) {
+			if(!$this->mobileDetectObject) {
+				$this->mobileDetectObject = new PepVN_Mobile_Detect();
+			}
+			
+			if ( $this->mobileDetectObject->isMobile() ) {
+				$this->baseCacheData['rs_base_is_mobile'] = true;
+			} else {
+				$this->baseCacheData['rs_base_is_mobile'] = false;
+			}
+			
+		}
+		
+		return $this->baseCacheData['rs_base_is_mobile'];
+		
+		
+	}
+	
+	
+	
+	public function base_is_tablet() 
+	{
+		
+		if(!isset($this->baseCacheData['rs_base_is_tablet'])) {
+			
+			if(!$this->mobileDetectObject) {
+				$this->mobileDetectObject = new PepVN_Mobile_Detect();
+			}
+			
+			if ( $this->mobileDetectObject->isTablet() ) {
+				$this->baseCacheData['rs_base_is_tablet'] = true;
+			} else {
+				$this->baseCacheData['rs_base_is_tablet'] = false;
+			}
+			
+		}
+		
+		return $this->baseCacheData['rs_base_is_tablet'];
+		
+		
+	}
+	
+	
+	
+	public function base_is_admin() 
+	{
+		$keyCache1 = 'rs_base_is_admin';
+		
+		if(!isset($this->baseCacheData[$keyCache1])) {
+		
+			if ( is_admin() ) {
+				$this->baseCacheData[$keyCache1] = true;
+			} else {
+				$this->baseCacheData[$keyCache1] = false;
+			}
+			
+		}
+		
+		return $this->baseCacheData[$keyCache1];
+		
+	}
+	
+	
+	public function base_is_current_user_logged_in_can($input_capability) 
+	{
+		$keyCache1 = 'rs_base_is_current_user_can-'.$input_capability;
+		
+		if(!isset($this->baseCacheData[$keyCache1])) {
+			
+			$this->baseCacheData[$keyCache1] = false;
+			
+			if ( is_user_logged_in() ) {
+				if ( current_user_can($input_capability) ) {
+					$this->baseCacheData[$keyCache1] = true;
+				}
+			}
+			
+		}
+		
+		return $this->baseCacheData[$keyCache1]; 
+		
+	}
+	
+	
+	
+	public function base_add_parameters_to_url($url = '',$params) 
+	{
+		$url = trim($url);
+		if(!$url) {
+			$url = $this->urlFullRequest;
+		}
+		
+		
+		return PepVN_Data::addParamsToUrl($url, $params);
+		
+		
+	}
 	
 	
 	
@@ -905,7 +1019,7 @@ class WPOptimizeByxTraffic_Base {
 			'optimize_speed_optimize_css_enable' => '',//on
 			'optimize_speed_optimize_css_combine_css_enable' => 'on',//on
 			'optimize_speed_optimize_css_minify_css_enable' => 'on',//on
-			'optimize_speed_optimize_css_asynchronous_css_loading_enable' => 'on',//on
+			'optimize_speed_optimize_css_asynchronous_css_loading_enable' => '',//on
 			'optimize_speed_optimize_css_exclude_external_css_enable' => '',//on
 			'optimize_speed_optimize_css_exclude_inline_css_enable' => '',//on
 			'optimize_speed_optimize_css_exclude_url' => '',//text
@@ -984,6 +1098,7 @@ class WPOptimizeByxTraffic_Base {
 		
 		$arrayPaths = array();
 		$arrayPaths[] = $cachePath;
+		$arrayPaths[] = PEPVN_CACHE_DATA_DIR.'ocps'.DIRECTORY_SEPARATOR;
 		if(isset($this->pepvn_UploadsPreviewImgFolderPath) && $this->pepvn_UploadsPreviewImgFolderPath) {
 			$arrayPaths[] = $this->pepvn_UploadsPreviewImgFolderPath;
 		}
@@ -1296,7 +1411,9 @@ class WPOptimizeByxTraffic_Base {
 				$options['optimize_speed_optimize_css_exclude_url'] = preg_replace('#[\'\"]+#','',$options['optimize_speed_optimize_css_exclude_url']);
 				
 				$options['optimize_speed_optimize_cache_cachetimeout'] = abs((int)$options['optimize_speed_optimize_cache_cachetimeout']);
-				
+				if($options['optimize_speed_optimize_cache_cachetimeout'] < 300) {
+					$options['optimize_speed_optimize_cache_cachetimeout'] = 300;
+				}
 			}
 			
 			
