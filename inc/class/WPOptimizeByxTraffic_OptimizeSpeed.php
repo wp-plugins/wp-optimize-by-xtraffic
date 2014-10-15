@@ -18,7 +18,7 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 	private $optimize_speed_numberLoadCssAsync = 0;
 	
 	
-	public $optimize_speed_optimize_cache_cacheObject = 0;
+	public $optimize_speed_optimize_cache_cachePageObject = 0;
 	
 	
 	public function __construct() 
@@ -36,8 +36,12 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			PepVN_Data::chmod($this->optimize_speed_UploadsStaticFilesFolderPath,WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 		}
 		
-		$this->optimize_speed_optimize_cache_cacheObject = new PepVN_Cache();
-		$this->optimize_speed_optimize_cache_cacheObject->cache_time = 86400;
+		$this->optimize_speed_optimize_cache_cachePageObject = new PepVN_Cache();
+		$this->optimize_speed_optimize_cache_cachePageObject->cache_time = 86400;
+		$this->optimize_speed_optimize_cache_cachePageObject->serialize_status = false;
+		$this->optimize_speed_optimize_cache_cachePageObject->gzcompress_status = false;
+		$this->optimize_speed_optimize_cache_cachePageObject->cache_path = PEPVN_CACHE_DATA_DIR.'ocps'.DIRECTORY_SEPARATOR;
+		
 		
 	}
 	
@@ -1259,10 +1263,6 @@ setTimeout(function() {
 		
 		$this->cacheObj->set_cache($keyCacheProcessMain,$text);
 		
-			
-		$this->optimize_speed_optimize_cache_check_and_create_page_cache(array(
-			'content' => $text
-		));
 		
 		
 		
@@ -1278,9 +1278,7 @@ setTimeout(function() {
 		
 		$currentRequestId = '';
 		
-		if ( $this->mobileDetectObject->isTablet() ) {
-			$currentRequestId .= '-device-tablet';
-		} else if ( $this->mobileDetectObject->isMobile() ) {
+		if ( PepVN_Data::isMobileDevice() ) {
 			$currentRequestId .= '-device-mobile';
 		} else {
 			$currentRequestId .= '-device-computer';
@@ -1343,8 +1341,11 @@ setTimeout(function() {
 	
 	
 	
-	public function optimize_speed_optimize_cache_flush_http_headers_cache($input_parameters)
+	public function optimize_speed_optimize_cache_flush_http_headers($input_parameters)
 	{
+		if (headers_sent()) {
+			return false;
+		}
 		
 		header('X-Powered-By: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
 		header('Server: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
@@ -1384,10 +1385,6 @@ setTimeout(function() {
 			ob_end_flush();exit();
 			
 		}
-		
-		
-		
-		
 		
 	}
 	
@@ -1465,7 +1462,7 @@ setTimeout(function() {
 				if(isset($options['optimize_speed_optimize_cache_mobile_device_cache_enable']) && $options['optimize_speed_optimize_cache_mobile_device_cache_enable']) {
 				
 				} else {
-					if ( $this->mobileDetectObject->isMobile() ) {
+					if ( PepVN_Data::isMobileDevice() ) {
 						$isCacheStatus = false; 
 					}
 				}
@@ -1488,7 +1485,7 @@ setTimeout(function() {
 				if(isset($options['optimize_speed_optimize_cache_logged_users_cache_enable']) && $options['optimize_speed_optimize_cache_logged_users_cache_enable']) {
 				
 				} else {
-					if($this->currentUserId > 0) {
+					if($this->base_get_current_user_id() > 0) {
 						$isCacheStatus = false; 
 					}
 				}
@@ -1508,9 +1505,7 @@ setTimeout(function() {
 	}
 	
 	
-	
-	
-	public function optimize_speed_optimize_cache_check_and_get_page_cache()
+	public function optimize_speed_optimize_cache_check_and_flush_http_browser_cache()
 	{
 		
 		
@@ -1521,6 +1516,96 @@ setTimeout(function() {
 		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
 		
 		if($isCacheStatus) {
+			$isBrowserCacheStatus = false;
+			if(isset($options['optimize_speed_optimize_cache_browser_cache_enable']) && $options['optimize_speed_optimize_cache_browser_cache_enable']) {
+				$isBrowserCacheStatus = true;
+			}
+			
+			
+			
+			if($isBrowserCacheStatus) {
+					
+				$rsOne = $this->optimize_speed_optimize_cache_get_info_current_request();
+				
+				$filenamecache = $rsOne['filenamecache'];
+				$rsGetFilemtime = $rsOne['filemtime'];
+				$etag = $rsOne['etag'];
+				$contentType = $rsOne['content_type'];
+				
+				$parametersTemp = array();
+				$parametersTemp['content_type'] = $contentType; 
+				$parametersTemp['etag'] = $etag;
+				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
+				$parametersTemp['cache_timeout'] = 0;
+				if($isBrowserCacheStatus) {
+					$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
+				}
+				
+				$this->optimize_speed_optimize_cache_flush_http_headers($parametersTemp);
+				$parametersTemp = 0;
+				
+			}
+			
+			
+			
+		}
+	}
+	
+	
+	public function optimize_speed_optimize_cache_get_info_current_request()
+	{
+		$keyCache1 = 'optimize_speed_optimize_cache_get_info_current_request';
+		if(!isset($this->baseCacheData[$keyCache1])) {
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+			
+			
+			$this->baseCacheData[$keyCache1] = array();
+			
+			
+			$filenamecache = $this->optimize_speed_optimize_cache_get_filenamecache_current_request();
+			$rsGetFilemtime = $this->optimize_speed_optimize_cache_cachePageObject->get_filemtime($filenamecache);
+			
+			if(0 == $rsGetFilemtime) {
+				$rsGetFilemtime = time();
+			}
+			
+			$etag = $filenamecache.'?etag='.$rsGetFilemtime;
+			$etag = md5($etag);
+			
+			
+			$contentType = 'text/html; charset=UTF-8';
+			if(is_feed()) {
+				$contentType = 'application/xml; charset=UTF-8';
+			}
+			
+			
+			
+			$this->baseCacheData[$keyCache1]['filenamecache'] = $filenamecache;
+			$this->baseCacheData[$keyCache1]['filemtime'] = $rsGetFilemtime;
+			$this->baseCacheData[$keyCache1]['etag'] = $etag;
+			$this->baseCacheData[$keyCache1]['content_type'] = $contentType;
+			
+			
+			
+		}
+		
+		return $this->baseCacheData[$keyCache1];
+		
+	}
+	
+	
+	public function optimize_speed_optimize_cache_check_and_get_page_cache()
+	{
+		
+		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
+		
+		if($isCacheStatus) {
+			
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
 			
 			$isBrowserCacheStatus = false;
 			if(isset($options['optimize_speed_optimize_cache_browser_cache_enable']) && $options['optimize_speed_optimize_cache_browser_cache_enable']) {
@@ -1533,75 +1618,75 @@ setTimeout(function() {
 			
 			$options['optimize_speed_optimize_cache_cachetimeout'] = (int)$options['optimize_speed_optimize_cache_cachetimeout'];
 			if($options['optimize_speed_optimize_cache_cachetimeout'] < 300) {
-				$options['optimize_speed_optimize_cache_cachetimeout'] = 300;
+				$options['optimize_speed_optimize_cache_cachetimeout'] = 300; 
 			}
-			$this->optimize_speed_optimize_cache_cacheObject->cache_time = $options['optimize_speed_optimize_cache_cachetimeout'];
+			
+			$this->optimize_speed_optimize_cache_cachePageObject->cache_time = $options['optimize_speed_optimize_cache_cachetimeout'];
 			
 			
+			$rsOne = $this->optimize_speed_optimize_cache_get_info_current_request();
 			
-			$filenamecache = $this->optimize_speed_optimize_cache_get_filenamecache_current_request();
-			$rsGetFilemtime = $this->optimize_speed_optimize_cache_cacheObject->get_filemtime($filenamecache);
-			
-			$etag = $filenamecache.'?etag='.ceil($rsGetFilemtime / $options['optimize_speed_optimize_cache_cachetimeout']);
-			$etag = md5($etag);
-			
-			$contentType = 'text/html; charset=UTF-8';
-			if(is_feed()) {
-				$contentType = 'application/xml; charset=UTF-8';
-			}
+			$filenamecache = $rsOne['filenamecache'];
+			$rsGetFilemtime = $rsOne['filemtime'];
+			$etag = $rsOne['etag'];
+			$contentType = $rsOne['content_type'];
 			
 			
 			$isNotModifiedStatus = false;
 			
-			if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH']) {
-				if(trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
-					$isNotModifiedStatus = true;
+			if($isBrowserCacheStatus) {
+				
+				if(isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH']) {
+					if(trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+						$isNotModifiedStatus = true;
+					}
 				}
-			}
-			
-			if(!$isNotModifiedStatus) {
-			
-				if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
-					if($rsGetFilemtime > 0) {
-						if(strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $rsGetFilemtime) {
-							$isNotModifiedStatus = true;
+				
+				if(!$isNotModifiedStatus) {
+				
+					if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
+						if($rsGetFilemtime > 0) {
+							if(strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $rsGetFilemtime) {
+								$isNotModifiedStatus = true;
+							}
 						}
+						
 					}
 					
 				}
 				
-			}
-			
-			
-			
-			if($isNotModifiedStatus) {
-				$parametersTemp = array();
-				$parametersTemp['isNotModifiedStatus'] = true;
-				$parametersTemp['content_type'] = $contentType; 
-				$parametersTemp['etag'] = $etag;
-				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
-				$parametersTemp['cache_timeout'] = 0;
-				if($isBrowserCacheStatus) {
-					$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
+				
+				
+				if($isNotModifiedStatus) {
+					$parametersTemp = array();
+					$parametersTemp['isNotModifiedStatus'] = true;
+					$parametersTemp['content_type'] = $contentType; 
+					$parametersTemp['etag'] = $etag;
+					$parametersTemp['last_modified_time'] = $rsGetFilemtime;
+					$parametersTemp['cache_timeout'] = 0;
+					if($isBrowserCacheStatus) {
+						$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
+					}
+					
+					$this->optimize_speed_optimize_cache_flush_http_headers($parametersTemp);
+					$parametersTemp = 0;
 				}
 				
-				$this->optimize_speed_optimize_cache_flush_http_headers_cache($parametersTemp);
-				$parametersTemp = 0;
 			}
 			
-			$pageCacheContent = $this->optimize_speed_optimize_cache_cacheObject->get_cache($filenamecache);
+			$pageCacheContent = $this->optimize_speed_optimize_cache_cachePageObject->get_cache($filenamecache);
 			if($pageCacheContent) {
 				
 				$parametersTemp = array();
-				$parametersTemp['etag'] = $etag;
-				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
 				$parametersTemp['content_type'] = $contentType;
 				$parametersTemp['cache_timeout'] = 0;
 				if($isBrowserCacheStatus) {
+					$parametersTemp['etag'] = $etag;
+					$parametersTemp['last_modified_time'] = $rsGetFilemtime;
 					$parametersTemp['cache_timeout'] = $options['optimize_speed_optimize_cache_cachetimeout'];
 				}
 				
-				$this->optimize_speed_optimize_cache_flush_http_headers_cache($parametersTemp);
+				$this->optimize_speed_optimize_cache_flush_http_headers($parametersTemp); 
 				$parametersTemp = 0;
 				
 				echo $pageCacheContent;
@@ -1625,7 +1710,7 @@ setTimeout(function() {
 			
 			$filenamecache = $this->optimize_speed_optimize_cache_get_filenamecache_current_request();
 			
-			$this->optimize_speed_optimize_cache_cacheObject->set_cache($filenamecache, $input_parameters['content']);
+			$this->optimize_speed_optimize_cache_cachePageObject->set_cache($filenamecache, $input_parameters['content']);
 		}
 	}
 	
@@ -1847,7 +1932,7 @@ setTimeout(function() {
 						
 								<li>
 									<h6> ',__('Cache Timeout',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'&nbsp;:&nbsp;<input type="text" name="optimize_speed_optimize_cache_cachetimeout" class="" value="',$optimize_speed_optimize_cache_cachetimeout,'" style="width: 100px;" />&nbsp;seconds </h6> 
-									<p class="description">',__('How long should cached pages remain fresh? You should set this value from 21600 seconds (6 hours) to 86400 seconds (24 hours).',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+									<p class="description">',__('How long should cached pages remain fresh? You should set this value from 21600 seconds (6 hours) to 86400 seconds (24 hours). Minimum value is 300 seconds (5 minutes).',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 								</li>
 								
 								
@@ -2066,7 +2151,7 @@ setTimeout(function() {
 	
 
 
-}//class WPOptimizeByxTraffic
+}//class WPOptimizeByxTraffic  
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )
 

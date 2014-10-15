@@ -31,6 +31,13 @@ class PepVN_Cache
 	//Length of time to cache a file in seconds
 	public $cache_time = 3600;
 	
+	
+	public $serialize_status = true;
+	
+	public $gzcompress_status = true;
+	
+	
+	
 	function __construct() 
 	{
 		$this->cache_path = PEPVN_CACHE_DATA_DIR.'s'.DIRECTORY_SEPARATOR;
@@ -38,7 +45,7 @@ class PepVN_Cache
 		
 		
 		PepVN_Data::createFolder($this->cache_path, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-		PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+		//PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 		
 	}
 
@@ -49,21 +56,30 @@ class PepVN_Cache
 		} else {
 							
 			PepVN_Data::createFolder($this->cache_path, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			//PepVN_Data::chmod($this->cache_path,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 			
 		}
 		
-		if($this->cache_path && file_exists($this->cache_path) && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($this->cache_path))) {
-			$data = @serialize($data);
+		
+		if($this->cache_path && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($this->cache_path))) {
+			
+			if($this->serialize_status) {
+				$data = @serialize($data);
+			}
+			
 			if($data) {
-				$data = @gzcompress($data,5);
+			
+				if($this->gzcompress_status) {
+					$data = @gzcompress($data,2);
+				}
+				
+				
 				if($data) {
 					$filename = $this->get_filepath($label);
-					//@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', $data); 
 					@file_put_contents($filename, $data);
 				}
 			}
-			//@file_put_contents($this->cache_path . $this->safe_filename($label) .'.cache', gzcompress(serialize($data),2));
+			
 		}
 		
 	}
@@ -71,19 +87,27 @@ class PepVN_Cache
 	public function get_cache($label)
 	{
 		if($this->is_cached($label)){
-            //$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
+            
 			$filename = $this->get_filepath($label);
 			$data = @file_get_contents($filename);
 			if($data) {
-				$data = @gzuncompress($data);
+				
+				if($this->gzcompress_status) {
+					$data = @gzuncompress($data);
+				}
+				
 				if($data) {
-					$data = @unserialize($data);
+				
+					if($this->serialize_status) {
+						$data = @unserialize($data);
+					}
+					
 					if($data) {
 						return $data;
 					}
 				}
 			}
-			//return unserialize(gzuncompress(file_get_contents($filename)));
+			
 		}
 
 		return false;
@@ -93,14 +117,14 @@ class PepVN_Cache
 	{
 		$resultData = false;
 		
-		//$filename = $this->cache_path . $this->safe_filename($label) .'.cache';
-		
 		$filename = $this->get_filepath($label);
 		
-		if($filename && file_exists($filename)) {
-			$this->cache_time = abs((int)$this->cache_time);
-			if(PepVN_Data::is_readable($filename) && ((filemtime($filename) + $this->cache_time) >= time())) {
-				$resultData = true;
+		if($filename) {
+			if(PepVN_Data::is_readable($filename)) {
+				$this->cache_time = abs((int)$this->cache_time);
+				if(((filemtime($filename) + $this->cache_time) >= time())) {
+					$resultData = true;
+				}
 			}
 		}
 		
@@ -125,7 +149,7 @@ class PepVN_Cache
 		$rsFilemtime = 0;
 		
 		$filename = $this->get_filepath($label);
-		if($filename && file_exists($filename) && PepVN_Data::is_readable($filename)) {
+		if($filename && PepVN_Data::is_readable($filename)) {
 			$rsFilemtime = filemtime($filename);
 		}
 		
@@ -137,7 +161,7 @@ class PepVN_Cache
 
 }//class PepVN_Cache
 
-endif; //if ( !class_exists('PepVN_Cache') )
+endif; //if ( !class_exists('PepVN_Cache') ) 
 
 
 ?>
