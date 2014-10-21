@@ -104,6 +104,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 4.1.3 =
+* Fix some bugs "Optimize Cache" due to the announcement of Boris Osadciw
+
 = 4.1.2 =
 * Improve feature "Optimize Cache" help WordPress website load faster. Add prebuild cache the most visited pages.
 
