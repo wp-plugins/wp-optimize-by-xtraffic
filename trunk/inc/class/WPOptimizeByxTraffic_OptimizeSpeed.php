@@ -1744,7 +1744,15 @@ setTimeout(function() {
 		
 		
 		if(isset($staticVarData['time_init']) && $staticVarData['time_init']) {
-			$numberRequestsPerSecond = $staticVarData['total_number_requests'] / abs(time() - $staticVarData['time_init']);
+			
+			$timePeriod = abs(time() - $staticVarData['time_init']);
+			
+			if($timePeriod < 1) {
+				$timePeriod = 1;
+			}
+			
+			$numberRequestsPerSecond = $staticVarData['total_number_requests'] / $timePeriod; 
+			
 			
 			$maxNumberUrlsPrebuild1 = $maxTimePrebuild * $numberRequestsPerSecond;
 			if($maxNumberUrlsPrebuild > $maxNumberUrlsPrebuild1) {

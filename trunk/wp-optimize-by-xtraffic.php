@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.2
+Version: 4.1.3
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.2' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.3' );
 }
 
 
