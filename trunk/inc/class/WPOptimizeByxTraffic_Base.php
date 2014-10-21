@@ -14,7 +14,8 @@ require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Mobile_Detect.php');
 if ( !class_exists('WPOptimizeByxTraffic_Base') ) :
 
 
-class WPOptimizeByxTraffic_Base {
+class WPOptimizeByxTraffic_Base 
+{
 	
 	// Name for our options in the DB
 	protected $wpOptimizeByxTraffic_DB_option = WPOPTIMIZEBYXTRAFFIC_PLUGIN_NS;
@@ -42,7 +43,7 @@ class WPOptimizeByxTraffic_Base {
 			
 		} else {
 			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+			//PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
 		}
 		
 		$cachePathTemp = PEPVN_CACHE_DATA_DIR;
@@ -50,7 +51,16 @@ class WPOptimizeByxTraffic_Base {
 			
 		} else {
 			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);  
+			//PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);   
+		}
+		
+		
+		$cachePathTemp = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH;
+		if($cachePathTemp && file_exists($cachePathTemp)) {
+			
+		} else {
+			PepVN_Data::createFolder($cachePathTemp, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			//PepVN_Data::chmod($cachePathTemp,WPOPTIMIZEBYXTRAFFIC_CACHE_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD); 
 		}
 		
 		
@@ -143,18 +153,20 @@ class WPOptimizeByxTraffic_Base {
 		
 		
 		$this->fullDomainName = '';
-		$parseUrl = parse_url(get_bloginfo('wpurl'));
-		if(isset($parseUrl['host']) && $parseUrl['host']) {
-			$this->fullDomainName = $parseUrl['host'];
-			
+		if(PepVN_Data::$defaultParams['fullDomainName']) {
+			$this->fullDomainName = PepVN_Data::$defaultParams['fullDomainName'];
+		} else {
+			$parseUrl = parse_url(get_bloginfo('wpurl'));
+			if(isset($parseUrl['host']) && $parseUrl['host']) {
+				$this->fullDomainName = $parseUrl['host'];
+				PepVN_Data::$defaultParams['fullDomainName'] = $this->fullDomainName;
+				
+			}
 		}
 		
-		$this->urlProtocol = 'http:';
-		if(PepVN_Data::is_ssl()) {
-			$this->urlProtocol = 'https:';
-		}
+		$this->urlProtocol = PepVN_Data::$defaultParams['urlProtocol'];
 		
-		$this->urlFullRequest = $this->urlProtocol.'//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		$this->urlFullRequest = PepVN_Data::$defaultParams['urlFullRequest'];
 		
 		
 		add_action('admin_notices', array(&$this,'admin_notice'));
@@ -244,6 +256,338 @@ class WPOptimizeByxTraffic_Base {
 		
 		return $resultData;
 	}
+	
+	
+	
+	public function base_getABSPATH()
+	{
+		$path = ABSPATH;
+		$siteUrl = site_url();
+		$homeUrl = home_url();
+		$diff = str_replace($homeUrl, "", $siteUrl);
+		$diff = trim($diff,"/");
+
+		$pos = strrpos($path, $diff);
+
+		if($pos !== false){
+			$path = substr_replace($path, "", $pos, strlen($diff));
+			$path = trim($path,"/");
+			$path = "/".$path."/";
+		}
+		
+		return $path;
+	}
+
+	
+	
+	public function base_clear_config_content($htaccess_content)
+	{
+		
+		$htaccess_content = preg_replace('/\s*?\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#\s*?/is','',$htaccess_content);
+		
+		return $htaccess_content;
+	}
+	
+	
+	//do when plugin active once
+	public function base_activate()
+	{
+		
+		$pathRootWP = ABSPATH;
+		
+		if($this->optimize_speed_is_subdirectory_install()){
+			$pathRootWP = $this->base_getABSPATH();
+		}
+		
+		if('apache' === PepVN_Data::$defaultParams['serverSoftware']) {
+			
+			$pathFileHtaccess = $pathRootWP.'.htaccess';
+			
+			$htaccessContent = false;
+			
+			if(file_exists($pathFileHtaccess) && is_file($pathFileHtaccess) && is_writable($pathFileHtaccess)){
+				$htaccessContent = @file_get_contents($pathFileHtaccess);
+			} else if(PepVN_Data::is_writable($pathRootWP)) {
+				@file_put_contents($pathFileHtaccess,'');
+				if(PepVN_Data::is_writable($pathFileHtaccess)) {
+					$htaccessContent = @file_get_contents($pathFileHtaccess);
+				}
+			}
+			
+			
+			if(false !== $htaccessContent) {
+			
+				$htaccessContent = $this->base_clear_config_content($htaccessContent);
+				
+				$htaccessContent = trim($htaccessContent);
+				
+				
+				$myHtaccessConfig = 
+'
+
+### BEGIN WPOPTIMIZEBYXTRAFFIC ###
+
+<IfModule pagespeed_module>
+ModPagespeed on
+</IfModule>
+
+<ifModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/plain text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript
+</ifModule>
+
+
+<ifModule mod_expires.c>
+ExpiresActive On
+ExpiresByType image/x-icon "access plus 1296000 seconds"
+ExpiresByType image/jpeg "access plus 1296000 seconds"
+ExpiresByType image/jpg "access plus 1296000 seconds"
+ExpiresByType image/png "access plus 1296000 seconds"
+ExpiresByType image/gif "access plus 1296000 seconds"
+ExpiresByType application/x-shockwave-flash "access plus 1296000 seconds"
+ExpiresByType text/css "access plus 604800 seconds"
+ExpiresByType text/javascript "access plus 604800 seconds"
+ExpiresByType application/javascript "access plus 604800 seconds"
+ExpiresByType application/x-javascript "access plus 604800 seconds"
+ExpiresByType application/xhtml+xml "access plus 15 seconds"
+</ifModule>
+
+
+<ifModule mod_headers.c>
+	<filesMatch "\.(ico|jpe?g|png|gif|swf)$">
+		Header set Cache-Control "public, max-age=1296000"
+		Header set Pragma "public"
+	</filesMatch>
+	<filesMatch "\.(css)$">
+		Header set Cache-Control "public, max-age=604800"
+		Header set Pragma "public"
+	</filesMatch>
+	<filesMatch "\.(js)$">
+		Header set Cache-Control "public, max-age=604800"
+		Header set Pragma "public"
+	</filesMatch>
+</ifModule>
+
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+# If you serve pages from behind a proxy you may want to change \'RewriteCond %{HTTPS} on\' to something more sensible
+AddDefaultCharset UTF-8
+RewriteCond %{REQUEST_URI} !^.*[^/]$
+RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{QUERY_STRING} !.*=.*
+RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
+RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond %{HTTPS} on
+RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html.gz -f
+RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html.gz" [L]
+
+RewriteCond %{REQUEST_URI} !^.*[^/]$
+RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{QUERY_STRING} !.*=.*
+RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
+RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond %{HTTPS} !on
+RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html.gz -f
+RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html.gz" [L]
+
+RewriteCond %{REQUEST_URI} !^.*[^/]$
+RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{QUERY_STRING} !.*=.*
+RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
+RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTPS} on
+RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html -f
+RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html" [L]
+
+RewriteCond %{REQUEST_URI} !^.*[^/]$
+RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{QUERY_STRING} !.*=.*
+RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
+RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
+RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTPS} !on
+RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html -f
+RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html" [L]
+</IfModule>
+
+### END WPOPTIMIZEBYXTRAFFIC ###
+
+';
+				$htaccessContent = $myHtaccessConfig . $htaccessContent;
+				
+				@file_put_contents($pathFileHtaccess,$htaccessContent);
+			}
+			
+			
+			$folderPath = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH;
+						
+			$pathFileHtaccess = $folderPath.'.htaccess';
+			
+			$htaccessContent = false;
+			
+			if(file_exists($pathFileHtaccess) && is_file($pathFileHtaccess) && is_writable($pathFileHtaccess)){
+				$htaccessContent = @file_get_contents($pathFileHtaccess);
+			} else if(PepVN_Data::is_writable($folderPath)) {
+				@file_put_contents($pathFileHtaccess,'');
+				if(PepVN_Data::is_writable($pathFileHtaccess)) {
+					$htaccessContent = @file_get_contents($pathFileHtaccess);
+				}
+			}
+			
+			
+			if(false !== $htaccessContent) {
+			
+				$htaccessContent = $this->base_clear_config_content($htaccessContent);
+				
+				$htaccessContent = trim($htaccessContent);
+				
+				$myHtaccessConfig = 
+			
+'
+
+### BEGIN WPOPTIMIZEBYXTRAFFIC ###
+
+<IfModule mod_mime.c>
+  <FilesMatch "\.html\.gz$">
+    ForceType text/html
+    FileETag None
+  </FilesMatch>
+  AddEncoding gzip .gz
+  AddType text/html .gz
+</IfModule>
+<IfModule mod_deflate.c>
+  SetEnvIfNoCase Request_URI \.gz$ no-gzip
+</IfModule>
+<IfModule mod_headers.c>
+  Header set Vary "Accept-Encoding, Cookie"
+  Header set Cache-Control \'max-age=15, must-revalidate\'
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html A3
+</IfModule>
+
+### END WPOPTIMIZEBYXTRAFFIC ###
+
+';
+				$htaccessContent = $myHtaccessConfig . $htaccessContent;
+				
+				@file_put_contents($pathFileHtaccess,$htaccessContent);
+
+			}
+			
+		}
+		
+		
+	
+		
+		$pathFile1 = $pathRootWP.'wp-settings.php';
+		
+		$fileContent1 = false;
+		
+		if(file_exists($pathFile1) && is_file($pathFile1) && is_writable($pathFile1)){
+			$fileContent1 = @file_get_contents($pathFile1);
+			if($fileContent1) {
+				
+				$fileContent1 = $this->base_clear_config_content($fileContent1);
+				
+				
+				$patterns = array();
+				
+				$pathFile2 = $pathRootWP.'wp-content/plugins/wp-optimize-by-xtraffic/inc/wp-optimize-by-xtraffic-advanced-cache.php';
+				$replace1 = 
+'wp_initial_constants();
+
+### BEGIN WPOPTIMIZEBYXTRAFFIC ###
+
+if(file_exists(\''.$pathFile2.'\')) {
+	@include_once(\''.$pathFile2.'\');
+}
+
+### END WPOPTIMIZEBYXTRAFFIC ###
+';
+				$patterns['wp_initial_constants();'] = $replace1;
+				
+				$fileContent1 = str_replace(array_keys($patterns),array_values($patterns),$fileContent1);
+				
+				@file_put_contents($pathFile1,$fileContent1);
+				
+			}
+			
+		}
+		
+		
+		
+		$this->base_clear_data(',all,');
+	}
+	
+	
+	
+	
+	//do when plugin deactivate once
+	public function base_deactivate()
+	{
+		$pathRootWP = ABSPATH;
+		
+		if($this->optimize_speed_is_subdirectory_install()){
+			$pathRootWP = $this->base_getABSPATH();
+		}
+		
+		$arrayFilesNeedCleanConfigs = array();
+		
+		$arrayFilesNeedCleanConfigs[] = $pathRootWP.'wp-settings.php';
+		
+		if('apache' === PepVN_Data::$defaultParams['serverSoftware']) {
+			
+			$arrayFilesNeedCleanConfigs[] = $pathRootWP.'.htaccess';
+			$arrayFilesNeedCleanConfigs[] = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH.'.htaccess';
+			
+		}
+		
+		$arrayFilesNeedCleanConfigs = array_unique($arrayFilesNeedCleanConfigs);
+		
+		foreach($arrayFilesNeedCleanConfigs as $keyOne => $valueOne) {
+			
+			if($valueOne) {
+			
+				if(file_exists($valueOne) && is_file($valueOne) && is_writable($valueOne)){
+					$fileContent = @file_get_contents($valueOne);
+					if($fileContent) {
+						
+						$fileContent = $this->base_clear_config_content($fileContent);
+						
+						@file_put_contents($valueOne,$fileContent);
+						
+					}
+					
+					
+				}
+				
+			}
+		}
+		
+		$this->base_clear_data(',all,');
+		
+	}
+	
 	
 	
 	
@@ -374,10 +718,8 @@ class WPOptimizeByxTraffic_Base {
 	
 	public function base_gmdate_gmt($input_timestamp)
 	{
-		$input_timestamp = (int)$input_timestamp;
-		$formatStringGMDate = 'D, d M Y H:i:s';
-		$resultData = gmdate($formatStringGMDate, $input_timestamp).' GMT';
-		return $resultData;
+		return PepVN_Data::gmdate_gmt($input_timestamp);
+		
 	}
 	
 	
@@ -535,6 +877,14 @@ class WPOptimizeByxTraffic_Base {
 	public function base_do_before_wp_shutdown()
 	{
 		
+		//set options
+		$keyCache1 = WPOPTIMIZEBYXTRAFFIC_PLUGIN_OPTIONS_CACHE_KEY;
+		if(!PepVN_Data::$cacheObject->get_cache($keyCache1)) {
+			PepVN_Data::$cacheObject->set_cache($keyCache1, $this->get_options(array(
+				'cache_status' => 1
+			)));
+		}
+		
 		
 	}
 	
@@ -629,7 +979,7 @@ class WPOptimizeByxTraffic_Base {
 		} else {
 			return $resultData;
 		}
-		//$input_parameters['post_types'] = (array)$input_parameters['post_types'];
+		
 		/*
 			input_parameters['keywords'] = array(
 				keyword a => (float)w
@@ -785,7 +1135,7 @@ class WPOptimizeByxTraffic_Base {
 									
 									$foundKeywordStatus = false;
 									
-									//*
+									
 									$valueTemp1 = $valueOne->post_title;
 									$valueTemp1 = $this->base_get_clean_raw_text_for_process_search($valueTemp1);
 									foreach($input_parameters['keywords'] as $key1 => $value1) {
@@ -806,7 +1156,7 @@ class WPOptimizeByxTraffic_Base {
 											}
 										}
 									}
-									//*/
+									
 									
 									if($foundKeywordStatus) {
 									
@@ -1098,7 +1448,11 @@ class WPOptimizeByxTraffic_Base {
 		
 		$arrayPaths = array();
 		$arrayPaths[] = $cachePath;
-		$arrayPaths[] = PEPVN_CACHE_DATA_DIR.'ocps'.DIRECTORY_SEPARATOR;
+		
+		if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) {
+			$arrayPaths[] = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH.'data/'.PepVN_Data::$defaultParams['parseedUrlFullRequest']['host'] . '/';
+		}
+		
 		if(isset($this->pepvn_UploadsPreviewImgFolderPath) && $this->pepvn_UploadsPreviewImgFolderPath) {
 			$arrayPaths[] = $this->pepvn_UploadsPreviewImgFolderPath;
 		}
@@ -1115,7 +1469,7 @@ class WPOptimizeByxTraffic_Base {
 					if($pathTemp1 && file_exists($pathTemp1)) {
 					} else {
 						PepVN_Data::createFolder($path1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-						PepVN_Data::chmod($path1,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
+						//PepVN_Data::chmod($path1,WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 					}
 				}
 				
@@ -1171,6 +1525,13 @@ class WPOptimizeByxTraffic_Base {
 			
 			
 		}
+		
+		
+		
+		
+		$staticVarData = PepVN_Data::staticVar_GetData();
+		$staticVarData['group_urls_prebuild_cache'] = array();
+		PepVN_Data::staticVar_SetData($staticVarData,'r');
 		
 		
 		
@@ -1775,6 +2136,10 @@ class WPOptimizeByxTraffic_Base {
 		return $resultData;
 	}
 	
+	
+	
+	
+	
 	public function base_process_ajax() 
 	{
 	
@@ -1791,21 +2156,63 @@ class WPOptimizeByxTraffic_Base {
 			
 			if(isset($dataSent['preview_optimize_traffic_modules']) && $dataSent['preview_optimize_traffic_modules']) {
 				
-				
-				$rsOne = $this->optimize_traffic_preview_optimize_traffic_modules($dataSent);
-				
-				$resultData = PepVN_Data::mergeArrays(array(
-					$resultData
-					,$rsOne
-				));
+				if($this->base_is_current_user_logged_in_can('activate_plugins')) {
+					$rsOne = $this->optimize_traffic_preview_optimize_traffic_modules($dataSent);
+					
+					$resultData = PepVN_Data::mergeArrays(array(
+						$resultData
+						,$rsOne
+					));
+				}
+			}
+			
+			
+			if(isset($dataSent['cronjobs']['status']) && $dataSent['cronjobs']['status']) {
+				$this->base_cronjobs();
 			}
 		}
+		
+		
 		
 		echo PepVN_Data::encodeResponseData($resultData);
 		
 	
 	
 	
+	}
+	
+	
+	
+	public function base_cronjobs() 
+	{
+		$resultData = array();
+		$resultData['cronjobs_status'] = 0;
+		
+		$staticVarData = PepVN_Data::staticVar_GetData();
+		
+		$doCronjobsStatus = true;
+		if(isset($staticVarData['time_start_processing_base_cronjobs']) && $staticVarData['time_start_processing_base_cronjobs']) {
+			$doCronjobsStatus = false;
+			if(($staticVarData['time_start_processing_base_cronjobs'] + 3600) < time()) {	//is timeout
+				$doCronjobsStatus = true;
+			}
+			
+		}
+		
+		if($doCronjobsStatus) {
+			$staticVarData['time_start_processing_base_cronjobs'] = time();
+			PepVN_Data::staticVar_SetData($staticVarData);
+			
+			$resultData['cronjobs_status'] = 1;
+			
+			$this->optimize_speed_optimize_cache_prebuild_urls_cache();
+			
+			$staticVarData['time_start_processing_base_cronjobs'] = 0;
+			PepVN_Data::staticVar_SetData($staticVarData);
+		}
+				
+		return $resultData;
+		
 	}
 	
 	
@@ -1909,12 +2316,12 @@ class WPOptimizeByxTraffic_Base {
 			
 			return $resultData;
 		} else {
-			//$this->http_UserAgent,
+			
 			$args1 = array(
 				'timeout'     => 6,
 				'redirection' => 9,
 				//'httpversion' => '1.0',
-				'user-agent'  => 'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36',//'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' ),
+				'user-agent'  => $this->http_UserAgent,
 				'blocking'    => true,
 				'headers'     => array(),
 				'cookies'     => array(),
@@ -1958,7 +2365,7 @@ class WPOptimizeByxTraffic_Base {
 		
 		
 		$resultData = '';
-		return $resultData;
+		return $resultData; 
 		
 		
 	}

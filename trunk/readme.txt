@@ -61,6 +61,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
   * *Optimize Image Quality* : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
   * *Rename Image Filename* : Rename your image's filename for friendly SEO
 * ***Optimize Speed*** : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
+  * Optimize Cache : Make your WordPress website load faster from 80% or more. Prebuild cache the most visited pages.
   * Optimize Javascript :
     * Combine Javascript
     * Minify Javascript
@@ -102,6 +103,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.2 =
+* Improve feature "Optimize Cache" help WordPress website load faster. Add prebuild cache the most visited pages.
 
 = 4.1.1 =
 * Improve feature "Optimize Cache" help WordPress website load faster from 200% or more.

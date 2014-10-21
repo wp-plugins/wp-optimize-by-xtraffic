@@ -23,6 +23,10 @@ class PepVN_Data
 	public static $cacheData = array();
 	
 	public static $cacheObject = false;
+	public static $cacheSitePageObject = false;
+	
+	
+	public static $staticVarDataFileObject = false;
 	
 	function __construct()
 	{
@@ -34,12 +38,8 @@ class PepVN_Data
 	{
 		if(!self::$defaultParams) {
 			
+			
 			self::$defaultParams['status'] = 1;
-			
-				
-			self::$cacheObject = new PepVN_Cache();
-			self::$cacheObject->cache_time = 86400;
-			
 			
 			unset($arrayVietnameseChar);
 			$arrayVietnameseChar = array(
@@ -145,6 +145,37 @@ class PepVN_Data
 			self::chmod(WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_PATH_PEPVN,WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_PATH_WP,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 			
 			self::$defaultParams['optimize_images']['number_images_processed_request'] = 0;
+			
+			self::$defaultParams['urlProtocol'] = 'http:';
+			if(self::is_ssl()) {
+				self::$defaultParams['urlProtocol'] = 'https:';
+			}
+			
+			self::$defaultParams['urlFullRequest'] = self::$defaultParams['urlProtocol'].'//'.$_SERVER['HTTP_HOST'];
+			if(isset($_SERVER['REQUEST_URI'])) {
+				self::$defaultParams['urlFullRequest'] .= $_SERVER['REQUEST_URI'];
+			}
+			
+			self::$defaultParams['parseedUrlFullRequest'] = self::parseUrl(self::$defaultParams['urlFullRequest']);
+			
+			self::$defaultParams['fullDomainName'] = '';
+			$parseUrl = parse_url(self::$defaultParams['urlFullRequest']);
+			if(isset($parseUrl['host']) && $parseUrl['host']) {
+				self::$defaultParams['fullDomainName'] = $parseUrl['host'];
+			}
+			
+			self::$defaultParams['serverSoftware'] = '';
+			if(isset($_SERVER['SERVER_SOFTWARE']) && $_SERVER['SERVER_SOFTWARE']) {
+				$valueTemp = $_SERVER['SERVER_SOFTWARE'];
+				$valueTemp = trim($valueTemp);
+				if(preg_match('#nginx#i',$valueTemp)) {
+					self::$defaultParams['serverSoftware'] = 'nginx';
+				} else if(preg_match('#apache#i',$valueTemp)) {
+					self::$defaultParams['serverSoftware'] = 'apache';
+				}
+				
+			}
+			
 		}
 	}
 	
@@ -162,6 +193,18 @@ class PepVN_Data
 		return mb_convert_case($input_text, MB_CASE_UPPER, $input_encoding);
 		
 	}
+	
+	
+	
+	public static function gmdate_gmt($input_timestamp)
+	{
+		$input_timestamp = (int)$input_timestamp;
+		$formatStringGMDate = 'D, d M Y H:i:s';
+		$resultData = gmdate($formatStringGMDate, $input_timestamp).' GMT';
+		return $resultData;
+	}
+	
+	
 	
 	public static function randomHash() 
 	{
@@ -806,7 +849,7 @@ class PepVN_Data
 		$patternsEscape1 = array();
 
 		$matched1 = false;
-		preg_match_all('/<a[^><]+>.*?<\/a>/i',$input_content,$matched1);
+		preg_match_all('/<a[^><]*?>.*?<\/a>/is',$input_content,$matched1);
 		if(isset($matched1[0]) && $matched1[0]) {
 			if(count($matched1[0])>0) {
 				foreach($matched1[0] as $key1 => $value1) {
@@ -874,7 +917,7 @@ class PepVN_Data
 				$tagName = trim($tagName);
 				if($tagName) {
 					$matched1 = false;
-					preg_match_all('/<'.$tagName.'[^><]+>.*?<\/'.$tagName.'>/i',$input_content,$matched1);
+					preg_match_all('/<'.$tagName.'[^><]*?>.*?<\/'.$tagName.'>/is',$input_content,$matched1);
 					if(isset($matched1[0]) && $matched1[0]) {
 						if(count($matched1[0])>0) {
 							foreach($matched1[0] as $key1 => $value1) {
@@ -919,7 +962,7 @@ class PepVN_Data
 
 		$matched1 = false;
 		
-		preg_match_all("/<\!--\s*\[\s*if[^>]+>(.*?)<\!\s*\[\s*endif\s*\]\s*-->/si", $input_content, $matched1);
+		preg_match_all('/<\!--\s*\[\s*if[^>]+>(.*?)<\!\s*\[\s*endif\s*\]\s*-->/si', $input_content, $matched1);
 		if(isset($matched1[0]) && $matched1[0]) {
 			if(count($matched1[0])>0) {
 				foreach($matched1[0] as $key1 => $value1) {
@@ -1175,9 +1218,22 @@ class PepVN_Data
 			$chmod = WPOPTIMIZEBYXTRAFFIC_CHMOD;
 		}
 		
+		$pathRoot = '';
+		if(defined('ABSPATH')) {
+			$pathRoot = ABSPATH;
+		}
+		if($pathRoot) {
+			$pathRoot = preg_replace('#/+$#i','',$pathRoot);
+			$pathRoot .= DIRECTORY_SEPARATOR;
+		}
+		
+		if($pathRoot) {
+			$input_path = preg_replace('#^'.self::preg_quote($pathRoot).'#','',$input_path,1);
+		}
+		
 		$input_path = self::fixPath($input_path);
 		
-		$pathTemp1 = $input_path;
+		$pathTemp1 = $pathRoot.$input_path;
 		
 		if($pathTemp1 && file_exists($pathTemp1)) {
 			$resultData = $pathTemp1;
@@ -1193,23 +1249,17 @@ class PepVN_Data
 			array_pop($arrayPath);
 		}
 		
+		$folderPath = $pathRoot;
+		$folderPath = preg_replace('#/+$#i','',$folderPath);
 		
-		$pathTemp1 = implode(DIRECTORY_SEPARATOR,$arrayPath);
-		@mkdir($pathTemp1, $chmod, true);
-		if($pathTemp1 && file_exists($pathTemp1)) {
-			return $input_path;
-		}
-		
-		
-		
-		$folderPath = '';
 		foreach($arrayPath as $path1) {
 			$folderPath .= DIRECTORY_SEPARATOR . $path1;
 			$pathTemp1 = $folderPath;
 			
 			if($pathTemp1 && file_exists($pathTemp1)) {
 			} else {
-				@mkdir($folderPath, $chmod, true);
+				
+				@mkdir($folderPath);
 				$pathTemp1 = $folderPath;
 				
 				if($pathTemp1 && file_exists($pathTemp1)) {
@@ -1222,7 +1272,7 @@ class PepVN_Data
 		if($folderPath) {
 			
 			if($folderPath && file_exists($folderPath)) {
-				$resultData = $folderPath . DIRECTORY_SEPARATOR;
+				$resultData = $folderPath . DIRECTORY_SEPARATOR; 
 				if(isset($pathInfo['extension'])) {
 					if(isset($pathInfo['basename'])) {
 						$resultData .= $pathInfo['basename'];
@@ -1622,7 +1672,88 @@ class PepVN_Data
 	
 	
 	
+	public static function staticVar_InitDataFileObject()
+	{
+		if(!self::$staticVarDataFileObject) {
+			self::$staticVarDataFileObject = new PepVN_Cache();
+			self::$staticVarDataFileObject->cache_time = 86400 * 15;
+			self::$staticVarDataFileObject->cache_path = WPOPTIMIZEBYXTRAFFIC_CACHE_PATH . 'data' . DIRECTORY_SEPARATOR . 'lg' . DIRECTORY_SEPARATOR;
+		}
+	}
 	
+	
+	public static function staticVar_GetKeyDataFileObject()
+	{
+		$keyCacheStaticVarData = __FILE__;
+		
+		$keyCacheStaticVarData = (string)$keyCacheStaticVarData;
+		$keyCacheStaticVarData .= '_pepvn_staticvar_keycachestaticvardata_ilateddebidemasani';
+		$keyCacheStaticVarData = md5($keyCacheStaticVarData);
+		
+		return $keyCacheStaticVarData;
+	}
+	
+	
+	public static function staticVar_InitData()
+	{
+		/*
+		* all keys should not use number
+		*/
+		
+		$resultData = array();
+		
+		$resultData['time_init'] = time();
+		
+		$resultData['total_number_requests'] = 0;
+		
+		$resultData['statistics']['group_urls'] = array(
+			//'url' => number_access
+		);
+		
+		$resultData['group_urls_prebuild_cache'] = array(
+			//'url' => time_build_cache
+		);
+		
+		return $resultData;
+	}
+	
+	public static function staticVar_GetData($input_data = false)
+	{
+		self::staticVar_InitDataFileObject();
+		$keyCacheStaticVarData = self::staticVar_GetKeyDataFileObject();
+		
+		$resultData = self::$staticVarDataFileObject->get_cache($keyCacheStaticVarData);
+		if(!$resultData) {
+			$resultData = self::staticVar_InitData();
+		}
+		
+		return $resultData;
+		
+	}
+	
+	/*
+	*	$input_data (array)
+	*	$input_method (string) : [ m : merge ; r : replace ]
+	*/
+	public static function staticVar_SetData($input_data, $input_method = 'm')
+	{
+		if($input_data && is_array($input_data)) {
+		
+			self::staticVar_InitDataFileObject();
+			
+			$keyCacheStaticVarData = self::staticVar_GetKeyDataFileObject();
+			
+			if('m' === $input_method) {
+				$input_data = self::mergeArrays(array(
+					self::staticVar_GetData()
+					, $input_data
+				));
+			}
+			
+			self::$staticVarDataFileObject->set_cache($keyCacheStaticVarData,$input_data);
+		}
+		
+	}
 	
 	
 	
@@ -1630,9 +1761,9 @@ class PepVN_Data
 }//class PepVN_Data
 
 
-PepVN_Data::setDefaultParams(); 
+PepVN_Data::setDefaultParams();
 
 endif; //if ( !class_exists('PepVN_Data') )
 
 
-?>
+
