@@ -2452,5 +2452,3 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 endif; //if ( !class_exists('WPOptimizeByxTraffic_OptimizeImages') )
 
 
-
-?>

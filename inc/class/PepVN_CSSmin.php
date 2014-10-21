@@ -793,7 +793,7 @@ class PepVN_CSSFixer
 	
 	public function fix($options = false)
 	{
-		//return '<h2> Dump on : '.__FILE__.' at line : '.__LINE__.' </h2><pre>'.(var_export($options,true)).'</pre>'; 
+		
 		if(!$options) {
 			$options = array();
 		}
@@ -896,4 +896,5 @@ class PepVN_CSSFixer
 
 endif; //if ( !class_exists('PepVN_CSSmin') )
 
-?>
+
+

@@ -164,7 +164,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		} else {
 			return $resultData;
 		}
-		//$input_parameters['post_types'] = (array)$input_parameters['post_types'];
+		
 		
 		$keyword = $input_parameters['keyword'];
 		
@@ -398,12 +398,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 								
 								$dbFieldsHasIndexTypes[$colName][] = $indexType;
 								
-								/*
-								if($indexType === 'fulltext') {
-									
-								}
-								*/
-								
 							}
 							
 							
@@ -604,8 +598,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			}
 			
 		}
-			
-		//$arrignorepost = $this->explode_trim(",", ($options['optimize_links_ignorepost']));
 		
 		$arrignorepost = PepVN_Data::explode(',',$options['optimize_links_ignorepost']);
 		$arrignorepost = PepVN_Data::cleanArray($arrignorepost);
@@ -668,8 +660,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$array_base_custom_post_types[] = 'page';
 		}
 		
-		
-		//$arrignore = PepVN_Data::explode(',',$options['optimize_links_ignore']);
 		
 		if ($options['optimize_links_excludeheading'] == 'on') {
 			//escape a and h1 -> h6
@@ -1379,10 +1369,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	
 
 
-}//class WPOptimizeByxTraffic
+}//class WPOptimizeByxTraffic 
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )
 
 
 
-?>

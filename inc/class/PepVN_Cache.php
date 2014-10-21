@@ -161,7 +161,16 @@ class PepVN_Cache
 
 }//class PepVN_Cache
 
+
+PepVN_Data::$cacheObject = new PepVN_Cache();
+PepVN_Data::$cacheObject->cache_time = 86400;
+
+PepVN_Data::$cacheSitePageObject = new PepVN_Cache();
+PepVN_Data::$cacheSitePageObject->cache_time = 86400;
+PepVN_Data::$cacheSitePageObject->serialize_status = false;
+PepVN_Data::$cacheSitePageObject->gzcompress_status = true;
+
+
+
 endif; //if ( !class_exists('PepVN_Cache') ) 
 
-
-?>
