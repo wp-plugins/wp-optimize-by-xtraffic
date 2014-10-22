@@ -1706,15 +1706,38 @@ setTimeout(function() {
 			'cache_status' => 1
 		));
 		
-		$isCacheStatus = false;
+		$checkStatus1 = false;
 		
 		if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
-			$isCacheStatus = true;
+			$checkStatus1 = true;
 		}
 		
-		if(!$isCacheStatus) {
+		if($checkStatus1) {
+			if(isset($options['optimize_speed_optimize_cache_prebuild_cache_enable']) && $options['optimize_speed_optimize_cache_prebuild_cache_enable']) {
+			} else {
+				$checkStatus1 = false;
+			}
+		}
+		
+		
+		
+		
+		if(!$checkStatus1) {
 			return false;
 		}
+		
+		
+		
+		
+		if(!isset($options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'])) {
+			$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'] = 1;
+		}
+		$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'] = (int)$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'];
+		if($options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'] < 1) {
+			$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'] = 1;
+		}
+		
+		
 		
 		
 		if(!isset($options['optimize_speed_optimize_cache_cachetimeout'])) {
@@ -1762,8 +1785,12 @@ setTimeout(function() {
 		}
 		
 	
-		if($maxNumberUrlsPrebuild < 5) {
-			$maxNumberUrlsPrebuild = 5;
+		if($maxNumberUrlsPrebuild < 1) {
+			$maxNumberUrlsPrebuild = 1;
+		}
+		
+		if($maxNumberUrlsPrebuild > $options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process']) {
+			$maxNumberUrlsPrebuild = $options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'];
 		}
 		
 		
@@ -1878,6 +1905,9 @@ setTimeout(function() {
 		$optimize_speed_optimize_cache_url_get_query_cache_enable = $options['optimize_speed_optimize_cache_url_get_query_cache_enable'] == 'on' ? 'checked':'';
 		$optimize_speed_optimize_cache_logged_users_cache_enable = $options['optimize_speed_optimize_cache_logged_users_cache_enable'] == 'on' ? 'checked':'';
 		
+		$optimize_speed_optimize_cache_prebuild_cache_enable = $options['optimize_speed_optimize_cache_prebuild_cache_enable'] == 'on' ? 'checked':'';
+		$optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process = abs((int)$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process']);
+		
 		$optimize_speed_optimize_cache_cachetimeout = abs((int)$options['optimize_speed_optimize_cache_cachetimeout']);
 		
 		
@@ -1979,6 +2009,7 @@ setTimeout(function() {
 						</ul>
 						
 						<div style="margin-top: 0;" id="optimize_speed_optimize_cache_container" class="wpoptimizebyxtraffic_show_hide_container">
+							
 							<ul>
 								
 								
@@ -2040,6 +2071,24 @@ setTimeout(function() {
 									<p class="description"></p>
 									
 								</li> 
+								
+								
+								
+								<li style="margin-bottom: 3%;">
+									
+									<h6 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_cache_prebuild_cache_enable" data-target="#optimize_speed_optimize_cache_prebuild_cache_container"  class="wpoptimizebyxtraffic_show_hide_trigger" ',$optimize_speed_optimize_cache_prebuild_cache_enable,' /> &nbsp; ',__('Enable Prebuild Cache',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<p class="description">',__('Prebuild cache help your site load faster by creating cache of pages is the most visited.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+									<div style="margin-top: 0;" id="optimize_speed_optimize_cache_prebuild_cache_container" class="wpoptimizebyxtraffic_show_hide_container">
+										<ul>	
+											<li>
+												<h6 style="margin-bottom: 0;">',__('Maximum number of pages is prebuilt each process',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'&nbsp;:&nbsp;<input type="text" name="optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process" class="" value="',$optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process,'" style="width: 100px;" />&nbsp;',__('pages',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6> 
+												<p class="description">',__('This number depends on the performance of the server, if your server is fast then you should set this number higher and vice versa.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+											</li>
+										</ul>
+										
+									</div>
+								</li> 
+								
 								
 								
 						

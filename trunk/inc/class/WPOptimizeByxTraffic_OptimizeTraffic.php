@@ -75,14 +75,11 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		global $wpdb, $post;
 		
 		
-		$this->enable_db_fulltext();
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
-		if(isset($options['db_has_fulltext_status']) && ($options['db_has_fulltext_status'])) {
-		} else {
-			return $input_text;
-		}
+		
+		
 		
 		$original_InputText1 = $input_text;
 		
@@ -627,7 +624,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			'keywords' => $groupKeywordsFromText4
 			,'limit' => $input_options['limit']
 			,'exclude_posts_ids' => $input_options['exclude_posts_ids']
-		));
+		)); 
 		
 		if($rsSearchPosts) {
 			foreach($rsSearchPosts as $key1 => $value1) {
