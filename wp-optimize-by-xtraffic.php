@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.4
+Version: 4.1.6
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.4' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.6' );
 }
 
 
@@ -217,7 +217,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		{
 			global $wpOptimizeByxTraffic_wp_register_style_status;
 			if(!$wpOptimizeByxTraffic_wp_register_style_status) {
-				$wpOptimizeByxTraffic_wp_register_style_status = true;
+				$wpOptimizeByxTraffic_wp_register_style_status = true; 
 				
 				
 				
@@ -386,6 +386,10 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			
 			
 			$input_html = $wpOptimizeByxTraffic->optimize_speed_process_html_pages($input_html);
+			
+			$input_html = $wpOptimizeByxTraffic->optimize_speed_cdn_process_html_pages($input_html);
+			
+			$input_html = $wpOptimizeByxTraffic->base_add_plugin_info_html($input_html);
 			
 			$wpOptimizeByxTraffic->optimize_speed_optimize_cache_check_and_create_page_cache(array(
 				'content' => $input_html

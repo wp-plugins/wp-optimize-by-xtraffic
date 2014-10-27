@@ -78,15 +78,13 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 		
 		
 		
+		$path = ABSPATH;
+		
+		if($this->optimize_speed_is_subdirectory_install()){
+			$path = $this->base_getABSPATH();
+		}
 		
 		if('apache' === PepVN_Data::$defaultParams['serverSoftware']) {
-			
-			
-			$path = ABSPATH;
-		
-			if($this->optimize_speed_is_subdirectory_install()){
-				$path = $this->base_getABSPATH();
-			}
 			
 			$pathFileHtaccess = $path.'.htaccess';
 			
@@ -103,6 +101,66 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			}
 			
 			
+			
+		} else if('nginx' === PepVN_Data::$defaultParams['serverSoftware']) {
+			$pathFileConfig = $path.'xtraffic-nginx.conf';
+			
+			$checkStatus1 = false;
+			
+			if(file_exists($pathFileConfig) && is_file($pathFileConfig) && is_writable($pathFileConfig)){
+				$checkStatus1 = true;
+			} else if(PepVN_Data::is_writable($path)) {
+				$checkStatus1 = true; 
+			}
+			
+			if(!$checkStatus1) {
+				$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server is using Nginx. You should create file ',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'"'.$pathFileConfig.'" and make it <u>'.__('readable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> & <u>'.__('writable',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u> '.__('to achieve the highest performance with ',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' "<b>Optimize Speed</b>". '.__('After change, please deactivate & reactivate this plugin for the changes to be updated',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'!</div>';
+			} else {
+				$resultData['notice']['error'][] = '
+				<div class="update-nag fade">
+					<p><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('To achieve the highest performance with the plugin on your Nginx server, you should follow the instructions below (if you have not already done) : ',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' <input type="button" value="Show me" class="button-primary wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_nginx_config_server_guide_container" /></p>
+					<div id="optimize_speed_optimize_nginx_config_server_guide_container" class="wpoptimizebyxtraffic_show_hide_container" style="display:none;">
+						<ul>
+						
+							<li>
+								<h6 style="font-weight: 900;font-size: 100%;margin-bottom: 6px;"><b><u>'.__('Step 1',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u></b> : '.__('Find and remove <i style="color: red;font-weight: 900;">red block below</i> (if exists) in your config "<i>server {...}</i>" block (at file .conf)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' :</h6>
+<pre style="background-color: #eee;padding: 20px 20px;margin-left: 2%;">server {
+	listen   80; 
+	## Your website name goes here.
+	server_name '.$this->fullDomainName.';
+	root '.$path.';
+	index index.php;
+	...
+	<b style="color: red;font-weight: 900;"><i>location / {
+		...
+	}</i></b>
+	...
+}</pre>
+							</li>
+							
+							<li>
+								<h6 style="font-weight: 900;font-size: 100%;margin-bottom: 6px;"><b><u>'.__('Step 2',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u></b> : '.__('Add <i style="color: blue;font-weight: 900;">blue line below</i> into your config "<i>server {...}</i>" block (at file .conf)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' :</h6>
+<pre style="background-color: #eee;padding: 20px 20px;margin-left: 2%;">server {
+	listen   80; 
+	## Your website name goes here.
+	server_name '.$this->fullDomainName.';
+	root '.$path.';
+	index index.php;
+	...
+	<b style="color: blue;font-weight: 900;"><i>include '.$pathFileConfig.';</i></b>
+	...
+}</pre>
+							</li>
+							
+							<li>
+								<h6 style="font-weight: 900;font-size: 100%;margin-bottom: 6px;"><b><u>'.__('Step 3',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</u></b> : '.__('Restart your Nginx through SSH command',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).' : </h6>
+<pre style="background-color: #eee;padding: 20px 20px;margin-left: 2%;"># sudo service nginx restart</pre>
+							</li>
+						</ul>
+					</div>
+				</div>
+				';
+			}
 			
 		}
 		
@@ -126,9 +184,14 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 	
 	public function optimize_speed_fix_javascript_code($input_data) 
 	{
-		
+		/*
 		$patterns = array(
 			'#'.PepVN_Data::preg_quote('document.open();document.write("<img id=\"wpstats\" src=\""+u+"\" alt=\"\" />");document.close();').'#is' => 'wpOptimizeByxtraffic_appendHtml(document.getElementsByTagName("body")[0],"<img id=\"wpstats\" src=\""+u+"\" alt=\"\" />");'
+		);
+		*/
+		
+		$patterns = array(
+			'#document.write\((\'|\")(.+)\1\)#is' => 'wpOptimizeByxtraffic_appendHtml(document.getElementsByTagName("body")[0],$1$2$1)' 
 		);
 		
 		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
@@ -213,10 +276,10 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			$input_parameters['url'] = PepVN_Data::removeProtocolUrl($input_parameters['url']);
 			
 			if(!isset($input_parameters['id'])) {
-				$input_parameters['id'] = md5($input_parameters['url']);
+				$input_parameters['id'] = PepVN_Data::mcrc32($input_parameters['url']);
 			}
 			
-			$jsLoaderId = md5($input_parameters['id'].'_js_loader');
+			$jsLoaderId = PepVN_Data::mcrc32($input_parameters['id'].'_js_loader');
 			
 			if(!isset($input_parameters['media'])) {
 				$input_parameters['media'] = 'all';
@@ -280,8 +343,9 @@ setTimeout(function() {
 			} else if('js_data' === $input_parameters['load_by']) {
 				
 				
+				//wpOptimizeByxTraffic_JsLoaderFilesData	//wpOptimizeByxTraffic_JsLoaderData
 				
-				$resultData = ' <script language="javascript" type="text/javascript" id="'.$jsLoaderId.'" > (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderFilesData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderFilesData = []; } e.wpOptimizeByxTraffic_JsLoaderFilesData.push({ 
+				$resultData = ' <script language="javascript" type="text/javascript" id="'.$jsLoaderId.'" > (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderData = []; } e.wpOptimizeByxTraffic_JsLoaderData.push({ 
 "pepvn_data_loader_id" : "'.$jsLoaderId.'"
 ,"pepvn_data_append_to" : "'.$input_parameters['append_to'].'"
 ,"pepvn_data_src" : "'.($input_parameters['url']).'"
@@ -304,12 +368,6 @@ setTimeout(function() {
 		
 		$checkStatus1 = true;
 		
-		$rsTemp = $this->optimize_speed_check_system_ready();
-		if(in_array(30,$rsTemp['notice']['error_no'])) {
-			$checkStatus1 = false; 
-		}
-		
-		
 		if($checkStatus1) {
 			if ( is_feed() ) {
 				$checkStatus1 = false;
@@ -322,13 +380,16 @@ setTimeout(function() {
 			}
 		}
 		
-		
+		if($checkStatus1) {
+			$rsTemp = $this->optimize_speed_check_system_ready();
+			if(in_array(30,$rsTemp['notice']['error_no'])) {
+				$checkStatus1 = false; 
+			}
+		}
 		
 		if(!$checkStatus1) {
 			return $text;
 		}
-		
-		
 		
 		
 		
@@ -344,7 +405,12 @@ setTimeout(function() {
 		$processHtmlStatus = false;
 		
 		if('on' == $options['optimize_speed_optimize_javascript_enable']) {
-			if('on' == $options['optimize_speed_optimize_javascript_combine_javascript_enable']) {
+			
+			if(
+				('on' == $options['optimize_speed_optimize_javascript_combine_javascript_enable'])
+				|| ('on' == $options['optimize_speed_optimize_javascript_minify_javascript_enable'])
+				|| ('on' == $options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable'])
+			) {
 				$processJavascriptStatus = true;
 			}
 		}
@@ -360,9 +426,6 @@ setTimeout(function() {
 			}
 		}
 		
-		
-		
-	
 		if('on' == $options['optimize_speed_optimize_html_enable']) {
 			if('on' == $options['optimize_speed_optimize_html_minify_html_enable']) {
 				$processHtmlStatus = true;
@@ -430,7 +493,7 @@ setTimeout(function() {
 		
 		
 		$fullDomainName = $this->fullDomainName;
-		$fullDomainNamePregQuote = PepVN_Data::preg_quote($fullDomainName);
+		$fullDomainNamePregQuote = PepVN_Data::preg_quote($fullDomainName); 
 		
 		
 		
@@ -456,13 +519,111 @@ setTimeout(function() {
 		
 		
 			
-			$combineJavascriptsStatus = true;
+			$combineJavascriptsStatus = false;
+			if(isset($options['optimize_speed_optimize_javascript_combine_javascript_enable']) && ($options['optimize_speed_optimize_javascript_combine_javascript_enable'])) {	
+				$combineJavascriptsStatus = true;
+			}
+			
 			
 			$rsGetAllJavascripts = $this->optimize_speed_get_all_javascripts($text);
 			
 			if(!PepVN_Data::isEmptyArray($rsGetAllJavascripts)) {
 			
 				$arrayDataTextNeedReplace = array();
+				
+				$rsGetAllJavascripts1 = array();
+				foreach($rsGetAllJavascripts as $key1 => $value1) {
+					
+					$checkStatus2 = false;
+					if($value1) {
+						$checkStatus2 = true;
+						if(preg_match('#type=(\'|")([^"\']+)\1#i',$value1,$matched2)) {
+							if(isset($matched2[2]) && $matched2[2]) {
+								$matched2[2] = trim($matched2[2]);
+								if($matched2[2]) {
+									$checkStatus2 = false;
+									if(false !== stripos($matched2[2],'javascript')) {
+										$checkStatus2 = true;
+									}
+								}
+							}
+						}
+					}
+					
+					
+					if($checkStatus2) {
+						
+						if(preg_match('#<script[^><]*?src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+						
+							if(isset($matched2[2]) && $matched2[2]) {
+								
+								$matched2[2] = trim($matched2[2]);
+								
+								$isProcessStatus1 = true;
+								
+								if($patternJavascriptExcludeUrl) {
+									if(preg_match('#('.$patternJavascriptExcludeUrl.')#i',$matched2[2],$matched3)) {
+										$isProcessStatus1 = false;
+									}
+								}
+								
+								
+								
+								if(isset($options['optimize_speed_optimize_javascript_exclude_external_javascript_enable']) && $options['optimize_speed_optimize_javascript_exclude_external_javascript_enable']) {
+									
+									//if(!preg_match('#^(https?:)?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
+									if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
+										
+										$isProcessStatus1 = false;
+									}
+								}
+								
+								if($isProcessStatus1) {
+									$rsGetAllJavascripts1[$key1] = $value1;
+								}
+							}
+						} else if(preg_match('/<script[^><]*>(.*?)<\/script>/is',$value1,$matched2)) {
+						
+							if(isset($matched2[1]) && $matched2[1]) {
+								$matched2[1] = trim($matched2[1]);
+								if($matched2[1]) {
+									if(preg_match('#\s*?st_go\(\{.+#is',$matched2[1],$matched3)) { 
+									
+									} else {
+										
+										if(isset($options['optimize_speed_optimize_javascript_combine_javascript_enable']) && ($options['optimize_speed_optimize_javascript_combine_javascript_enable'])) {	
+											if(isset($options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) && ($options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable'])) {
+												$matched2[1] = PepVN_Data::minifyJavascript($this->optimize_speed_fix_javascript_code($matched2[1]));
+												$arrayDataTextNeedReplace[$value1] = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
+													'url' => '|__ecv__|'.PepVN_Data::encodeVar($matched2[1])//base64_encode($matched2[1])
+													,'load_by' => 'js_data'//js_data,div_tag
+													,'file_type' => 'js'
+												));
+											} else {
+												$rsGetAllJavascripts1[$key1] = $value1;
+											}
+											
+										} else {
+											if(isset($options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) && ($options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable'])) {
+											} else {
+												$rsGetAllJavascripts1[$key1] = $value1;
+											}
+										}
+									}
+								
+								}
+							}
+							
+							
+						}
+					}
+				}
+				
+				$rsGetAllJavascripts = $rsGetAllJavascripts1; $rsGetAllJavascripts1 = 0;
+				
+				
+				
+				
 				
 				if(!$combineJavascriptsStatus) {
 					
@@ -483,96 +644,119 @@ setTimeout(function() {
 								}
 							}
 							
-							if($jsLink1) {
 							
-								$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
-									'url' => $jsLink1
-									,'load_by' => 'js_data'//js,js_data,div_tag
-									,'file_type' => 'js'
-								));
-								if($valueTemp) {
-									$arrayDataTextNeedReplace[$value1] = $valueTemp;
+							
+							
+							if($jsLink1) { 
+							
+								if(isset($options['optimize_speed_optimize_javascript_minify_javascript_enable']) && $options['optimize_speed_optimize_javascript_minify_javascript_enable']) {
+									
+									$keyCacheJsLink1 = PepVN_Data::createKey($jsLink1);
+									
+									$jsLink1FilesPath = false;
+									
+									$jsLink1FilesPath1 = $this->optimize_speed_UploadsStaticFilesFolderPath . $keyCacheJsLink1.'.js';
+									
+									if(file_exists($jsLink1FilesPath1)) {
+										if(filesize($jsLink1FilesPath1)>0) {
+											$jsLink1FilesPath = $jsLink1FilesPath1;
+										} else {
+											$filemtimeTemp1 = filemtime($jsLink1FilesPath1);
+											if($filemtimeTemp1) {
+												$filemtimeTemp1 = (int)$filemtimeTemp1;
+												if((time() - $filemtimeTemp1) <= (86400 * 1)) {
+													$jsLink1FilesPath1 = false;
+												} else {
+													unlink($jsLink1FilesPath1);
+												}
+											}
+										}
+										
+										
+									}
+									
+									
+									
+									if($jsLink1FilesPath1 && !$jsLink1FilesPath) {
+										if(PepVN_Data::is_writable($this->optimize_speed_UploadsStaticFilesFolderPath)) {
+											
+											file_put_contents($jsLink1FilesPath1,'');
+											
+											$jsLink1Temp = $jsLink1;
+											$protocol1 = 'http://';
+											$jsLink1Temp = PepVN_Data::removeProtocolUrl($jsLink1Temp);
+											
+											if(preg_match('#^https\://#i', $jsLink1)) {
+												$protocol1 = 'https://';
+											}
+											
+											$jsContent1 = $this->quickGetUrlContent($protocol1.$jsLink1Temp, array(
+												'cache_timeout' => $this->optimize_speed_getUrlContentCacheTimeout
+											));
+											
+											
+											if($jsContent1) {
+												$jsContent1 = trim($jsContent1);
+												if($jsContent1) {
+													
+													$jsContent1 = $this->optimize_speed_fix_javascript_code($jsContent1);
+													
+													$jsContent1 = PepVN_Data::minifyJavascript($jsContent1);
+													
+													$jsContent1 = ' try { '.$jsContent1.' } catch(err) { } ';
+													
+													@file_put_contents($jsLink1FilesPath1, $jsContent1);
+													
+													$jsLink1FilesPath = $jsLink1FilesPath1;
+													
+												}
+											}
+											
+										}
+									}
+									
+									if($jsLink1FilesPath) {
+										$jsLink1 = str_replace($this->optimize_speed_UploadsStaticFilesFolderPath,$this->optimize_speed_UploadsStaticFilesFolderUrl,$jsLink1FilesPath);
+										
+									}
+									
+									
+									
+								}//optimize_speed_optimize_javascript_minify_javascript_enable
+							}
+							
+							if($jsLink1) {
+								$jsLink1 = $this->optimize_speed_cdn_get_cdn_link($jsLink1);
+								$jsLink1 = PepVN_Data::removeProtocolUrl($jsLink1);
+								
+								$jsLink1 = trim($jsLink1);
+								
+								if($jsLink1) {
+								
+									if(isset($options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable']) && ($options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable'])) {
+									
+										$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
+											'url' => $jsLink1
+											,'load_by' => 'js_data'//js,js_data,div_tag
+											,'file_type' => 'js'
+										));
+										if($valueTemp) {
+											$arrayDataTextNeedReplace[$value1] = $valueTemp;
+										}
+										
+									} else {
+										$arrayDataTextNeedReplace[$value1] = ' <script language="javascript" type="text/javascript" src="//'.$jsLink1.'" ></script> ';
+									}
 								}
 								
 							}
 							
 						}
 					}
-					
 					
 					
 				} else {//enable combine js
 			
-					$rsGetAllJavascripts1 = array();
-					foreach($rsGetAllJavascripts as $key1 => $value1) {
-						
-						$checkStatus2 = false;
-						if($value1) {
-							$checkStatus2 = true;
-							if(preg_match('#type=(\'|")([^"\']+)\1#i',$value1,$matched2)) {
-								if(isset($matched2[2]) && $matched2[2]) {
-									$matched2[2] = trim($matched2[2]);
-									if($matched2[2]) {
-										$checkStatus2 = false;
-										if(false !== stripos($matched2[2],'javascript')) {
-											$checkStatus2 = true;
-										}
-									}
-								}
-							}
-						}
-						
-						
-						if($checkStatus2) {
-							
-							if(preg_match('#src=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
-							
-								if(isset($matched2[2]) && $matched2[2]) {
-									
-									$matched2[2] = trim($matched2[2]);
-									
-									$isProcessStatus1 = true;
-									
-									if($patternJavascriptExcludeUrl) {
-										if(preg_match('#('.$patternJavascriptExcludeUrl.')#i',$matched2[2],$matched3)) {
-											$isProcessStatus1 = false;
-										}
-									}
-									
-									
-									if('on' == $options['optimize_speed_optimize_javascript_exclude_external_javascript_enable']) {
-										
-										if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
-											
-											$isProcessStatus1 = false;
-										}
-									}
-									
-									if($isProcessStatus1) {
-										$rsGetAllJavascripts1[$key1] = $value1;
-									}
-								}
-							} else if(preg_match('/<script[^><]*>(.*?)<\/script>/is',$value1,$matched2)) {
-							
-								if('on' === $options['optimize_speed_optimize_javascript_exclude_inline_javascript_enable']) {
-									
-									if(isset($matched2[1]) && $matched2[1]) {
-										if(preg_match('#\s*?st_go\(\{.+#is',$matched2[1],$matched3)) { 
-										
-										} else {
-											$arrayDataTextNeedReplace[$value1] = ' <script language="javascript" type="text/javascript"> (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderInlinejsData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderInlinejsData = []; } e.wpOptimizeByxTraffic_JsLoaderInlinejsData.push({ "pepvn_data_src" : "'.(base64_encode($matched2[1])).'"	}); })(window); </script> ';
-										}
-									}
-								} else {
-									$rsGetAllJavascripts1[$key1] = $value1;
-								}
-								
-							}
-						}
-					}
-					
-					$rsGetAllJavascripts = $rsGetAllJavascripts1; $rsGetAllJavascripts1 = false;
-					
 					
 					$keyCacheAllJavascripts = PepVN_Data::createKey($rsGetAllJavascripts);
 					
@@ -603,7 +787,7 @@ setTimeout(function() {
 					if($combinedAllJavascriptsFilesPath1 && !$combinedAllJavascriptsFilesPath) {
 						if(PepVN_Data::is_writable($this->optimize_speed_UploadsStaticFilesFolderPath)) {
 							
-							file_put_contents($combinedAllJavascriptsFilesPath1,'');
+							@file_put_contents($combinedAllJavascriptsFilesPath1,'');
 							
 							$combinedAllJavascriptsFilesContents = '';
 							
@@ -671,11 +855,13 @@ setTimeout(function() {
 								
 								if('' !== $jsContent1) {
 									
+									$jsContent1 = $this->optimize_speed_fix_javascript_code($jsContent1);
+									
 									$arrayDataTextNeedReplace[$value1] = '';
 									
-									if('on' == $options['optimize_speed_optimize_javascript_minify_javascript_enable']) {
+									if(isset($options['optimize_speed_optimize_javascript_minify_javascript_enable']) && $options['optimize_speed_optimize_javascript_minify_javascript_enable']) {
 										
-										
+										/*
 										$rsOne = PepVN_Data::escapeByPattern($jsContent1,array(
 											'pattern' => '#[\+\-]+[ \t\s]+[\+\-]+#is'
 											,'target_patterns' => array(
@@ -684,22 +870,26 @@ setTimeout(function() {
 											,'wrap_target_patterns' => '+'
 										));
 										
+										
 										$pepVN_JavaScriptPacker = false;$pepVN_JavaScriptPacker = new PepVN_JavaScriptPacker($rsOne['content'], 'Normal', true, false);
 										$rsOne['content'] = $pepVN_JavaScriptPacker->pack();unset($pepVN_JavaScriptPacker);$pepVN_JavaScriptPacker=false;
+										
 										
 										if(!PepVN_Data::isEmptyArray($rsOne['patterns'])) {
 											$rsOne['content'] = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$rsOne['content']);
 										}
 										
 										$jsContent1 = $rsOne['content']; $rsOne = false;
+										//*/ 
+										
+										$jsContent1 = PepVN_Data::minifyJavascript($jsContent1);
+										
 										
 										
 									}
 									
-									$jsContent1 = $this->optimize_speed_fix_javascript_code($jsContent1);
-									
 									$jsContent1 = ' try { '.$jsContent1.' } catch(err) { } ';
-																		
+									
 									$combinedAllJavascriptsFilesContents .= PHP_EOL . ' ' . $jsContent1;
 									
 									
@@ -715,7 +905,7 @@ setTimeout(function() {
 							
 							if(!$breakProcessStatus1) {
 								$combinedAllJavascriptsFilesContents = trim($combinedAllJavascriptsFilesContents);
-								file_put_contents($combinedAllJavascriptsFilesPath1, $combinedAllJavascriptsFilesContents);
+								@file_put_contents($combinedAllJavascriptsFilesPath1, $combinedAllJavascriptsFilesContents);
 								$combinedAllJavascriptsFilesPath = $combinedAllJavascriptsFilesPath1;
 							}
 							
@@ -734,11 +924,13 @@ setTimeout(function() {
 						
 						$combinedAllJavascriptsFilesUrl = str_replace($this->optimize_speed_UploadsStaticFilesFolderPath,$this->optimize_speed_UploadsStaticFilesFolderUrl,$combinedAllJavascriptsFilesPath);
 						
+						$combinedAllJavascriptsFilesUrl = $this->optimize_speed_cdn_get_cdn_link($combinedAllJavascriptsFilesUrl);
+						
 						$combinedAllJavascriptsFilesUrl = PepVN_Data::removeProtocolUrl($combinedAllJavascriptsFilesUrl);
 						
 						$combinedAllJavascriptsFilesUrl = trim($combinedAllJavascriptsFilesUrl);
 												
-						if('on' == $options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable']) {
+						if(isset($options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable']) && ($options['optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable'])) {
 							
 							$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 								'url' => $combinedAllJavascriptsFilesUrl
@@ -798,7 +990,7 @@ setTimeout(function() {
 			
 			if(!PepVN_Data::isEmptyArray($rsGetAllCss)) {
 				
-				if(!$combineCssStatus) {
+				if(!$combineCssStatus) {	//combineCssStatus:false
 					
 					$arrayDataTextNeedReplace = array();
 					
@@ -821,9 +1013,11 @@ setTimeout(function() {
 									}
 									
 									
-									if('on' == $options['optimize_speed_optimize_css_exclude_external_css_enable']) {
+									
+									if(isset($options['optimize_speed_optimize_css_exclude_external_css_enable']) && ($options['optimize_speed_optimize_css_exclude_external_css_enable'])) {
 										
-										if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
+										//if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
+										if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
 											$isProcessStatus1 = false;
 										}
 									}
@@ -834,7 +1028,23 @@ setTimeout(function() {
 									
 									
 								}
+							} 
+							
+							/*
+							else if(preg_match('/(<style[^><]*?>)(.*?)<\/style>/is',$value1,$matched2)) {
+								
+								if(isset($matched2[2]) && $matched2[2]) {
+									if(!$options['optimize_speed_optimize_css_exclude_inline_css_enable']) {
+										if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
+											$arrayDataTextNeedReplace[$value1] = $matched2[1].PepVN_Data::minifyCss($matched2[2]).'</style>';
+										}
+										
+									}
+								}
+								
+								
 							}
+							*/
 							
 							if($cssLink1) {
 								
@@ -850,7 +1060,7 @@ setTimeout(function() {
 								
 								
 								
-								if('on' == $options['optimize_speed_optimize_css_minify_css_enable']) {
+								if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
 									
 									$keyCacheCssFile1 = PepVN_Data::createKey(array(
 										__METHOD__
@@ -881,7 +1091,7 @@ setTimeout(function() {
 									
 									if($cssFilePath2 && !$cssFilePath1) {
 										if(PepVN_Data::is_writable($this->optimize_speed_UploadsStaticFilesFolderPath)) {
-											file_put_contents($cssFilePath2,'');
+											@file_put_contents($cssFilePath2,'');
 											
 											
 											$cssLinkTemp1 = $cssLink1;
@@ -898,7 +1108,8 @@ setTimeout(function() {
 												
 													$pepVN_CSSFixer = false;
 													$pepVN_CSSFixer = new PepVN_CSSFixer();
-													if('on' == $options['optimize_speed_optimize_css_minify_css_enable']) {
+													
+													if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
 														$valueTemp = $pepVN_CSSFixer->fix(array(
 															'css_content' => $cssContent1
 															,'css_url' => $cssLinkTemp1
@@ -915,7 +1126,7 @@ setTimeout(function() {
 														$cssContent1 = $valueTemp;
 													}
 													
-													file_put_contents($cssFilePath2,$cssContent1);
+													@file_put_contents($cssFilePath2,$cssContent1);
 													
 													$cssFilePath1 = $cssFilePath2;
 													
@@ -936,9 +1147,12 @@ setTimeout(function() {
 									
 								}
 								
+								if($cssLink1) {
+									$cssLink1 = $this->optimize_speed_cdn_get_cdn_link($cssLink1);
+									$cssLink1 = PepVN_Data::removeProtocolUrl($cssLink1);
+								}
 								
-								
-								if('on' == $options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) {
+								if(isset($options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) && ($options['optimize_speed_optimize_css_asynchronous_css_loading_enable'])) {
 									$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 										'url' => $cssLink1
 										,'load_by' => 'js_data'//js_data,div_tag
@@ -950,7 +1164,7 @@ setTimeout(function() {
 									}
 								} else {
 									
-									$arrayDataTextNeedReplace[$value1] = ' <link href="'.$cssLink1.'" media="'.$mediaType1.'" rel="stylesheet" type="text/css" /> ';
+									$arrayDataTextNeedReplace[$value1] = ' <link href="//'.$cssLink1.'" media="'.$mediaType1.'" rel="stylesheet" type="text/css" /> ';
 									
 								}
 								
@@ -964,7 +1178,7 @@ setTimeout(function() {
 					}
 				
 				
-				} else {
+				} else {//combineCssStatus:true
 					
 					$breakProcessStatus1 = false;
 					
@@ -983,7 +1197,7 @@ setTimeout(function() {
 							$cssContent1 = '';
 					
 					
-							if(preg_match('#href=(\'|")((https?:)?//[^"\']+)\1#i',$value1,$matched2)) {
+							if(preg_match('#href=(\'|")((https?)?:?//[^"\']+)\1#i',$value1,$matched2)) {
 								
 								if(isset($matched2[2]) && $matched2[2]) {
 									$matched2[2] = trim($matched2[2]);
@@ -1010,9 +1224,11 @@ setTimeout(function() {
 									}
 									
 									
-									if('on' == $options['optimize_speed_optimize_css_exclude_external_css_enable']) {
+									
+									if(isset($options['optimize_speed_optimize_css_exclude_external_css_enable']) && ($options['optimize_speed_optimize_css_exclude_external_css_enable'])) {
 										
-										if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$cssContent1,$matched3)) {
+										//if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$cssContent1,$matched3)) {
+										if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$cssContent1,$matched3)) {
 											$isProcessStatus1 = false;
 										}
 									}
@@ -1119,9 +1335,8 @@ setTimeout(function() {
 							
 							if($combinedAllCssFilesPath1 && !$combinedAllCssFilesPath) {
 								if(PepVN_Data::is_writable($this->optimize_speed_UploadsStaticFilesFolderPath)) {
-									file_put_contents($combinedAllCssFilesPath1,'');
+									@file_put_contents($combinedAllCssFilesPath1,'');
 									
-											
 									$combinedAllCssFilesContents = '';
 									
 									$breakProcessStatus1 = false;
@@ -1151,7 +1366,7 @@ setTimeout(function() {
 													}
 													
 													
-													$cssContent2 .= PHP_EOL . ' ' .$cssContent3;
+													$cssContent2 .= PHP_EOL . ' ' .$cssContent3 . ' '.PHP_EOL;
 													
 													
 												} else {
@@ -1160,23 +1375,24 @@ setTimeout(function() {
 													break;
 												}
 											} else {
-												$cssContent2 .= PHP_EOL . ' ' .$value2;
+												$cssContent2 .= PHP_EOL . ' ' . $value2 . ' '.PHP_EOL;
 											}
 											
 											
 											$cssContent2 = trim($cssContent2);
 											if($cssContent2) {
-												$combinedAllCssFilesContents .= $cssContent2;
+												$combinedAllCssFilesContents .= PHP_EOL . ' ' . $cssContent2 . ' '.PHP_EOL;
 											}
 										}
 									}
 									
 									if(!$breakProcessStatus1) {
-										if('on' == $options['optimize_speed_optimize_css_minify_css_enable']) {
+										
+										if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
 											$combinedAllCssFilesContents = PepVN_Data::minifyCss($combinedAllCssFilesContents);
 										}
 										$combinedAllCssFilesContents = trim($combinedAllCssFilesContents);
-										file_put_contents($combinedAllCssFilesPath1, $combinedAllCssFilesContents);
+										@file_put_contents($combinedAllCssFilesPath1, $combinedAllCssFilesContents);
 										$combinedAllCssFilesPath = $combinedAllCssFilesPath1;
 									} else {
 										$breakProcessStatus = true;
@@ -1196,10 +1412,13 @@ setTimeout(function() {
 								
 								$combinedAllCssFilesUrl = str_replace($this->optimize_speed_UploadsStaticFilesFolderPath,$this->optimize_speed_UploadsStaticFilesFolderUrl,$combinedAllCssFilesPath);
 								
+								
+								$combinedAllCssFilesUrl = $this->optimize_speed_cdn_get_cdn_link($combinedAllCssFilesUrl);
+								
 								$combinedAllCssFilesUrl = PepVN_Data::removeProtocolUrl($combinedAllCssFilesUrl);
 								$combinedAllCssFilesUrl = trim($combinedAllCssFilesUrl);
 								
-								if('on' == $options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) {
+								if(isset($options['optimize_speed_optimize_css_asynchronous_css_loading_enable']) && ($options['optimize_speed_optimize_css_asynchronous_css_loading_enable'])) {
 									$valueTemp = $this->optimize_speed_parse_load_html_scripts_by_tag(array(
 										'url' => $combinedAllCssFilesUrl
 										,'load_by' => 'js_data'//js_data,div_tag
@@ -1245,7 +1464,7 @@ setTimeout(function() {
 		$jsUrl = WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL;
 		$jsUrl = PepVN_Data::removeProtocolUrl($jsUrl);
 		$jsUrl .= 'js/optimize_speed_by_xtraffic.min.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION; 
-		//$jsUrl .= 'js/optimize_speed_by_xtraffic.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION . time();//test
+		//$jsUrl .= 'js/optimize_speed_by_xtraffic.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION . time();//test 
 		$jsId = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-optimize-speed';
 		$jsLoaderId = $jsId.'-js-loader'; 
 		
@@ -1253,7 +1472,7 @@ setTimeout(function() {
 /*<![CDATA[*/
 setTimeout(function() {
 (function(e) { var t, n, r, s, i = "'.$jsId.'"; if(e.getElementById(i)) { return 0; } t = document.location.protocol; if(-1 !== t.indexOf("https")) { n = "https:"; } else { n = "http:"; } r = e.createElement("script"); r.setAttribute("data-cfasync","false"); r.id = i; r.setAttribute("language","javascript"); r.setAttribute("type","text/javascript"); r.async = true; r.src = n + "//'.$jsUrl.'"; s = e.getElementById("'.$jsLoaderId.'"); s.parentNode.insertBefore(r, s); s.parentNode.removeChild(s); })(document);
-}, 10);
+}, 20);
 /*]]>*/
 </script>';
 		$textAppendToBody .= ' '.$jsLoadString;
@@ -1270,7 +1489,8 @@ setTimeout(function() {
 		}
 		
 		if($processHtmlStatus) {
-			if('on' == $options['optimize_speed_optimize_html_minify_html_enable']) {
+			
+			if(isset($options['optimize_speed_optimize_html_minify_html_enable']) && ($options['optimize_speed_optimize_html_minify_html_enable'])) {
 				$text = PepVN_Data::minifyHtml($text);
 			}
 			
@@ -1281,29 +1501,235 @@ setTimeout(function() {
 			$text = str_replace(array_values($patternsEscaped),array_keys($patternsEscaped),$text);
 		}
 		
-		
-		
-		$textAppendToEndBodyTagHtml = PHP_EOL . '<!-- '
-		. PHP_EOL . '+ This website has been optimized by plugin "WP Optimize By xTraffic".'
-		. PHP_EOL . '+ Served from : '.$this->fullDomainName.' @ '.date('Y-m-d H:i:s').' by "WP Optimize By xTraffic".'
-		//. PHP_EOL . '+ Page Caching using disk.'
-		//. PHP_EOL . '+ Processing time before use cache : '.number_format(microtime(true) - WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART, 10, '.', '').' seconds.'
-		. PHP_EOL . '+ Learn more here : http://wordpress.org/plugins/wp-optimize-by-xtraffic/ '
-		. PHP_EOL . ' -->';
-		
-		$text = PepVN_Data::appendTextToTagBodyOfHtml($textAppendToEndBodyTagHtml,$text);
-		
-		$text = trim($text);
-		
 		$this->cacheObj->set_cache($keyCacheProcessMain,$text);
 		
+		return $text;
+		
+	}
+	
+	
+	
+	public function optimize_speed_cdn_get_cdn_link($input_link) 
+	{
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
+		$checkStatus1 = false;
+		
+		if(isset($options['optimize_speed_cdn_enable']) && ($options['optimize_speed_cdn_enable'])) {
+			if(isset($options['optimize_speed_cdn_domain']) && ($options['optimize_speed_cdn_domain'])) {
+				$options['optimize_speed_cdn_domain'] = trim($options['optimize_speed_cdn_domain']);
+				if($options['optimize_speed_cdn_domain']) {
+					$checkStatus1 = true;
+				}
+			}
+		}
+		
+		
+		if($checkStatus1) {
+			
+			$keyCache1 = 'optimize_speed_cdn_get_cdn_link_optimize_speed_cdn_exclude_url_data';
+		
+			if(!isset($this->baseCacheData[$keyCache1])) {
+					
+				$optimize_speed_cdn_exclude_url = array();
+				
+				if(isset($options['optimize_speed_cdn_exclude_url']) && ($options['optimize_speed_cdn_exclude_url'])) {
+					$valueTemp = trim($options['optimize_speed_cdn_exclude_url']);
+					if($valueTemp) {
+						$valueTemp = PepVN_Data::explode(',',$valueTemp);
+						$valueTemp = PepVN_Data::cleanArray($valueTemp);
+						if(!PepVN_Data::isEmptyArray($valueTemp)) {
+							$optimize_speed_cdn_exclude_url = $valueTemp;
+							
+						}
+					}
+				}
+				
+				if(!PepVN_Data::isEmptyArray($optimize_speed_cdn_exclude_url)) {
+					$optimize_speed_cdn_exclude_url = array_unique($optimize_speed_cdn_exclude_url);
+					foreach($optimize_speed_cdn_exclude_url as $key1 => $value1) {
+						$optimize_speed_cdn_exclude_url[$key1] = PepVN_Data::preg_quote($value1);
+					}
+				} else {
+					$optimize_speed_cdn_exclude_url = false;
+				}
+				
+				$this->baseCacheData[$keyCache1] = $optimize_speed_cdn_exclude_url;
+			}
+			
+			$optimize_speed_cdn_exclude_url = $this->baseCacheData[$keyCache1];
+			
+			
+			$currentProtocol = 'http://';
+			if(PepVN_Data::is_ssl()) {
+				$currentProtocol = 'https://';
+			}
+			
+			
+			
+			$input_link1 = PepVN_Data::removeProtocolUrl($input_link);
+			if(preg_match('#^'.PepVN_Data::preg_quote($this->fullDomainName).'.+#i',$input_link1,$matched3)) {
+				
+				$checkStatus2 = true;
+	
+				if($optimize_speed_cdn_exclude_url) {
+					if(preg_match('#('.implode('|',$optimize_speed_cdn_exclude_url).')#i',$input_link1,$matched4)) {
+						$checkStatus2 = false;
+					}
+				}
+				
+				if($checkStatus2) {
+					return $currentProtocol.preg_replace('#^'.PepVN_Data::preg_quote($this->fullDomainName).'#i',$options['optimize_speed_cdn_domain'],$input_link1,1);
+				}
+				
+			}
+			
+			
+			
+			
+		}
+		
+		
+		return $input_link;
+	}
+	
+	
+	public function optimize_speed_cdn_process_html_pages($text) 
+	{
+		
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
+		
+		$checkStatus1 = true; 
+				
+		if($checkStatus1) {
+			if ( is_feed() ) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		if($checkStatus1) {
+			if ( is_admin() ) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		
+		
+		if($checkStatus1) {
+			$checkStatus1 = false;
+			
+			if(isset($options['optimize_speed_cdn_enable']) && ($options['optimize_speed_cdn_enable'])) {
+				if(isset($options['optimize_speed_cdn_domain']) && ($options['optimize_speed_cdn_domain'])) {
+					$options['optimize_speed_cdn_domain'] = trim($options['optimize_speed_cdn_domain']);
+					if($options['optimize_speed_cdn_domain']) {
+						$checkStatus1 = true;
+					}
+				}
+			}
+		}
+		
+		
+		if(!$checkStatus1) {
+			return $text;
+		}
+		
+		
+		
+		$keyCacheProcessMain = array(
+			__METHOD__
+			,$text
+			,'process_main'
+		);
+		
+		$keyCacheProcessMain = PepVN_Data::createKey($keyCacheProcessMain);
+		
+		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessMain); 
+		
+		if($valueTemp) {
+			return $valueTemp;
+		}
+		
+		
+		$allTargetElements = array();
+		$arrayDataTextNeedReplace = array();
+		
+		preg_match_all('#<script[^><]+src=[^><]+/?>.*?(</\1>)?#is',$text,$matched1);
+		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+			$allTargetElements = array_merge($allTargetElements, $matched1[0]);
+		}
+		
+		
+		
+		preg_match_all('#<img[^><]+src=[^><]+/?>#is',$text,$matched1);
+		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+			$allTargetElements = array_merge($allTargetElements, $matched1[0]);
+		}
+		
+		
+		
+		preg_match_all('#<link[^><]+href=[^><]+/?>.*?(</\1>)?#is',$text,$matched1);
+		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+			
+			foreach($matched1[0] as $key1 => $value1) {
+				if($value1) {
+					if(preg_match('#(rel|type)=(\'|\")(stylesheet|text/css)#is',$value1,$matched2)) {
+						$allTargetElements[] = $value1;
+					}
+				}
+			}
+		}
+		
+		$allTargetElements = array_unique($allTargetElements);
+		
+		if(!PepVN_Data::isEmptyArray($allTargetElements)) {
+			
+			foreach($allTargetElements as $key1 => $value1) {
+				
+				$checkStatus2 = false;
+				
+				if($value1) {
+				
+					if(preg_match('#(href|src)=(\'|")((https?:)?//[^"\']+)\2#i',$value1,$matched2)) {
+						
+						if(isset($matched2[3]) && $matched2[3]) {
+							$matched2[3] = trim($matched2[3]);
+							if($matched2[3]) {
+								$valueTemp1 = $matched2[3];
+								$valueTemp2 = $this->optimize_speed_cdn_get_cdn_link($valueTemp1);
+								$valueTemp1 = PepVN_Data::removeProtocolUrl($valueTemp1);
+								$valueTemp2 = PepVN_Data::removeProtocolUrl($valueTemp2);
+								if($valueTemp1 !== $valueTemp2) {
+									$arrayDataTextNeedReplace[$value1] = str_replace($valueTemp1,$valueTemp2,$value1);
+								}
+								
+							}
+						}
+					}
+				}
+				
+			}
+		}
+		
+		if(!PepVN_Data::isEmptyArray($arrayDataTextNeedReplace)) {
+			$text = str_replace(array_keys($arrayDataTextNeedReplace),array_values($arrayDataTextNeedReplace),$text);
+		}
+		$arrayDataTextNeedReplace = array();
+		
+		$text = trim($text); 
+		
+		$this->cacheObj->set_cache($keyCacheProcessMain,$text); 
 		
 		
 		
 		return $text;
 		
+		
 	}
-
+	
 	
 	
 	
@@ -1379,120 +1805,102 @@ setTimeout(function() {
 	
 	
 	
-	public function optimize_speed_optimize_cache_isCacheable()
+	public function optimize_speed_optimize_cache_isCacheable($options)
 	{
 		
+		global $wpOptimizeByxTraffic_AdvancedCache;
 		
-		$keyCache1 = array(
-			__METHOD__
-			,'optimize_speed_optimize_cache_isCacheable'
-		);
+		$isCacheStatus = false;
 		
-		$keyCache1 = PepVN_Data::createKey($keyCache1);
+		if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
+			$isCacheStatus = true;
+		}
 		
-		$rsCache = $this->cacheObj->get_cache($keyCache1); 
-		
-		if(!$rsCache) {
-			
-			$rsCache = array();
-			
-			$options = $this->get_options(array(
-				'cache_status' => 1
-			));
-			
-			$isCacheStatus = false;
-			
-			if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
-				$isCacheStatus = true;
+		if($isCacheStatus) {
+			if(!$wpOptimizeByxTraffic_AdvancedCache->optimize_cache_isCacheable($options)) {
+				$isCacheStatus = false;
 			}
-			
-			if($isCacheStatus) {
-				if ( $this->base_is_admin() ) {
+		}
+		
+		
+		if($isCacheStatus) {
+			if ( $this->base_is_admin() ) {
+				$isCacheStatus = false;
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			if(is_single() || is_page() || is_singular() || is_feed()) {
+			} else {
+				
+				if(isset($options['optimize_speed_optimize_cache_front_page_cache_enable']) && $options['optimize_speed_optimize_cache_front_page_cache_enable']) {
+				
+				} else {
 					$isCacheStatus = false;
 				}
-			}
-			
-			if($isCacheStatus) {
-				if(is_single() || is_page() || is_singular() || is_feed()) {
-				} else {
-					
-					if(isset($options['optimize_speed_optimize_cache_front_page_cache_enable']) && $options['optimize_speed_optimize_cache_front_page_cache_enable']) {
-					
-					} else {
-						$isCacheStatus = false;
-					}
-					
-				}
 				
 			}
-			
-			if($isCacheStatus) {
-				if(isset($options['optimize_speed_optimize_cache_feed_page_cache_enable']) && $options['optimize_speed_optimize_cache_feed_page_cache_enable']) {
-				
-				} else {
-					if(is_feed()) {
-						$isCacheStatus = false; 
-					}
-				}
-			}
-			
-			
-			if($isCacheStatus) {
-				if(isset($options['optimize_speed_optimize_cache_ssl_request_cache_enable']) && $options['optimize_speed_optimize_cache_ssl_request_cache_enable']) {
-				
-				} else {
-					if(PepVN_Data::is_ssl()) {
-						$isCacheStatus = false; 
-					}
-				}
-			}
-			
-			
-			
-			if($isCacheStatus) {
-				if(isset($options['optimize_speed_optimize_cache_mobile_device_cache_enable']) && $options['optimize_speed_optimize_cache_mobile_device_cache_enable']) {
-				
-				} else {
-					if ( PepVN_Data::isMobileDevice() ) {
-						$isCacheStatus = false; 
-					}
-				}
-			}
-			
-			
-			
-			if($isCacheStatus) {
-				if(isset($options['optimize_speed_optimize_cache_url_get_query_cache_enable']) && $options['optimize_speed_optimize_cache_url_get_query_cache_enable']) {
-				
-				} else {
-					if ( preg_match('#.+\?+.*?#i', $this->urlFullRequest) ) {
-						$isCacheStatus = false; 
-					}
-				}
-			}
-			
-			
-			if($isCacheStatus) {
-				if(isset($options['optimize_speed_optimize_cache_logged_users_cache_enable']) && $options['optimize_speed_optimize_cache_logged_users_cache_enable']) {
-				
-				} else {
-					if($this->base_get_current_user_id() > 0) {
-						$isCacheStatus = false; 
-					}
-				}
-			}
-						
-			$rsCache['status'] = $isCacheStatus;
-			
-			$this->cacheObj->set_cache($keyCache1,$rsCache);
 			
 		}
 		
-		if($rsCache['status']) {
-			return true;
-		} else {
-			return false;
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_feed_page_cache_enable']) && $options['optimize_speed_optimize_cache_feed_page_cache_enable']) {
+			
+			} else {
+				if(is_feed()) {
+					$isCacheStatus = false; 
+				}
+			}
 		}
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_ssl_request_cache_enable']) && $options['optimize_speed_optimize_cache_ssl_request_cache_enable']) {
+			
+			} else {
+				if(PepVN_Data::is_ssl()) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_mobile_device_cache_enable']) && $options['optimize_speed_optimize_cache_mobile_device_cache_enable']) {
+			
+			} else {
+				if ( PepVN_Data::isMobileDevice() ) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_url_get_query_cache_enable']) && $options['optimize_speed_optimize_cache_url_get_query_cache_enable']) {
+			
+			} else {
+				if ( preg_match('#.+\?+.*?#i', $this->urlFullRequest) ) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_logged_users_cache_enable']) && $options['optimize_speed_optimize_cache_logged_users_cache_enable']) {
+			
+			} else {
+				if($this->base_get_current_user_id() > 0) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		return $isCacheStatus;
 	}
 	
 	
@@ -1504,7 +1912,7 @@ setTimeout(function() {
 			'cache_status' => 1
 		));
 		
-		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
+		$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable($options);
 		
 		if($isCacheStatus) {
 			$isBrowserCacheStatus = false;
@@ -1564,7 +1972,11 @@ setTimeout(function() {
 		$input_parameters['content'] = trim($input_parameters['content']);
 		if($input_parameters['content']) {
 			
-			$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable();
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+			
+			$isCacheStatus = $this->optimize_speed_optimize_cache_isCacheable($options);
 			
 			if($isCacheStatus) {
 				
@@ -1572,7 +1984,10 @@ setTimeout(function() {
 				
 				PepVN_Data::$cacheSitePageObject->set_cache($filenamecache, $input_parameters['content']);
 				
-				$this->optimize_speed_optimize_cache_check_and_create_static_page_cache_for_server_software($input_parameters);
+				$this->optimize_speed_optimize_cache_check_and_create_static_page_cache_for_server_software(array(
+					'content' => $input_parameters['content']
+					,'force_write_status' => 1
+				));
 				
 			}
 		}
@@ -1581,120 +1996,11 @@ setTimeout(function() {
 	}
 	
 	
-	public function optimize_speed_optimize_cache_check_and_create_static_page_cache_for_server_software($input_parameters = false)
+	public function optimize_speed_optimize_cache_check_and_create_static_page_cache_for_server_software($input_parameters)
 	{
+		global $wpOptimizeByxTraffic_AdvancedCache;
+		$wpOptimizeByxTraffic_AdvancedCache->optimize_cache_check_and_create_static_page_cache_for_server_software($input_parameters);
 		
-		$checkStatus1 = false;
-		
-		if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) {
-			$checkStatus1 = true;
-		}
-		
-		
-		if($checkStatus1) {	//no cache with GET query
-			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['parameters']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['parameters']) {
-				$checkStatus1 = false;
-			}
-		}
-		
-		if($checkStatus1) {
-			if($this->base_get_current_user_id() > 0) {	//no cache with user logged in
-				$checkStatus1 = false;
-			}
-		}
-		
-		if($checkStatus1) {
-			if ( PepVN_Data::isMobileDevice() ) {	//no cache with mobile
-				$checkStatus1 = false;
-			}
-		}
-		
-		if($checkStatus1) {
-			$checkStatus1 = false;
-			if(isset(PepVN_Data::$defaultParams['serverSoftware']) && PepVN_Data::$defaultParams['serverSoftware']) {
-				if(
-					('apache' === PepVN_Data::$defaultParams['serverSoftware'])
-					|| ('nginx' === PepVN_Data::$defaultParams['serverSoftware'])
-				) {
-					$checkStatus1 = true;
-				}
-			}
-		}
-		
-		
-		if($checkStatus1) {
-			$checkStatus1 = false;
-			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme']) {
-				if(
-					('http' === PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme'])
-					|| ('https' === PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme'])
-				) {
-					$checkStatus1 = true;
-				}
-			}
-		}
-		
-		
-		if($checkStatus1) {
-			
-			$folderPath1 = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH.'data/';
-			
-			if(!file_exists($folderPath1)) {
-				PepVN_Data::createFolder($folderPath1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
-			}
-			
-			$folderPathPlus = '';
-			$folderPathPlus .= PepVN_Data::$defaultParams['parseedUrlFullRequest']['host'] . '/';
-			
-			$folderPathTemp = $folderPath1.$folderPathPlus;
-			if(!file_exists($folderPathTemp)) {
-				@mkdir($folderPathTemp);
-			}
-			
-			if(PepVN_Data::is_ssl()) {
-				$folderPathPlus .= 'https/';
-			} else {
-				$folderPathPlus .= 'http/';
-			}
-			
-			if ( PepVN_Data::isMobileDevice() ) {
-				$folderPathPlus .= 'mobile/';
-			} else {
-				$folderPathPlus .= 'pc/';
-			}
-			
-			
-			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['path'])) {
-				$folderPathPlus .= PepVN_Data::$defaultParams['parseedUrlFullRequest']['path'] . '/';
-			}
-			
-			$folderPathPlus = PepVN_Data::fixPath($folderPathPlus) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
-			
-			$folderPath2 = $folderPath1.$folderPathPlus;
-			
-			if(!file_exists($folderPath2)) {
-				PepVN_Data::createFolder($folderPath2, WPOPTIMIZEBYXTRAFFIC_CHMOD); 
-			}
-			
-			
-			
-			
-			if(PepVN_Data::is_writable($folderPath2)) {
-				
-				$filePath1 = $folderPath2.'index.html';
-				@file_put_contents($filePath1, $input_parameters['content']);
-				
-				
-				$filePath1 = $folderPath2.'index.html.gz';
-				$input_parameters['content'] = @gzencode( $input_parameters['content'], 2, FORCE_GZIP );
-				if($input_parameters['content']) {
-					@file_put_contents($filePath1,$input_parameters['content']);
-				}
-				
-				
-			}
-			
-		}
 	}
 	
 	
@@ -1744,11 +2050,13 @@ setTimeout(function() {
 			$options['optimize_speed_optimize_cache_cachetimeout'] = 3600;
 		}
 		
-		$timeoutRequest = 2;//seconds
+		$timeoutRequest = 30;//seconds
 		
-		$maxTimePrebuild = 180;//seconds
+		$maxTimePrebuild = 300;//seconds
 		
 		$staticVarData = PepVN_Data::staticVar_GetData();
+		$staticVarData = $this->base_StaticVar_SafeVarForCronjobs($staticVarData);
+		
 		
 		$groupUrlsStatistics = array();
 		
@@ -1758,13 +2066,7 @@ setTimeout(function() {
 			$groupUrlsStatistics = $staticVarData['statistics']['group_urls'];
 		}
 		
-		
-		
-		
-		
-		$maxNumberUrlsPrebuild = $maxTimePrebuild / ($timeoutRequest * 2);
-		$maxNumberUrlsPrebuild = ceil($maxNumberUrlsPrebuild);
-		
+		$maxNumberUrlsPrebuild = 9999;
 		
 		if(isset($staticVarData['time_init']) && $staticVarData['time_init']) {
 			
@@ -1793,6 +2095,7 @@ setTimeout(function() {
 			$maxNumberUrlsPrebuild = $options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'];
 		}
 		
+		$maxNumberUrlsPrebuild = (int)$maxNumberUrlsPrebuild;
 		
 		
 		if(count($groupUrlsStatistics)>0) {
@@ -1834,12 +2137,12 @@ setTimeout(function() {
 					,'redirection' => 1
 				));
 				$staticVarData['group_urls_prebuild_cache'][$value1] = time();
-				
+				PepVN_Data::staticVar_SetData($staticVarData);
 			}
 		}
 		
 		
-		PepVN_Data::staticVar_SetData($staticVarData);
+		PepVN_Data::staticVar_SetData($staticVarData); 
 		
 	}
 	
@@ -1942,6 +2245,22 @@ setTimeout(function() {
 		
 		
 		
+		
+		
+		//CDN Options
+		$optimize_speed_cdn_enable = $options['optimize_speed_cdn_enable'] == 'on' ? 'checked':''; 
+		$optimize_speed_cdn_domain = $options['optimize_speed_cdn_domain'];
+		$optimize_speed_cdn_exclude_url = $options['optimize_speed_cdn_exclude_url'];
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		$nonce = wp_create_nonce( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG );
 		
 		$classSystemReady = '';
@@ -1985,7 +2304,7 @@ setTimeout(function() {
 						<a href="#xtraffic_tabs_content2" class="">Optimize Javascript</a> 
 						<a href="#xtraffic_tabs_content3" class="">Optimize CSS</a>
 						<a href="#xtraffic_tabs_content4" class="">Optimize HTML</a>
-						
+						<a href="#xtraffic_tabs_content5" class="">CDN</a>
 					</div>
 					
 					
@@ -2044,21 +2363,21 @@ setTimeout(function() {
 								
 								<li>
 									
-									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_ssl_request_cache_enable" class="" ',$optimize_speed_optimize_cache_ssl_request_cache_enable,' /> &nbsp; ',__('Enable Cache SSL (https) Requests',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_ssl_request_cache_enable" class="" ',$optimize_speed_optimize_cache_ssl_request_cache_enable,' /> &nbsp; ',__('Enable Cache SSL (https) Requests',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
 									<p class="description"></p>
+									
+								</li> 
+								
+								<li style="margin-bottom: 3%;">
+									
+									<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_cache_mobile_device_cache_enable" class="" ',$optimize_speed_optimize_cache_mobile_device_cache_enable,' /> &nbsp; ',__('Enable Cache For Mobile Device',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description" style="color:red;">',__('Warning',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': ',__('Don\'t turn on this option if you use one of these plugins: WP Touch, WP Mobile Detector, wiziApp, and WordPress Mobile Pack.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 									
 								</li> 
 								
 								<li>
 									
-									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_mobile_device_cache_enable" class="" ',$optimize_speed_optimize_cache_mobile_device_cache_enable,' /> &nbsp; ',__('Enable Cache For Mobile Device',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
-									<p class="description"></p>
-									
-								</li> 
-								
-								<li>
-									
-									<h6 style=""><input type="checkbox" name="optimize_speed_optimize_cache_url_get_query_cache_enable" class="" ',$optimize_speed_optimize_cache_url_get_query_cache_enable,' /> &nbsp; ',__('Enable Cache URIs with GET query string variables',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<h6 style=""><input type="checkbox" name="optimize_speed_optimize_cache_url_get_query_cache_enable" class="" ',$optimize_speed_optimize_cache_url_get_query_cache_enable,' /> &nbsp; ',__('Enable Cache URIs with GET query string variables',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
 									<p class="description" style="margin-bottom: 3%;">',__('Ex : "/?s=query..." at the end of a url',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 									
 								</li> 
@@ -2067,7 +2386,7 @@ setTimeout(function() {
 								
 								<li>
 									
-									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_logged_users_cache_enable" class="" ',$optimize_speed_optimize_cache_logged_users_cache_enable,' /> &nbsp; ',__('Enable Cache For Logged Users',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_cache_logged_users_cache_enable" class="" ',$optimize_speed_optimize_cache_logged_users_cache_enable,' /> &nbsp; ',__('Enable Cache For Logged Users',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
 									<p class="description"></p>
 									
 								</li> 
@@ -2102,7 +2421,7 @@ setTimeout(function() {
 								
 								
 							</ul>						
-							<br />
+							<br /> 
 							
 						</div>
 						
@@ -2121,21 +2440,24 @@ setTimeout(function() {
 						
 						<ul>
 							
-							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container"  ',$optimize_speed_optimize_javascript_enable,' /> &nbsp; ',__('Enable Optimize Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+							<li style="margin-bottom: 3%;">
+								<h4 style="margin-bottom: 1%;"><input type="checkbox" name="optimize_speed_optimize_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container"  ',$optimize_speed_optimize_javascript_enable,' /> &nbsp; ',__('Enable Optimize Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+								<p class="description" style="color:red;">',__('Warning',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': ',__('This option will help your site load faster. However, in some cases, web layout will be error. If an error occurs, you should disable this option.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 							</li>
 							
 						</ul>
 						
 						<div style="margin-top: 0;" id="optimize_speed_optimize_javascript_container" class="wpoptimizebyxtraffic_show_hide_container">
+							
 							<ul>
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_combine_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container2"  ',$optimize_speed_optimize_javascript_combine_javascript_enable,' /> &nbsp; ',__('Enable Combine Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_combine_javascript_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_javascript_container2"  ',$optimize_speed_optimize_javascript_combine_javascript_enable,' /> &nbsp; ',__('Enable Combine Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
 									<p class="description"></p>
 									
 								</li> 
 								
+								<!--
 								<div style="margin-top: 0;" id="optimize_speed_optimize_javascript_container2" class="wpoptimizebyxtraffic_show_hide_container">
 									
 									<ul>
@@ -2146,37 +2468,45 @@ setTimeout(function() {
 											<p class="description"></p>
 											
 										</li>
-										
-										<li>
-										
-											<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable" class="" ',$optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable,' /> &nbsp; ',__('Enable Asynchronous Javascript Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
-											<p class="description"></p>
-											
-										</li>
-										
-										<li style="margin-bottom: 3%;">
-											
-											<h6 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_external_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_external_javascript_enable,' /> &nbsp; ',__('Exclude External Javascript File',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
-											<p class="description">',__('Plugin will ignore all external javascript files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Which not scripts in your self-hosted',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ). <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
-											
-										</li>
-										
-										<li style="margin-bottom: 3%;">
-											
-											<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_inline_javascript_enable,' /> &nbsp; ',__('Exclude Inline Javascript Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h6>
-											<p class="description">',__('Plugin will ignore all javascript code in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
-											
-										</li>
-										
-										<li>
-											<h6> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h6> 
-											<input type="text" name="optimize_speed_optimize_javascript_exclude_url" class="" value="',$optimize_speed_optimize_javascript_exclude_url,'" style="width: 50%;" /> &nbsp;  
-											<p class="description">',__('Plugin will ignore these javascript files urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
-										</li>
-										
 									</ul>
 									
 								</div>
+								-->
+								
+								<li>
+											
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_minify_javascript_enable" class="" ',$optimize_speed_optimize_javascript_minify_javascript_enable,' /> &nbsp; ',__('Enable Minify Javascript',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description"></p>
+									
+								</li>
+						
+								<li>
+								
+									<h6 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable" class="" ',$optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable,' /> &nbsp; ',__('Enable Asynchronous Javascript Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description"></p>
+									
+								</li>
+								
+								<li style="margin-bottom: 3%;">
+									
+									<h6 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_external_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_external_javascript_enable,' /> &nbsp; ',__('Exclude External Javascript File',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description">',__('Plugin will ignore all external javascript files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Which not scripts in your self-hosted',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ). <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
+									
+								</li>
+								
+								<li style="margin-bottom: 3%;">
+									
+									<h6 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_javascript_exclude_inline_javascript_enable" class="" ',$optimize_speed_optimize_javascript_exclude_inline_javascript_enable,' /> &nbsp; ',__('Exclude Inline Javascript Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6>
+									<p class="description">',__('Plugin will ignore all javascript code in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
+									
+								</li>
+								
+								<li>
+									<h6> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h6> 
+									<input type="text" name="optimize_speed_optimize_javascript_exclude_url" class="" value="',$optimize_speed_optimize_javascript_exclude_url,'" style="width: 50%;" /> &nbsp;  
+									<p class="description">',__('Plugin will ignore these javascript files urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+								</li>
+								
 								
 							</ul>						
 							<br />
@@ -2194,8 +2524,9 @@ setTimeout(function() {
 						
 						<ul>
 							
-							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_css_container"  ',$optimize_speed_optimize_css_enable,' /> &nbsp; ',__('Enable Optimize CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+							<li style="margin-bottom: 3%;">
+								<h4 style="margin-bottom: 1%;"><input type="checkbox" name="optimize_speed_optimize_css_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_css_container"  ',$optimize_speed_optimize_css_enable,' /> &nbsp; ',__('Enable Optimize CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+								<p class="description" style="color:red;">',__('Warning',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),': ',__('This option will help your site load faster. However, in some cases, web layout will be error. If an error occurs, you should disable this option.',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 							</li>
 							
 						</ul>
@@ -2204,7 +2535,7 @@ setTimeout(function() {
 							<ul>
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_combine_css_enable" class="" ',$optimize_speed_optimize_css_combine_css_enable,' /> &nbsp; ',__('Enable Combine CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_combine_css_enable" class="" ',$optimize_speed_optimize_css_combine_css_enable,' /> &nbsp; ',__('Enable Combine CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
 									<p class="description"></p>
 									
 								</li> 
@@ -2212,7 +2543,7 @@ setTimeout(function() {
 						
 								<li>
 									
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_minify_css_enable" class="" ',$optimize_speed_optimize_css_minify_css_enable,' /> &nbsp; ',__('Enable Minify CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_minify_css_enable" class="" ',$optimize_speed_optimize_css_minify_css_enable,' /> &nbsp; ',__('Enable Minify CSS',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
 									<p class="description"></p>
 									
 								</li>
@@ -2221,21 +2552,21 @@ setTimeout(function() {
 						
 								<li>
 								
-									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_asynchronous_css_loading_enable" class="" ',$optimize_speed_optimize_css_asynchronous_css_loading_enable,' /> &nbsp; ',__('Enable Asynchronous CSS Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h5 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_css_asynchronous_css_loading_enable" class="" ',$optimize_speed_optimize_css_asynchronous_css_loading_enable,' /> &nbsp; ',__('Enable Asynchronous CSS Loading',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
 									<p class="description"></p>
 									
 								</li>
 								
 								<li style="margin-bottom: 3%;">
 									
-									<h5 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_external_css_enable" class="" ',$optimize_speed_optimize_css_exclude_external_css_enable,' /> &nbsp; ',__('Exclude External CSS Files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h5 style="margin-bottom: 0;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_external_css_enable" class="" ',$optimize_speed_optimize_css_exclude_external_css_enable,' /> &nbsp; ',__('Exclude External CSS Files',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
 									<p class="description">',__('Plugin will ignore all external CSS files ( Which not CSS files in your self-hosted )',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 									
 								</li>
 								
 								<li style="margin-bottom: 3%;">
 									
-									<h5 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_inline_css_enable" class="" ',$optimize_speed_optimize_css_exclude_inline_css_enable,' /> &nbsp; ',__('Exclude Inline CSS Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' ( ',__('Not Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' )</h5>
+									<h5 style="margin-bottom: 0%;"><input type="checkbox" name="optimize_speed_optimize_css_exclude_inline_css_enable" class="" ',$optimize_speed_optimize_css_exclude_inline_css_enable,' /> &nbsp; ',__('Exclude Inline CSS Code',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h5>
 									<p class="description">',__('Plugin will ignore all style (wrap by &#x3C;style&#x3E;&#x3C;/style&#x3E;) in your html',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'. <i>',__('You should not enable this feature unless an error occurs',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</i></p>
 									
 								</li> 
@@ -2264,7 +2595,7 @@ setTimeout(function() {
 						<ul>
 							
 							<li>
-								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_html_container"  ',$optimize_speed_optimize_html_enable,' /> &nbsp; ',__('Enable Optimize HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_optimize_html_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_optimize_html_container"  ',$optimize_speed_optimize_html_enable,' /> &nbsp; ',__('Enable Optimize HTML',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Recommended',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h4>
 							</li>
 							
 						</ul>
@@ -2287,6 +2618,54 @@ setTimeout(function() {
 						</div>
 						
 					</div><!-- //xtraffic_tabs_contents -->
+					
+					
+					
+					
+					<div id="xtraffic_tabs_content5" class="xtraffic_tabs_contents">
+
+						<h3>CDN (Content Delivery Network)</h3>
+						
+						<ul>
+							
+							<li>
+								<h4 style="margin-bottom: 3%;"><input type="checkbox" name="optimize_speed_cdn_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_speed_cdn_container"  ',$optimize_speed_cdn_enable,' /> &nbsp; ',__('Enable CDN',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h4>
+							</li>
+							
+						</ul>
+						
+						<div style="margin-top: 0;" id="optimize_speed_cdn_container" class="wpoptimizebyxtraffic_show_hide_container">
+							<ul>
+								
+								<li style="margin-bottom: 3%;">
+									<h6> ',__('CNAME (CDN)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</h6> 
+									<input type="text" name="optimize_speed_cdn_domain" class="" value="',$optimize_speed_cdn_domain,'" style="width: 50%;" /> &nbsp;  
+									<p class="description"></p>
+								</li>
+								
+								<li style="margin-bottom: 3%;">
+									<h6> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h6> 
+									<input type="text" name="optimize_speed_cdn_exclude_url" class="" value="',$optimize_speed_cdn_exclude_url,'" style="width: 50%;" /> &nbsp;  
+									<p class="description">',__('Plugin will ignore these urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+								</li>
+								
+								
+								
+							</ul>						
+							<br />
+							
+						</div>
+						
+					</div><!-- //xtraffic_tabs_contents -->
+					
+					
+					
+					
+					
+					
+					
+					
+					
 					
 						
 					<div class="submit"><input type="submit" name="Submit" value="',__('Update Options',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'" class="button-primary" /></div>

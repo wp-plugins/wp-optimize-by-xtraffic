@@ -17,7 +17,7 @@ require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
 
 
 
-if ( !class_exists('WPOptimizeByxTraffic_AdvancedCache') ) : 
+if ( !class_exists('WPOptimizeByxTraffic_AdvancedCache') ) :  
 
 
 
@@ -61,6 +61,9 @@ class WPOptimizeByxTraffic_AdvancedCache
 		if(isset($_COOKIE) && $_COOKIE) {
 			if(is_array($_COOKIE)) {
 				foreach($_COOKIE as $keyOne => $valueOne) {
+					$keyOne = (string)$keyOne;
+					$valueOne = (string)$valueOne;
+					
 					$keyOne = trim($keyOne);
 					$valueOne = trim($valueOne);
 					
@@ -77,6 +80,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 		}
 		
 		return $userhash;
+		
 	}
 	
 	
@@ -101,6 +105,27 @@ class WPOptimizeByxTraffic_AdvancedCache
 	
 	
 	
+	public function optimize_cache_get_current_request_etag($filenamecache = 0,$rsGetFilemtime = 0)
+	{
+		if(!$filenamecache) {
+			$filenamecache = $this->optimize_cache_get_filenamecache_current_request();
+		}
+		
+		if(!$rsGetFilemtime) {
+			$rsGetFilemtime = PepVN_Data::$cacheSitePageObject->get_filemtime($filenamecache);
+		}
+		
+		if(0 == $rsGetFilemtime) {
+			$rsGetFilemtime = time();
+		}
+		
+		
+		$etag = $filenamecache.'?etag='.$rsGetFilemtime;
+		$etag = md5($etag);
+		
+		return $etag;
+		
+	}
 	
 	public function optimize_cache_get_info_current_request($input_mode = 1)
 	{
@@ -126,8 +151,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 				$rsGetFilemtime = time();
 			}
 			
-			$etag = $filenamecache.'?etag='.$rsGetFilemtime;
-			$etag = md5($etag);
+			$etag = $this->optimize_cache_get_current_request_etag($filenamecache, $rsGetFilemtime);
 			
 			
 			$contentType = '';
@@ -163,7 +187,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 		}
 		
 		header('X-Powered-By: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
-		header('Server: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true);
+		header('Server: '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION,true); 
 		
 		if(isset($input_parameters['content_type']) && $input_parameters['content_type']) {
 			header('Content-Type: '.$input_parameters['content_type'],true);
@@ -208,16 +232,272 @@ class WPOptimizeByxTraffic_AdvancedCache
 	
 	
 	
+	public function optimize_cache_isCacheable($options)
+	{
+	
+		$urlFullRequest = PepVN_Data::$defaultParams['urlFullRequest'];
+		$requestMethod = PepVN_Data::getRequestMethod();
+		$fullDomainName = PepVN_Data::$defaultParams['fullDomainName'];
+		
+		$isCacheStatus = false;
+		
+		if(isset($options['optimize_speed_optimize_cache_enable']) && $options['optimize_speed_optimize_cache_enable']) {
+			$isCacheStatus = true;
+		}
+		
+		
+		if($isCacheStatus) {
+			if($fullDomainName) {
+				if ( preg_match('#'.PepVN_Data::preg_quote($fullDomainName).'/(wp-admin|wp-content|wp-includes)/#i', $urlFullRequest) ) {
+					$isCacheStatus = false;
+				}
+			}
+		}
+		
+		if($isCacheStatus) {
+			if ( preg_match('#\.php#i', $urlFullRequest) ) {
+				$isCacheStatus = false;
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			if('get' !== $requestMethod) {
+				$isCacheStatus = false;
+			} else {
+				if(isset($_POST) && ($_POST)) {
+					if(is_array($_POST) && (count($_POST)>0)) {
+						$isCacheStatus = false;
+					}
+				}
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_url_get_query_cache_enable']) && $options['optimize_speed_optimize_cache_url_get_query_cache_enable']) {
+			
+			} else {
+				if ( preg_match('#.+\?+.*?#i', $urlFullRequest) ) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_ssl_request_cache_enable']) && $options['optimize_speed_optimize_cache_ssl_request_cache_enable']) {
+			
+			} else {
+				if(PepVN_Data::is_ssl()) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		
+		if($isCacheStatus) {
+			if(isset($options['optimize_speed_optimize_cache_mobile_device_cache_enable']) && $options['optimize_speed_optimize_cache_mobile_device_cache_enable']) {
+			
+			} else {
+				if ( PepVN_Data::isMobileDevice() ) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		if($isCacheStatus) {
+			
+			if(isset($options['optimize_speed_optimize_cache_logged_users_cache_enable']) && $options['optimize_speed_optimize_cache_logged_users_cache_enable']) {
+			
+			} else {
+				$userhash = $this->optimize_cache_get_userhash_current_request();
+				if($userhash) {
+					$isCacheStatus = false; 
+				}
+			}
+		}
+		
+		
+		return $isCacheStatus;
+		
+		
+	}
+	
+	
+	
+	
+	
+	public function optimize_cache_check_and_create_static_page_cache_for_server_software($input_parameters)
+	{
+		
+		$checkStatus1 = false;
+		
+		if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['host']) {
+			$checkStatus1 = true;
+		}
+		
+		
+		if($checkStatus1) {	//no cache with GET query
+			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['parameters']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['parameters']) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		if($checkStatus1) {
+			$userhash = $this->optimize_cache_get_userhash_current_request();
+			if($userhash) {	//no cache with user logged in
+				$checkStatus1 = false;
+			}
+		}
+		
+		if($checkStatus1) {
+			if ( PepVN_Data::isMobileDevice() ) {	//no cache with mobile
+				$checkStatus1 = false;
+			}
+		}
+		
+		if($checkStatus1) {
+			$checkStatus1 = false;
+			if(isset(PepVN_Data::$defaultParams['serverSoftware']) && PepVN_Data::$defaultParams['serverSoftware']) {
+				if(
+					('apache' === PepVN_Data::$defaultParams['serverSoftware'])
+					|| ('nginx' === PepVN_Data::$defaultParams['serverSoftware'])
+				) {
+					$checkStatus1 = true;
+				}
+			}
+		}
+		
+		
+		if($checkStatus1) {
+			$checkStatus1 = false;
+			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme']) && PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme']) {
+				if(
+					('http' === PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme'])
+					|| ('https' === PepVN_Data::$defaultParams['parseedUrlFullRequest']['scheme'])
+				) {
+					$checkStatus1 = true;
+				}
+			}
+		}
+		
+		
+		if($checkStatus1) {
+			
+			$folderPath1 = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH.'data/';
+			
+			if(!file_exists($folderPath1)) {
+				PepVN_Data::createFolder($folderPath1, WPOPTIMIZEBYXTRAFFIC_CHMOD);
+			}
+			
+			$folderPathPlus = '';
+			$folderPathPlus .= PepVN_Data::$defaultParams['parseedUrlFullRequest']['host'] . '/';
+			
+			$folderPathTemp = $folderPath1.$folderPathPlus;
+			if(!file_exists($folderPathTemp)) {
+				@mkdir($folderPathTemp);
+			}
+			
+			if(PepVN_Data::is_ssl()) {
+				$folderPathPlus .= 'https/';
+			} else {
+				$folderPathPlus .= 'http/';
+			}
+			
+			if ( PepVN_Data::isMobileDevice() ) {
+				$folderPathPlus .= 'mobile/';
+			} else {
+				$folderPathPlus .= 'pc/';
+			}
+			
+			
+			if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['path'])) {
+				$folderPathPlus .= PepVN_Data::$defaultParams['parseedUrlFullRequest']['path'] . '/';
+			}
+			
+			$folderPathPlus = PepVN_Data::fixPath($folderPathPlus) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+			
+			$folderPath2 = $folderPath1.$folderPathPlus;
+			
+			if(!file_exists($folderPath2)) {
+				PepVN_Data::createFolder($folderPath2, WPOPTIMIZEBYXTRAFFIC_CHMOD); 
+			}
+			
+			
+			
+			
+			if(PepVN_Data::is_writable($folderPath2)) {
+				
+				$filePath1 = $folderPath2.'index.html';
+				
+				$isWritableFileStatus1 = false;
+				
+				if(!file_exists($filePath1)) {
+					$isWritableFileStatus1 = true;
+				} else {
+					if(PepVN_Data::is_writable($filePath1)) {
+						if(isset($input_parameters['force_write_status']) && $input_parameters['force_write_status']) {
+							$isWritableFileStatus1 = true;
+						}
+						
+					}
+				}
+				
+				
+				
+				if($isWritableFileStatus1) {
+					@file_put_contents($filePath1, $input_parameters['content']);
+					
+					/*
+					$filePath1 = $folderPath2.'index.html.gz';
+						
+					$isWritableFileStatus2 = false;
+					
+					if(!file_exists($filePath1)) {
+						$isWritableFileStatus2 = true;
+					} else {
+						if(PepVN_Data::is_writable($filePath1)) {
+							$isWritableFileStatus2 = true;
+						}
+					}
+					
+					if($isWritableFileStatus2) {
+						$input_parameters['content'] = @gzencode( $input_parameters['content'], 2, FORCE_GZIP );
+						if($input_parameters['content']) {
+							@file_put_contents($filePath1,$input_parameters['content']);
+						}
+					}
+					//*/
+				}
+				
+				
+				
+				
+				
+			}
+			
+		}
+	}
+	
 	
 	
 	public function optimize_cache_check_and_get_page_cache()
 	{
-			
+		
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
 		
 		if(!$options) {
+			return false;
+		}
+		
+		$isCacheableStatus = $this->optimize_cache_isCacheable($options);
+		if(!$isCacheableStatus) {
 			return false;
 		}
 		
@@ -292,6 +572,10 @@ class WPOptimizeByxTraffic_AdvancedCache
 		$pageCacheContent = PepVN_Data::$cacheSitePageObject->get_cache($filenamecache);
 		
 		if($pageCacheContent) {
+		
+			$this->optimize_cache_check_and_create_static_page_cache_for_server_software(array(
+				'content' => $pageCacheContent
+			));
 			
 			$parametersTemp = array();
 			$parametersTemp['content_type'] = $contentType;

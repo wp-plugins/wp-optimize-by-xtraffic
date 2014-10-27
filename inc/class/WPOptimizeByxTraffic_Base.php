@@ -166,7 +166,12 @@ class WPOptimizeByxTraffic_Base
 		
 		$this->urlProtocol = PepVN_Data::$defaultParams['urlProtocol'];
 		
-		$this->urlFullRequest = PepVN_Data::$defaultParams['urlFullRequest'];
+		$this->urlFullRequest = PepVN_Data::$defaultParams['urlFullRequest']; 
+		$this->urlRequestNoParameters = PepVN_Data::$defaultParams['urlFullRequest'];
+		if(isset(PepVN_Data::$defaultParams['parseedUrlFullRequest']['url_no_parameters']) && (PepVN_Data::$defaultParams['parseedUrlFullRequest']['url_no_parameters'])) {
+			$this->urlRequestNoParameters = PepVN_Data::$defaultParams['parseedUrlFullRequest']['url_no_parameters']; 
+		}
+		
 		
 		
 		add_action('admin_notices', array(&$this,'admin_notice'));
@@ -283,7 +288,7 @@ class WPOptimizeByxTraffic_Base
 	public function base_clear_config_content($htaccess_content)
 	{
 		
-		$htaccess_content = preg_replace('/\s*?\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#\s*?/is','',$htaccess_content);
+		$htaccess_content = preg_replace('/\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#/is','',$htaccess_content);
 		
 		return $htaccess_content;
 	}
@@ -298,6 +303,9 @@ class WPOptimizeByxTraffic_Base
 		if($this->optimize_speed_is_subdirectory_install()){
 			$pathRootWP = $this->base_getABSPATH();
 		}
+		
+		
+		$pluginNameVersion = WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'/'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
 		
 		if('apache' === PepVN_Data::$defaultParams['serverSoftware']) {
 			
@@ -319,7 +327,7 @@ class WPOptimizeByxTraffic_Base
 			
 				$htaccessContent = $this->base_clear_config_content($htaccessContent);
 				
-				$htaccessContent = trim($htaccessContent);
+				$htaccessContent = trim($htaccessContent); 
 				
 				
 				$myHtaccessConfig = 
@@ -338,17 +346,49 @@ AddOutputFilterByType DEFLATE text/html text/plain text/xml application/xml appl
 
 <ifModule mod_expires.c>
 ExpiresActive On
+ExpiresByType text/cache-manifest "access plus 0 seconds"
+
+# Data
+ExpiresByType text/xml "access plus 0 seconds"
+ExpiresByType application/xml "access plus 0 seconds"
+ExpiresByType application/json "access plus 0 seconds"
+
+# Feed
+ExpiresByType application/rss+xml "access plus 3600 seconds"
+ExpiresByType application/atom+xml "access plus 3600 seconds"
+
+# Favicon
 ExpiresByType image/x-icon "access plus 1296000 seconds"
+
+# Media: images, video, audio
+ExpiresByType image/gif "access plus 1296000 seconds"
+ExpiresByType image/png "access plus 1296000 seconds"
 ExpiresByType image/jpeg "access plus 1296000 seconds"
 ExpiresByType image/jpg "access plus 1296000 seconds"
-ExpiresByType image/png "access plus 1296000 seconds"
-ExpiresByType image/gif "access plus 1296000 seconds"
+ExpiresByType video/ogg "access plus 1296000 seconds"
+ExpiresByType audio/ogg "access plus 1296000 seconds"
+ExpiresByType video/mp4 "access plus 1296000 seconds"
+ExpiresByType video/webm "access plus 1296000 seconds"
+
+# HTC files  (css3pie)
+ExpiresByType text/x-component "access plus 1296000 seconds"
+
+# Webfonts
+ExpiresByType application/x-font-ttf "access plus 1296000 seconds"
+ExpiresByType font/opentype "access plus 1296000 seconds"
+ExpiresByType application/x-font-woff "access plus 1296000 seconds"
+ExpiresByType image/svg+xml "access plus 1296000 seconds"
+ExpiresByType application/vnd.ms-fontobject "access plus 1296000 seconds"
+
+# CSS and JavaScript
+ExpiresByType text/css "access plus 1296000 seconds"
+ExpiresByType application/javascript "access plus 1296000 seconds"
+ExpiresByType text/javascript "access plus 1296000 seconds"
+ExpiresByType application/javascript "access plus 1296000 seconds"
+ExpiresByType application/x-javascript "access plus 1296000 seconds"
+
+# Others files
 ExpiresByType application/x-shockwave-flash "access plus 1296000 seconds"
-ExpiresByType text/css "access plus 604800 seconds"
-ExpiresByType text/javascript "access plus 604800 seconds"
-ExpiresByType application/javascript "access plus 604800 seconds"
-ExpiresByType application/x-javascript "access plus 604800 seconds"
-ExpiresByType application/xhtml+xml "access plus 15 seconds"
 </ifModule>
 
 
@@ -358,13 +398,15 @@ ExpiresByType application/xhtml+xml "access plus 15 seconds"
 		Header set Pragma "public"
 	</filesMatch>
 	<filesMatch "\.(css)$">
-		Header set Cache-Control "public, max-age=604800"
+		Header set Cache-Control "public, max-age=1296000"
 		Header set Pragma "public"
 	</filesMatch>
 	<filesMatch "\.(js)$">
-		Header set Cache-Control "public, max-age=604800"
+		Header set Cache-Control "public, max-age=1296000"
 		Header set Pragma "public"
 	</filesMatch>
+	Header set X-Powered-By "'.$pluginNameVersion.'"
+	Header set Server "'.$pluginNameVersion.'"
 </ifModule>
 
 
@@ -373,19 +415,6 @@ RewriteEngine On
 RewriteBase /
 # If you serve pages from behind a proxy you may want to change \'RewriteCond %{HTTPS} on\' to something more sensible
 AddDefaultCharset UTF-8
-RewriteCond %{REQUEST_URI} !^.*[^/]$
-RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST
-RewriteCond %{QUERY_STRING} !.*=.*
-RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
-RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
-RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
-RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
-RewriteCond %{HTTP:Accept-Encoding} gzip
-RewriteCond %{HTTPS} on
-RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html.gz -f
-RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html.gz" [L]
 
 RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
@@ -396,20 +425,8 @@ RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
 RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
 RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
 RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
-RewriteCond %{HTTP:Accept-Encoding} gzip
-RewriteCond %{HTTPS} !on
-RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html.gz -f
-RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html.gz" [L]
-
-RewriteCond %{REQUEST_URI} !^.*[^/]$
-RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST
-RewriteCond %{QUERY_STRING} !.*=.*
-RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
-RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
-RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
-RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTP_USER_AGENT} !(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge\ |maemo|midp|mmp|mobile.+firefox|netfront|opera\ m(ob|in)i|palm(\ os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows\ ce|xda|xiino [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} !^(1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a\ wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r\ |s\ )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1\ u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp(\ i|ip)|hs\-c|ht(c(\-|\ |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac(\ |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt(\ |\/)|klon|kpt\ |kwc\-|kyo(c|k)|le(no|xi)|lg(\ g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-|\ |o|v)|zz)|mt(50|p1|v\ )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v\ )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-|\ )|webc|whit|wi(g\ |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-) [NC]
 RewriteCond %{HTTPS} on
 RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html -f
 RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/https/pc/$1/data/index.html" [L]
@@ -423,6 +440,8 @@ RewriteCond %{HTTP:X-Wap-Profile} !^[a-z0-9\"]+ [NC]
 RewriteCond %{HTTP:Profile} !^[a-z0-9\"]+ [NC]
 RewriteCond %{HTTP_USER_AGENT} !^.*(2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800).* [NC]
 RewriteCond %{HTTP_user_agent} !^(w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-).* [NC]
+RewriteCond %{HTTP_USER_AGENT} !(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge\ |maemo|midp|mmp|mobile.+firefox|netfront|opera\ m(ob|in)i|palm(\ os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows\ ce|xda|xiino [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} !^(1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a\ wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r\ |s\ )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1\ u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp(\ i|ip)|hs\-c|ht(c(\-|\ |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac(\ |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt(\ |\/)|klon|kpt\ |kwc\-|kyo(c|k)|le(no|xi)|lg(\ g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-|\ |o|v)|zz)|mt(50|p1|v\ )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v\ )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-|\ )|webc|whit|wi(g\ |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-) [NC]
 RewriteCond %{HTTPS} !on
 RewriteCond %{DOCUMENT_ROOT}/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html -f
 RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/%{SERVER_NAME}/http/pc/$1/data/index.html" [L]
@@ -431,6 +450,14 @@ RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.
 ### END WPOPTIMIZEBYXTRAFFIC ###
 
 ';
+
+				$myHtaccessConfig = preg_replace('#\#[^\r\n]+#is','',$myHtaccessConfig);
+				$myHtaccessConfig = preg_replace('#[\r\n]+#is',PHP_EOL,$myHtaccessConfig);
+				
+				$myHtaccessConfig = trim($myHtaccessConfig);
+				
+				$myHtaccessConfig = PHP_EOL . '### BEGIN WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL . $myHtaccessConfig . PHP_EOL . '### END WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL;
+				
 				$htaccessContent = $myHtaccessConfig . $htaccessContent;
 				
 				@file_put_contents($pathFileHtaccess,$htaccessContent);
@@ -488,12 +515,190 @@ RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.
 ### END WPOPTIMIZEBYXTRAFFIC ###
 
 ';
+				
+				$myHtaccessConfig = preg_replace('#\#[^\r\n]+#is','',$myHtaccessConfig);
+				$myHtaccessConfig = preg_replace('#[\r\n]+#is',PHP_EOL,$myHtaccessConfig);
+				
+				$myHtaccessConfig = trim($myHtaccessConfig);
+				
+				$myHtaccessConfig = PHP_EOL . '### BEGIN WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL . $myHtaccessConfig . PHP_EOL . '### END WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL;
+				
 				$htaccessContent = $myHtaccessConfig . $htaccessContent;
 				
 				@file_put_contents($pathFileHtaccess,$htaccessContent);
 
 			}
 			
+		} else if('nginx' === PepVN_Data::$defaultParams['serverSoftware']) {
+			
+			$pathFileConf = $pathRootWP.'xtraffic-nginx.conf';
+			
+			$configContent = false;
+			
+			if(file_exists($pathFileConf) && is_file($pathFileConf) && is_writable($pathFileConf)){
+				$configContent = @file_get_contents($pathFileConf);
+			} else if(PepVN_Data::is_writable($pathRootWP)) {
+				@file_put_contents($pathFileConf,'');
+				if(PepVN_Data::is_writable($pathFileConf)) {
+					$configContent = @file_get_contents($pathFileConf);
+				}
+			}
+			
+			
+			if(false !== $configContent) {
+			
+				$configContent = $this->base_clear_config_content($configContent);
+				
+				$configContent = trim($configContent); 
+				
+				
+				$myConfigContent = 
+'
+# Deny access to any files with a .php extension in the uploads directory
+# Works in sub-directory installs and also in multisite network
+# Keep logging the requests to parse later (or to pass to firewall utilities such as fail2ban)
+location ~* /(?:uploads|files)/.*\.php$ {
+	deny all;
+}
+
+# Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
+# Keep logging the requests to parse later (or to pass to firewall utilities such as fail2ban)
+location ~ /\. {
+	deny all;
+}
+
+keepalive_timeout 15;
+
+gzip on;
+gzip_comp_level 2;
+gzip_min_length 1100;
+gzip_buffers  4 32k;
+gzip_types text/css text/x-component application/json application/x-javascript application/javascript text/javascript text/x-js text/richtext image/svg+xml text/plain text/xsd text/xsl application/xml application/xml+rss text/xml image/x-icon;
+gzip_vary on;
+
+location ~ \.(css|htc|less|js|js2|js3|js4)$ {
+    expires 604800s;
+    add_header Pragma "public";
+    add_header Cache-Control "max-age=604800, public";
+    add_header X-Powered-By "'.$pluginNameVersion.'";
+	add_header Server "'.$pluginNameVersion.'";
+}
+
+location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|woff|xla|xls|xlsx|xlt|xlw|zip)$ {
+    expires 1296000s;
+    add_header Pragma "public";
+    add_header Cache-Control "max-age=1296000, public";
+    add_header X-Powered-By "'.$pluginNameVersion.'";
+	add_header Server "'.$pluginNameVersion.'";
+}
+
+
+location ~ \.(rtf|rtx|svg|svgz|txt|xsd|xsl|xml)$ {
+    expires 300s;
+    add_header Pragma "public";
+    add_header Cache-Control "max-age=300, public";
+    add_header X-Powered-By "'.$pluginNameVersion.'";
+	add_header Server "'.$pluginNameVersion.'";
+}
+
+location ~ \.(html|htm)$ {
+    expires 15s;
+    add_header Pragma "public";
+    add_header Cache-Control "max-age=15, public";
+    add_header X-Powered-By "'.$pluginNameVersion.'";
+	add_header Server "'.$pluginNameVersion.'";
+}
+
+add_header X-Powered-By "'.$pluginNameVersion.'";
+add_header Server "'.$pluginNameVersion.'";
+
+# '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.' rules.
+
+set $cache_uri $request_uri;
+
+# POST requests and urls with a query string should always go to PHP
+if ($request_method = POST) {
+	set $cache_uri \'null cache\';
+}
+
+if ($request_method = PUT) {
+	set $cache_uri \'null cache\';
+}
+
+if ($request_method = UPDATE) {
+	set $cache_uri \'null cache\';
+}
+
+
+if ($request_method = DELETE) {
+	set $cache_uri \'null cache\';
+}
+
+if ($query_string != "") {
+	set $cache_uri \'null cache\'; 
+}   
+
+# Don\'t cache uris containing the following segments
+if ($request_uri ~* "(/wp-admin/|/wp-content/|/wp-includes/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+	set $cache_uri \'null cache\';
+}   
+
+# Don\'t use the cache for logged in users or recent commenters
+if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+	set $cache_uri \'null cache\';
+}
+
+# START MOBILE
+# Mobile browsers section to server them non-cached version. COMMENTED by default as most modern wordpress themes including twenty-eleven are responsive. Uncomment config lines in this section if you want to use a plugin like WP-Touch
+if ($http_x_wap_profile) {
+	set $cache_uri \'null cache\';
+}
+
+if ($http_profile) {
+	set $cache_uri \'null cache\';
+}
+
+if ($http_user_agent ~* (2.0\ MMP|240x320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800)) {
+	set $cache_uri \'null cache\';
+}
+
+if ($http_user_agent ~* (w3c\ |w3c-|acs-|alav|alca|amoi|audi|avan|benq|bird|blac|blaz|brew|cell|cldc|cmd-|dang|doco|eric|hipt|htc_|inno|ipaq|ipod|jigs|kddi|keji|leno|lg-c|lg-d|lg-g|lge-|lg/u|maui|maxo|midp|mits|mmef|mobi|mot-|moto|mwbp|nec-|newt|noki|palm|pana|pant|phil|play|port|prox|qwap|sage|sams|sany|sch-|sec-|send|seri|sgh-|shar|sie-|siem|smal|smar|sony|sph-|symb|t-mo|teli|tim-|tosh|tsm-|upg1|upsi|vk-v|voda|wap-|wapa|wapi|wapp|wapr|webc|winw|winw|xda\ |xda-)) {
+	set $cache_uri \'null cache\';
+}
+
+
+if ($http_user_agent ~* ((android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge\ |maemo|midp|mmp|mobile.+firefox|netfront|opera\ m(ob|in)i|palm(\ os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows\ ce|xda|xiino)) {
+	set $cache_uri \'null cache\';
+}
+
+if ($http_user_agent ~* (1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a\ wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r\ |s\ )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1\ u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp(\ i|ip)|hs\-c|ht(c(\-|\ |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac(\ |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt(\ |\/)|klon|kpt\ |kwc\-|kyo(c|k)|le(no|xi)|lg(\ g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-|\ |o|v)|zz)|mt(50|p1|v\ )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v\ )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-|\ )|webc|whit|wi(g\ |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-)) {
+	set $cache_uri \'null cache\';
+}
+
+#END MOBILE
+
+
+
+location / {
+	index index.html index.php;
+	try_files /wp-content/cache/wp-optimize-by-xtraffic-optimize-cache/data/$http_host/$scheme/pc/$cache_uri/data/index.html $uri $uri/ /index.php?$args;
+}
+
+';
+				
+				$myConfigContent = preg_replace('#\#[^\r\n]+#is','',$myConfigContent);
+				$myConfigContent = preg_replace('#([\;\{\}]+)\s+#is','$1 ',$myConfigContent);
+				$myConfigContent = preg_replace('#\s+([\;\{\}]+)#is',' $1',$myConfigContent);
+				
+				$myConfigContent = trim($myConfigContent);
+				
+				
+				$myConfigContent = PHP_EOL . '### BEGIN WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL . $myConfigContent . PHP_EOL . '### END WPOPTIMIZEBYXTRAFFIC ###' . PHP_EOL;
+				
+				$configContent = $myConfigContent . $configContent;
+				
+				@file_put_contents($pathFileConf, $configContent);
+			}
 		}
 		
 		
@@ -564,7 +769,7 @@ if(file_exists(\''.$pathFile2.'\')) {
 			
 			$arrayFilesNeedCleanConfigs[] = $pathRootWP.'.htaccess';
 			$arrayFilesNeedCleanConfigs[] = WPOPTIMIZEBYXTRAFFIC_WPCONTENT_OPTIMIZE_CACHE_PATH.'.htaccess';
-			
+			$arrayFilesNeedCleanConfigs[] = $pathRootWP.'xtraffic-nginx.conf';
 		}
 		
 		$arrayFilesNeedCleanConfigs = array_unique($arrayFilesNeedCleanConfigs);
@@ -719,6 +924,26 @@ if(file_exists(\''.$pathFile2.'\')) {
 		
 	}
 	
+	
+	
+	public function base_add_plugin_info_html($text)
+	{
+		
+		$textAppendToEndBodyTagHtml = PHP_EOL . '<!-- '
+		. PHP_EOL . '+ This website has been optimized by plugin "WP Optimize By xTraffic".'
+		. PHP_EOL . '+ Served from : '.$this->fullDomainName.' @ '.date('Y-m-d H:i:s').' by "WP Optimize By xTraffic".'
+		//. PHP_EOL . '+ Page Caching using disk.'
+		//. PHP_EOL . '+ Processing time before use cache : '.number_format(microtime(true) - WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART, 10, '.', '').' seconds.'
+		. PHP_EOL . '+ Learn more here : http://wordpress.org/plugins/wp-optimize-by-xtraffic/ '
+		. PHP_EOL . ' -->';
+		
+		$text = PepVN_Data::appendTextToTagBodyOfHtml($textAppendToEndBodyTagHtml,$text); 
+		
+		$text = trim($text);
+		
+		return $text;
+		
+	}
 	
 	
 	public function base_gmdate_gmt($input_timestamp)
@@ -1378,33 +1603,33 @@ LIMIT 0,'.($input_parameters['limit']).'
 			'optimize_speed_optimize_cache_front_page_cache_enable' => 'on',//on
 			'optimize_speed_optimize_cache_feed_page_cache_enable' => 'on',//on
 			'optimize_speed_optimize_cache_ssl_request_cache_enable' => '',//on
-			'optimize_speed_optimize_cache_mobile_device_cache_enable' => 'on',//on
-			'optimize_speed_optimize_cache_url_get_query_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_mobile_device_cache_enable' => '',//on
+			'optimize_speed_optimize_cache_url_get_query_cache_enable' => '',//on
 			'optimize_speed_optimize_cache_logged_users_cache_enable' => '',//on
-			'optimize_speed_optimize_cache_database_cache_enable' => 'on',//on
+			'optimize_speed_optimize_cache_database_cache_enable' => '',//on
 			'optimize_speed_optimize_cache_prebuild_cache_enable' => '',//on
-			'optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process' => 1,//int
+			'optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process' => 1,//int 
 			'optimize_speed_optimize_cache_cachetimeout' => 86400,//int 
 			
 			
 			
 			//optimize_javascript
 			'optimize_speed_optimize_javascript_enable' => '',//on
-			'optimize_speed_optimize_javascript_combine_javascript_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_combine_javascript_enable' => '',//on
 			'optimize_speed_optimize_javascript_minify_javascript_enable' => 'on',//on
-			'optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable' => 'on',//on
-			'optimize_speed_optimize_javascript_exclude_external_javascript_enable' => '',//on
-			'optimize_speed_optimize_javascript_exclude_inline_javascript_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_asynchronous_javascript_loading_enable' => '',//on
+			'optimize_speed_optimize_javascript_exclude_external_javascript_enable' => 'on',//on
+			'optimize_speed_optimize_javascript_exclude_inline_javascript_enable' => 'on',//on 
 			'optimize_speed_optimize_javascript_exclude_url' => 'alexa.com,',//text
 			
 			
 			//optimize_css
 			'optimize_speed_optimize_css_enable' => '',//on
-			'optimize_speed_optimize_css_combine_css_enable' => 'on',//on
+			'optimize_speed_optimize_css_combine_css_enable' => '',//on
 			'optimize_speed_optimize_css_minify_css_enable' => 'on',//on
 			'optimize_speed_optimize_css_asynchronous_css_loading_enable' => '',//on
-			'optimize_speed_optimize_css_exclude_external_css_enable' => '',//on
-			'optimize_speed_optimize_css_exclude_inline_css_enable' => '',//on
+			'optimize_speed_optimize_css_exclude_external_css_enable' => 'on',//on
+			'optimize_speed_optimize_css_exclude_inline_css_enable' => 'on',//on 
 			'optimize_speed_optimize_css_exclude_url' => '',//text
 			
 			
@@ -1412,6 +1637,12 @@ LIMIT 0,'.($input_parameters['limit']).'
 			'optimize_speed_optimize_html_enable' => '',//on
 			'optimize_speed_optimize_html_minify_html_enable' => 'on',//on
 			
+			
+			
+			//cdn
+			'optimize_speed_cdn_enable' => '',//on
+			'optimize_speed_cdn_domain' => '',//string
+			'optimize_speed_cdn_exclude_url' => 'captcha,/wp-admin/,.php,',//string 
 			
 			
 			
@@ -1779,6 +2010,13 @@ LIMIT 0,'.($input_parameters['limit']).'
 					,'optimize_speed_optimize_html_minify_html_enable'
 					
 					
+					//cdn
+					,'optimize_speed_cdn_enable'
+					,'optimize_speed_cdn_domain'
+					,'optimize_speed_cdn_exclude_url'
+					
+					
+					
 					
 					//optimize_cache
 					,'optimize_speed_optimize_cache_enable'
@@ -1818,6 +2056,26 @@ LIMIT 0,'.($input_parameters['limit']).'
 					$options['optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'] = 1;
 				}
 				
+				
+				$keyField1 = 'optimize_speed_cdn_domain';
+				$options[$keyField1] = trim($options[$keyField1]);
+				if($options[$keyField1]) {
+					$valueField1 = $options[$keyField1];
+					$valueField1 = 'http://'.PepVN_Data::removeProtocolUrl($valueField1);
+					$valueField1 = PepVN_Data::parseUrl($valueField1); 
+					if($valueField1) {
+						if(isset($valueField1['host']) && $valueField1['host']) {
+							$valueField1['host'] = trim($valueField1['host']);
+							if($valueField1['host']) {
+								$options[$keyField1] = strtolower($valueField1['host']);
+							}
+						}
+					}
+				}
+				
+				$keyField1 = 'optimize_speed_cdn_exclude_url';
+				$options[$keyField1] = preg_replace('#[\'\"]+#','',$options[$keyField1]);
+				$options[$keyField1] = trim($options[$keyField1]);
 				
 			}
 			
@@ -2232,6 +2490,26 @@ LIMIT 0,'.($input_parameters['limit']).'
 	}
 	
 	
+	public function base_StaticVar_SafeVarForCronjobs($staticVarData) 
+	{
+		
+		$staticVarData = (array)$staticVarData; 
+		
+		$fieldsNeedUnset = array(
+			'is_processing_base_cronjobs_status'
+			,'time_last_process_base_cronjobs'
+		);
+		
+		foreach($fieldsNeedUnset as $key1 => $value1) {
+			if($value1) {
+				if(isset($staticVarData[$value1])) {
+					unset($staticVarData[$value1]);
+				}
+			}
+		}
+		
+		return $staticVarData;
+	}
 	
 	public function base_cronjobs() 
 	{

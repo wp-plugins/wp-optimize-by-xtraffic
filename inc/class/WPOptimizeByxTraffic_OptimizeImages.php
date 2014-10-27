@@ -2315,7 +2315,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 													<label for="optimize_images_watermarks_preview_processed_image_example_image_url"> ',__('Example image url',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label><br />
 													<input type="text" 
 														name="optimize_images_watermarks_preview_processed_image_example_image_url"  
-														value="http://xtraffic.pep.vn/static-show/xtraffic/marketing/campaign-1/mang-quang-cao-mien-phi-open-free-ad-network-xtraffic-landing-page/img/xtraffic-mang-quang-cao-mien-phi-hieu-qua.jpg" 
+														value="'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'images/demo.jpg" 
 														title="" style="" 
 													/>
 												</li>

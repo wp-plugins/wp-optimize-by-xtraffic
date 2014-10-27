@@ -55,7 +55,7 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 <script language="javascript" type="text/javascript">
 	var wpOptimizeByxTraffic_Plugin_Url = "'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'";
 	var wpOptimizeByxTraffic_Admin_Ajax_Url = "'.WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL.'";
-	var wpOptimizeByxTraffic_AjaxLoadingTag = "<div class=\'wpoptimizebyxtraffic_ajax_loading\' style=\'display:inline-block;width:100%;height:auto;padding:16px;text-align: center;\'><img src=\'http://static.pep.vn/images/icon/ajax-loader.gif\' /></div>";
+	var wpOptimizeByxTraffic_AjaxLoadingTag = "<div class=\'wpoptimizebyxtraffic_ajax_loading\' style=\'display:inline-block;width:100%;height:auto;padding:16px;text-align: center;\'><img src=\''.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'images/ajax-loader.gif\' /></div>";
 </script>';
 
 

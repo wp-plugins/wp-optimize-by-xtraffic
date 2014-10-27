@@ -79,6 +79,11 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			'cache_status' => 1
 		));
 		
+		if(isset($options['optimize_traffic_modules']) && !PepVN_Data::isEmptyArray($options['optimize_traffic_modules'])) {
+		} else {
+			return $input_text;
+		}
+		
 		
 		
 		$original_InputText1 = $input_text;
@@ -105,30 +110,27 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		$groupModules_PositionsAddedToQueue = array();
 		$groupModules_ByFixedTypeBeginOrEnd = array();
 		
-		if(isset($options['optimize_traffic_modules']) && !PepVN_Data::isEmptyArray($options['optimize_traffic_modules'])) {
-			foreach($options['optimize_traffic_modules'] as $keyOne => $valueOne) {
-				if(isset($valueOne['module_type']) && $valueOne['module_type']) {
-					if(isset($valueOne['module_position'])) {
+		foreach($options['optimize_traffic_modules'] as $keyOne => $valueOne) {
+			if(isset($valueOne['module_type']) && $valueOne['module_type']) {
+				if(isset($valueOne['module_position'])) {
+					
+					if(!in_array($valueOne['module_position'], $groupModules_PositionsAddedToQueue)) {
 						
-						if(!in_array($valueOne['module_position'], $groupModules_PositionsAddedToQueue)) {
-							
-							$valueOne['module_mumber_of_items'] = abs((int)$valueOne['module_mumber_of_items']);
-							if($valueOne['module_mumber_of_items']<1) {
-								$valueOne['module_mumber_of_items'] = 1;
-							} else if($valueOne['module_mumber_of_items']>10) {
-								$valueOne['module_mumber_of_items'] = 10;
-							}
-							
-							
-							$groupModules_PositionsAddedToQueue[] = $valueOne['module_position'];
-							$groupModules_ByModuleType[$valueOne['module_type']][$valueOne['module_position']] = $valueOne;
-							
+						$valueOne['module_mumber_of_items'] = abs((int)$valueOne['module_mumber_of_items']);
+						if($valueOne['module_mumber_of_items']<1) {
+							$valueOne['module_mumber_of_items'] = 1;
+						} else if($valueOne['module_mumber_of_items']>10) {
+							$valueOne['module_mumber_of_items'] = 10;
 						}
+						
+						
+						$groupModules_PositionsAddedToQueue[] = $valueOne['module_position'];
+						$groupModules_ByModuleType[$valueOne['module_type']][$valueOne['module_position']] = $valueOne;
+						
 					}
 				}
 			}
 		}
-		
 		
 		
 		$numberElementContentInText = 0;

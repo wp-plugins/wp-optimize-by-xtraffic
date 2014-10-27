@@ -298,22 +298,63 @@ class PepVN_Data
 	
 	
 	
+	public static function minifyJavascript($input_data)
+	{
+		
+		$input_data = (array)$input_data;
+		$input_data = implode(PHP_EOL,$input_data);
+		$input_data = (string)$input_data;
+		$input_data = trim($input_data);
+		
+		$rsOne = self::escapeByPattern($input_data,array(
+			'pattern' => '#(\'|\").*?\1#is'
+			,'target_patterns' => array(
+				0
+			)
+			,'wrap_target_patterns' => '______'
+		));
+		$input_data = $rsOne['content']; $rsOne['content'] = '';
+		
+		
+		
+		$patternsFindAndReplace = array(
+			'#\/\*(.*?)\*\/#is' => ' ' // Remove all comments  
+			,'#[\t ]+#i' => ' '
+			,'#([\r\n])+#i' => PHP_EOL
+		);
+		
+		$input_data = preg_replace(array_keys($patternsFindAndReplace), array_values($patternsFindAndReplace), $input_data);
+		
+		
+		
+		if(!self::isEmptyArray($rsOne['patterns'])) {
+			$input_data = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$input_data);
+		}
+		
+		$input_data = trim($input_data);
+		
+		return $input_data;
+	}
+	
+	
+	
 	public static function minifyCss($input_data)
 	{
 		$input_data = self::removeCommentInCss($input_data);
 		
 		$patterns = array(
-			'#/\*[^*]*\*+([^/][^*]*\*+)*/#' => ''
-			,'#\s+#s' => ' ' // Compress all spaces into single space
-			
+			'#\s+#is' => ' ' // Compress all spaces into single space
+			//,'#/\*[^*]*\*+([^/][^*]*\*+)*/#' => ''
 			//,'#(\/\*|\<\!\-\-)(.*?)(\*\/|\-\-\>)#s' => ' '// Remove all comments
 			,'#(\/\*)(.*?)(\*\/)#is' => ' '// Remove all comments
-			,'#(\s+)?([,{};:>\+])(\s+)?#s' => '$2' // Remove un-needed spaces around special characters
+			//,'#(\s+)?([,{};:>\+]+)(\s+)?#s' => '$2' // Remove un-needed spaces around special characters
 			//,'#url\([\'\"](.*?)[\'\"]\)#s' => 'url($1)'// Remove quotes from urls
-			,'#;{2,}#' => ';' // Remove unecessary semi-colons
+			//,'#;{2,}#' => ';' // Remove unecessary semi-colons
 			
+			,'#\s+([\,\{\}\;\:]+)#is' => ' $1' // Remove un-needed spaces around special characters
+			,'#([\,\{\}\;\:]+)\s+#is' => '$1 ' // Remove un-needed spaces around special characters
 			
-			,'#^\s+#m' => ' '
+			//,'#^\s+#m' => ' '
 			,'#url\((\s+)([^\)]+)(\s+)\)#' => 'url($2)'
 		);
 		
@@ -355,7 +396,7 @@ class PepVN_Data
 	{
         $str = dechex(crc32($str));
 
-        $str = preg_replace('/[^a-z0-9]+/i','r',$str);
+        $str = preg_replace('/[^a-z0-9]+/i','r',$str); 
 
         $str = (string)$str;
         $str = trim($str);
@@ -461,20 +502,27 @@ class PepVN_Data
 	
 	public static function explode($input_delimiter, $input_data) 
 	{
-		$input_delimiter = $input_delimiter;
-		if(preg_match('#[,;]+#i',$input_delimiter)) {
-			$input_delimiter = preg_replace('#[;,]+#i',';',$input_delimiter);
+		$input_delimiter = (string)$input_delimiter;
+		
+		if(preg_match('#[\,\;]+#is',$input_delimiter)) {
+			
+			$input_delimiter = ';';
 			
 			$input_data = (array)$input_data;
 			$input_data = implode(';',$input_data);
+			
+			$input_data = preg_replace('#[\;\,]+#is',';',$input_data);
 		
 		}
+		
+		$input_data = (string)$input_data;
 		
 		$input_data = explode($input_delimiter,$input_data);
 		
 		return $input_data;
 		
 	}
+	
 	
 	public static function splitAndCleanKeywords($input_data) 
 	{
@@ -499,7 +547,7 @@ class PepVN_Data
 	
 	public static function appendTextToTagHeadOfHtml($input_text,$input_html) 
 	{
-		return preg_replace('#(\s*?</head>\s*?<body[^>]*?>)#is', $input_text.' \1',$input_html);
+		return preg_replace('#(\s*?</head>\s*?<body[^>]*?>)#is', $input_text.' \1',$input_html); 
 	}
 	
 	public static function appendTextToTagBodyOfHtml($input_text,$input_html) 
@@ -1081,6 +1129,26 @@ class PepVN_Data
 	
 	
 	
+	public static function isSameHost($input_link1,$input_link2)
+	{
+		$input_link1 = 'http://'.self::removeProtocolUrl($input_link1);
+		$input_link2 = 'http://'.self::removeProtocolUrl($input_link2);
+		$parseUrl1 = parse_url($input_link1);
+		if(isset($parseUrl1['host']) && $parseUrl1['host']) {
+			$parseUrl2 = parse_url($input_link2);
+			if(isset($parseUrl2['host']) && $parseUrl2['host']) {
+				$parseUrl1['host'] = self::strtolower($parseUrl1['host']);
+				$parseUrl2['host'] = self::strtolower($parseUrl2['host']);
+				if($parseUrl2['host'] === $parseUrl1['host']) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	
 	public static function isImg($input_data)
 	{
 		$resultData = false;
@@ -1435,6 +1503,22 @@ class PepVN_Data
 		
 	}
 	
+	
+	
+	public static function getRequestMethod()
+	{
+		$resultData = 'get';
+		
+		if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD']) {
+			
+			$resultData = $_SERVER['REQUEST_METHOD'];
+			$resultData = trim($resultData);
+			$resultData = strtolower($resultData);
+			
+		}
+		
+		return $resultData;
+	}
 	
 	
 	public static function preg_quote($input_text)

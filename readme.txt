@@ -33,7 +33,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
 = The main features : =
 * ***Internal Link Building*** : Build automatically internal link with your focused links or best related posts
 * ***Optimize Images*** : Watermark images + Reduce image's size + Optimize image's Alt/Title + Rename image's filename
-* ***Optimize Speed*** : Make your WordPress website load faster from 80% or more
+* ***Optimize Speed*** : Make your WordPress website load faster from 200% or more (speed up Apache and Nginx)
 * ***Optimize Traffic*** : create a list of related posts in the middle of article content to do : 
   * Reduce website's bounce rate;
   * Keep your website users to stay longer;
@@ -103,6 +103,11 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.6 =
+* Improve feature "Optimize Cache", compatible with Apache and Nginx
+* Add feature "CDN (Content Delivery Network)" to "Optimize Speed"
+* Fix some bugs "Optimize Speed" due to the announcement of Boris Osadciw
 
 = 4.1.4 =
 * Improve feature "Optimize Cache" & "Optimize Traffic"
