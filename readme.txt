@@ -26,6 +26,9 @@ Everything is done completely automatically, and you can change the options from
 * [Топ 10 WordPress плагинов за сентябрь 2014](http://wpnice.ru/top-10-wordpress-plaginov-za-sentyabr-2014/ "Топ 10 WordPress плагинов за сентябрь 2014")
 * [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
 * [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
+* [Tối ưu website WordPress với Plugin WP Optimize By xTraffic](http://melyweb.net/toi-uu-website-wordpress-voi-plugin-wp-optimize-by-xtraffic.html "Tối ưu website WordPress với Plugin WP Optimize By xTraffic")
+
+
 
 
 Thank the authors who talked about us :) . We always try to do it better in the future!
@@ -103,6 +106,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.7 =
+* Improve performance plugin
 
 = 4.1.6 =
 * Improve feature "Optimize Cache", compatible with Apache and Nginx

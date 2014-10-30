@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.6
+Version: 4.1.7
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.6' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.7' );
 }
 
 
@@ -268,7 +268,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/wp-optimize-by-xtraffic-fe.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
 				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/wp-optimize-by-xtraffic-fe.js?__ts='.time().mt_rand();//test
 				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-				wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
+				wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true); 
 				
 			}
 			

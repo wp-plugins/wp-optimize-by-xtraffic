@@ -580,16 +580,12 @@ location ~ \.(css|htc|less|js|js2|js3|js4)$ {
     expires 604800s;
     add_header Pragma "public";
     add_header Cache-Control "max-age=604800, public";
-    add_header X-Powered-By "'.$pluginNameVersion.'";
-	add_header Server "'.$pluginNameVersion.'";
 }
 
 location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|woff|xla|xls|xlsx|xlt|xlw|zip)$ {
     expires 1296000s;
     add_header Pragma "public";
     add_header Cache-Control "max-age=1296000, public";
-    add_header X-Powered-By "'.$pluginNameVersion.'";
-	add_header Server "'.$pluginNameVersion.'";
 }
 
 
@@ -597,17 +593,16 @@ location ~ \.(rtf|rtx|svg|svgz|txt|xsd|xsl|xml)$ {
     expires 300s;
     add_header Pragma "public";
     add_header Cache-Control "max-age=300, public";
-    add_header X-Powered-By "'.$pluginNameVersion.'";
-	add_header Server "'.$pluginNameVersion.'";
 }
 
-location ~ \.(html|htm)$ {
-    expires 15s;
-    add_header Pragma "public";
-    add_header Cache-Control "max-age=15, public";
-    add_header X-Powered-By "'.$pluginNameVersion.'";
-	add_header Server "'.$pluginNameVersion.'";
-}
+
+#Warning : html is error, must disable this
+#location ~ \.(html|htm)$ {
+#    expires 15s;
+#    add_header Pragma "public";
+#    add_header Cache-Control "max-age=15, public";
+#}
+
 
 add_header X-Powered-By "'.$pluginNameVersion.'";
 add_header Server "'.$pluginNameVersion.'";
@@ -617,6 +612,7 @@ add_header Server "'.$pluginNameVersion.'";
 set $cache_uri $request_uri;
 
 # POST requests and urls with a query string should always go to PHP
+
 if ($request_method = POST) {
 	set $cache_uri \'null cache\';
 }
@@ -644,12 +640,14 @@ if ($request_uri ~* "(/wp-admin/|/wp-content/|/wp-includes/|/xmlrpc.php|/wp-(app
 }   
 
 # Don\'t use the cache for logged in users or recent commenters
+
 if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
 	set $cache_uri \'null cache\';
 }
 
 # START MOBILE
 # Mobile browsers section to server them non-cached version. COMMENTED by default as most modern wordpress themes including twenty-eleven are responsive. Uncomment config lines in this section if you want to use a plugin like WP-Touch
+
 if ($http_x_wap_profile) {
 	set $cache_uri \'null cache\';
 }
@@ -680,15 +678,18 @@ if ($http_user_agent ~* (1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a\ wa|abac|
 
 
 location / {
+	root '.$pathRootWP.';
 	index index.html index.php;
-	try_files /wp-content/cache/wp-optimize-by-xtraffic-optimize-cache/data/$http_host/$scheme/pc/$cache_uri/data/index.html $uri $uri/ /index.php?$args;
+	try_files /wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/$http_host/$scheme/pc/$cache_uri/data/index.html $uri $uri/ /index.php?$args;
 }
+
 
 ';
 				
 				$myConfigContent = preg_replace('#\#[^\r\n]+#is','',$myConfigContent);
 				$myConfigContent = preg_replace('#([\;\{\}]+)\s+#is','$1 ',$myConfigContent);
 				$myConfigContent = preg_replace('#\s+([\;\{\}]+)#is',' $1',$myConfigContent);
+				
 				
 				$myConfigContent = trim($myConfigContent);
 				
@@ -1584,7 +1585,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			
 			'optimize_images_image_quality_value' => 100,
 			'optimize_images_rename_img_filename_value' => '',
-			'optimize_images_maximum_files_handled_each_request' => 2,
+			'optimize_images_maximum_files_handled_each_request' => 1,
 			'optimize_images_handle_again_files_different_configuration_enable' => '',//on
 			'optimize_images_remove_files_available_different_configuration_enable' => 'on',//on
 			
@@ -2513,6 +2514,8 @@ LIMIT 0,'.($input_parameters['limit']).'
 	
 	public function base_cronjobs() 
 	{
+		sleep( 2 );
+		
 		$resultData = array();
 		$resultData['cronjobs_status'] = 0;
 		
@@ -2534,7 +2537,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			if(isset($staticVarData['time_last_process_base_cronjobs']) && $staticVarData['time_last_process_base_cronjobs']) {
 				$doCronjobsStatus = false;
 				
-				if(($staticVarData['time_last_process_base_cronjobs'] + 10) < time()) {	//is timeout
+				if(($staticVarData['time_last_process_base_cronjobs'] + 15) < time()) {	//is timeout 
 					$doCronjobsStatus = true;
 				}
 			}
@@ -2561,7 +2564,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			$resultData['cronjobs_status'] = 1;
 			
 			$this->optimize_speed_optimize_cache_prebuild_urls_cache();
-			
+			sleep( 1 );
 			
 			
 			
@@ -2576,7 +2579,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			
 			PepVN_Data::staticVar_SetData($staticVarData);
 		}
-				
+		
 		return $resultData;
 		
 	}

@@ -1703,7 +1703,8 @@ setTimeout(function() {
 								$valueTemp1 = PepVN_Data::removeProtocolUrl($valueTemp1);
 								$valueTemp2 = PepVN_Data::removeProtocolUrl($valueTemp2);
 								if($valueTemp1 !== $valueTemp2) {
-									$arrayDataTextNeedReplace[$value1] = str_replace($valueTemp1,$valueTemp2,$value1);
+									//$arrayDataTextNeedReplace[$value1] = str_replace($valueTemp1,$valueTemp2,$value1);
+									$arrayDataTextNeedReplace[$valueTemp1] = $valueTemp2;
 								}
 								
 							}
@@ -2008,6 +2009,8 @@ setTimeout(function() {
 	
 	public function optimize_speed_optimize_cache_prebuild_urls_cache()
 	{
+		sleep( 1 );
+		
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
@@ -2050,7 +2053,7 @@ setTimeout(function() {
 			$options['optimize_speed_optimize_cache_cachetimeout'] = 3600;
 		}
 		
-		$timeoutRequest = 30;//seconds
+		$timeoutRequest = 60;//seconds
 		
 		$maxTimePrebuild = 300;//seconds
 		
@@ -2138,11 +2141,14 @@ setTimeout(function() {
 				));
 				$staticVarData['group_urls_prebuild_cache'][$value1] = time();
 				PepVN_Data::staticVar_SetData($staticVarData);
+				sleep( 1 );
 			}
 		}
 		
 		
 		PepVN_Data::staticVar_SetData($staticVarData); 
+		
+		sleep( 1 );
 		
 	}
 	
