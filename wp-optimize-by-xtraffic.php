@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.7
+Version: 4.1.8
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.7' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.8' );
 }
 
 
@@ -387,7 +387,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			
 			$input_html = $wpOptimizeByxTraffic->optimize_speed_process_html_pages($input_html);
 			
-			$input_html = $wpOptimizeByxTraffic->optimize_speed_cdn_process_html_pages($input_html);
+			$input_html = $wpOptimizeByxTraffic->optimize_speed_cdn_process_text($input_html,'html');
 			
 			$input_html = $wpOptimizeByxTraffic->base_add_plugin_info_html($input_html);
 			

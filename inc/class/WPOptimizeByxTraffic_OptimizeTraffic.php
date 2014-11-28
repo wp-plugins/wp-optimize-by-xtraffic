@@ -46,6 +46,17 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	}
 	
 	
+	
+	
+	
+	
+	public function optimize_traffic_remove_escaped_string($input_text)
+	{
+		$input_text = preg_replace('#______[a-z0-9\_]+______#',' ',$input_text);
+		
+		return $input_text;
+	}
+	
 	public function optimize_traffic_the_content_filter($input_text)
 	{
 		if(is_single() || is_page() || is_singular()) {
@@ -86,6 +97,35 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		
 		
+		
+		$patternsEscaped1 = array();
+		
+		$rsOne = PepVN_Data::escapeByPattern($input_text,array(
+			'pattern' => '#<([a-z]+)[^><]+class=(\'|\")[^><\'\"]*?wp\-caption[^><\'\"]*?\2[^><]*?>.*?</\1>#is'
+			,'target_patterns' => array(
+				0
+			)
+			,'wrap_target_patterns' => ''
+		));
+		
+		$input_text = $rsOne['content'];
+		
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped1 = array_merge($patternsEscaped1,$rsOne['patterns']);
+		}
+		$rsOne = 0;
+		
+		
+		
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($input_text,'a;table;pre;ol;ul;blockquote');
+		$input_text = $rsOne['content'];
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped1 = array_merge($patternsEscaped1, $rsOne['patterns']);
+		}
+		$rsOne = 0;
+		
+		
+		
 		$original_InputText1 = $input_text;
 		
 		$post->ID = (int)$post->ID;
@@ -101,7 +141,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		
 		$allPostTextCombined = $post->post_title.' '.PHP_EOL.' '.$post->post_excerpt.' '.PHP_EOL.implode(' ',$rsGetTerms2).' '.PHP_EOL.' '.$post->post_content;
-		
+		$allPostTextCombined = $this->optimize_traffic_remove_escaped_string($allPostTextCombined);
 		
 		
 		$patternsModulesReplaceText = array();
@@ -135,7 +175,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		$numberElementContentInText = 0;
 		
-		preg_match_all('/<(p|h1|h2|h3|h4|h5|h6)[^><]*?>.*?<\/\1>/is',$original_InputText1,$matchedElementContentInText);
+		preg_match_all('/<(p|h1|h2|h3|h4|h5|h6)(\s+[^><]*?)?>.*?<\/\1>/is',$original_InputText1,$matchedElementContentInText);
 		
 		if(isset($matchedElementContentInText[0]) && $matchedElementContentInText[0]) {
 			if(count($matchedElementContentInText[0])>0) {
@@ -149,7 +189,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 						if(count($valueTemp2)>5) {
 							$checkStatus2 = true;
 						} else {
-							if(preg_match('#<(h1|h2|h3|h4|h5|h6)[^><]*?>.*?</\1>#is',$valueTemp1,$matched1)) {
+							if(preg_match('#<(h1|h2|h3|h4|h5|h6)(\s+[^><]*?)?>.*?</\1>#is',$value1,$matched1)) {
 								$checkStatus2 = true;
 							}
 						}
@@ -340,8 +380,9 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 						$rawTextNeedProcess1 = '';
 						$iNumber1 = 0;
 						foreach($matchedElementContentInText[0] as $keyTwo => $valueTwo) {
+							
 							if(!in_array($valueTwo,$arrayMatchedElementContentInTextIsProcessed)) {
-								$arrayMatchedElementContentInTextIsProcessed[] = $valueTwo;
+								//$arrayMatchedElementContentInTextIsProcessed[] = $valueTwo;
 								
 								$originalTextNeedProcess1 .= ' '.$valueTwo;
 								
@@ -353,59 +394,62 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 							$currentPercentPos = (int)$currentPercentPos;
 							
 							if(($currentPercentPos >= $valueOne['module_position']) && $originalTextNeedProcess1) {
-								
-								$postsIdsFound1 = array();
-							
-								$rsSearchPost1 = $this->optimize_traffic_search_post_by_text($originalTextNeedProcess1, array(
-									'group_text_weight' => array(
-										array(
-											'text' => $post->post_title
-											,'weight' => 4
-										)
-										,array(
-											'text' => $post->post_excerpt
-											,'weight' => 3
-										)
-										,array(
-											'text' => implode(' ',$rsGetTerms2)
-											,'weight' => 3
-										)
-										,array(
-											'text' => $originalTextNeedProcess1
-											,'weight' => 8
-										)
-									)
-									,'exclude_posts_ids' => array($post->ID)
-									,'limit' => $valueOne['module_mumber_of_items']
-									,'key_cache' => $valueOne['module_type'].'_'.$valueOne['module_position']
-								));
-								
-								if($rsSearchPost1) {
+								if(preg_match('#<(p)(\s+[^><]*?)?>.*?</\1>#is',$valueTwo,$matched2)) {
 									
-									foreach($rsSearchPost1 as $keyThree => $valueThree) {
-										$postsIdsFound1[] = $valueThree['post_id'];
-									}
-								}
-								
-								if(count($postsIdsFound1)>0) {
-									$rsCreateTrafficModule1 = $this->optimize_traffic_create_traffic_module(array(
-										'option' => $valueOne
-										,'data' => array(
-											'posts_ids' => $postsIdsFound1
+									$originalTextNeedProcess1 = $this->optimize_traffic_remove_escaped_string($originalTextNeedProcess1);
+									
+									$postsIdsFound1 = array();
+									
+									$rsSearchPost1 = $this->optimize_traffic_search_post_by_text($originalTextNeedProcess1, array(
+										'group_text_weight' => array(
+											array(
+												'text' => $post->post_title
+												,'weight' => 4
+											)
+											,array(
+												'text' => $post->post_excerpt
+												,'weight' => 3
+											)
+											,array(
+												'text' => implode(' ',$rsGetTerms2)
+												,'weight' => 3
+											)
+											,array(
+												'text' => $originalTextNeedProcess1
+												,'weight' => 8
+											)
 										)
+										,'exclude_posts_ids' => array($post->ID)
+										,'limit' => $valueOne['module_mumber_of_items']
+										,'key_cache' => $valueOne['module_type'].'_'.$valueOne['module_position']
 									));
 									
-									if($rsCreateTrafficModule1['module']) {
-										$originalTextNeedProcess1 = '';
-										$patternsModulesReplaceText_K = $valueTwo;
-										$patternsModulesReplaceText_V = $valueTwo.' '.$rsCreateTrafficModule1['module'];
-										$patternsModulesReplaceText[$patternsModulesReplaceText_K] = $patternsModulesReplaceText_V;
-										break;
+									if($rsSearchPost1) {
+										
+										foreach($rsSearchPost1 as $keyThree => $valueThree) {
+											$postsIdsFound1[] = $valueThree['post_id'];
+										}
+									}
+									
+									if(count($postsIdsFound1)>0) {
+										$rsCreateTrafficModule1 = $this->optimize_traffic_create_traffic_module(array(
+											'option' => $valueOne
+											,'data' => array(
+												'posts_ids' => $postsIdsFound1
+											)
+										));
+										
+										if($rsCreateTrafficModule1['module']) {
+											$originalTextNeedProcess1 = '';
+											$patternsModulesReplaceText_K = $valueTwo;
+											$patternsModulesReplaceText_V = $valueTwo.' '.$rsCreateTrafficModule1['module'];
+											$patternsModulesReplaceText[$patternsModulesReplaceText_K] = $patternsModulesReplaceText_V;
+											break;
+										}
+										
 									}
 									
 								}
-								
-								
 							
 							}
 							
@@ -430,9 +474,11 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		}
 		
 		
+		if(count($patternsEscaped1)>0) {
+			$input_text = str_replace(array_values($patternsEscaped1),array_keys($patternsEscaped1),$input_text);
+		}
 		
-		
-		return $input_text; 
+		return $input_text;
 	}
 	
 	

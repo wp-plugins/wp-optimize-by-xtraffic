@@ -86,19 +86,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		));
 		
 		
-		
-		
-		
-		
-		
-		/*
-		if(function_exists('extension_loaded')) {
-			if (extension_loaded('gd') || extension_loaded('gd2')) {
-				
-			}
-		}
-		*/
-		
 		if(!function_exists('gd_info')) {
 			$resultData['notice']['error'][] = '<div class="update-nag fade"><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('Your server need to install the GD library to use',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'"<b>Optimize Image File</b>" (<a href="http://php.net/manual/en/book.image.php" target="_blank"><b>'.__('details here',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</b></a>)</div>';
 			$resultData['notice']['error_no'][] = 20;
@@ -235,12 +222,49 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 	
 	
 	
+	public function optimize_images_clean_unuse_image($input_parameters)
+	{
+		if(
+			isset($input_parameters['optimized_image_folder_path'])
+			&& $input_parameters['optimized_image_folder_path']
+			&& isset($input_parameters['key_file'])
+			&& $input_parameters['key_file']
+			
+		) {
+			
+			
+			$globPaths1 = $input_parameters['optimized_image_folder_path'] . '*.*';
+			$globPaths1 = glob($globPaths1);
+			
+			if($globPaths1 && is_array($globPaths1) && (count($globPaths1)>0)) {
+				
+				foreach ($globPaths1 as $filename1) {
+					
+					if($filename1 && file_exists($filename1)) {
+						if(PepVN_Data::isImg($filename1)) {
+							if(!preg_match('#-'.$input_parameters['key_file'].'(\.|\-)#',$filename1)) {
+								@unlink($filename1);
+							}
+						}
+					}
+					
+				}
+			}
+			
+			
+		}
+	}
+	
+	
+	
+	
 	
 	public function optimize_images_process_image($input_parameters)
 	{
 		$resultData = array();
 		$resultData['image_original_file_path'] = false;
 		$resultData['image_optimized_file_path'] = false;
+		$resultData['image_optimized_file_url'] = false;
 		
 		
 		$rsTemp = $this->optimize_images_check_system_ready();
@@ -250,17 +274,53 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		
 		
+		$options = false;
+		$paramsWatermarkOptions = false;
+		
+		if(isset($input_parameters['options']) && $input_parameters['options']) {
+			$options = $input_parameters['options'];
+		}
+		
+		if(isset($input_parameters['paramsWatermarkOptions']) && $input_parameters['paramsWatermarkOptions']) {
+			$paramsWatermarkOptions = $input_parameters['paramsWatermarkOptions'];
+		}
+		
+		$input_parameters['options'] = '';
+		$input_parameters['paramsWatermarkOptions'] = '';
+		
+		if(!$options) {
+		
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+			
+			
+		}
 		
 		
+		if(!$paramsWatermarkOptions) {
+		
+			$rsSettingWatermarksFirstOptions = $this->optimize_images_setting_watermarks_first_options(array(
+				'options' => $options
+			));
+			
+			$paramsWatermarkOptions = $rsSettingWatermarksFirstOptions['paramsWatermarkOptions'];
+			$options = $rsSettingWatermarksFirstOptions['options'];
+			
+			$rsSettingWatermarksFirstOptions = '';
+		}
 		
 		
+		if(isset($input_parameters['plusOptions']) && is_array($input_parameters['plusOptions'])) {
+			$options = PepVN_Data::mergeArrays(array(
+				$options
+				,$input_parameters['plusOptions']
+			));
+		}
 		
-		
-		$options = $input_parameters['options'];
-		$paramsWatermarkOptions = $input_parameters['paramsWatermarkOptions'];
 		
 		$checkStatus1 = false;
-										
+		
 		if(isset($paramsWatermarkOptions['text']) && $paramsWatermarkOptions['text']) {
 			if(is_array($paramsWatermarkOptions['text'])) {
 				if(count($paramsWatermarkOptions['text'])>0) {
@@ -310,6 +370,13 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			$isProcessStatus = true;
 		}
 		
+		if($isProcessStatus) {
+			if(isset($input_parameters['original_image_src']) && $input_parameters['original_image_src']) {
+				
+			} else {
+				$isProcessStatus = false;
+			}
+		}
 		
 		if($isProcessStatus) {
 			$options['optimize_images_maximum_files_handled_each_request'] = (int)$options['optimize_images_maximum_files_handled_each_request'];
@@ -320,13 +387,159 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			}
 		}
 		
+		
+		if($isProcessStatus) {
+			if(!isset($input_parameters['optimized_image_file_name'])) {
+				$input_parameters['optimized_image_file_name'] = '';
+			}
+			if(!$input_parameters['optimized_image_file_name']) {
+				$imgPathInfo = pathinfo($input_parameters['original_image_src']);
+				if(isset($imgPathInfo['filename']) && $imgPathInfo['filename']) {
+					$input_parameters['optimized_image_file_name'] = trim($imgPathInfo['filename']);
+				}
+			}
+			
+			if(!$input_parameters['optimized_image_file_name']) {
+				$isProcessStatus = false;
+			}
+		}
+		
+		
 		if(!$isProcessStatus) {
 			return $resultData;
 		}
 		
 		
+		
+		
+		
+		
+		if(!isset($input_parameters['resize_max_width'])) {
+			$input_parameters['resize_max_width'] = 0;
+		}
+		$input_parameters['resize_max_width'] = (int)$input_parameters['resize_max_width'];
+		$input_parameters['resize_max_width'] = abs($input_parameters['resize_max_width']);
+		if(!isset($input_parameters['resize_max_height'])) {
+			$input_parameters['resize_max_height'] = 0;
+		}
+		$input_parameters['resize_max_height'] = (int)$input_parameters['resize_max_height'];
+		$input_parameters['resize_max_height'] = abs($input_parameters['resize_max_height']);
+		
+		if(!isset($input_parameters['optimized_image_folder_path'])) {
+			$input_parameters['optimized_image_folder_path'] = '';
+		}
+		
+		if(!$input_parameters['optimized_image_folder_path']) {
+		
+			$input_parameters['optimized_image_folder_path'] = $this->pepvn_UploadsImgFolderPath;
+			
+			$imgKey1 = array();
+			$imgKey1[] = $this->fullDomainName;
+			$imgKey1[] = $input_parameters['original_image_src'];
+			$imgKey1 = PepVN_Data::createKey($imgKey1);
+			$imgKey1 = PepVN_Data::mhash($imgKey1,8);
+			
+			$input_parameters['optimized_image_folder_path'] .= $imgKey1 . DIRECTORY_SEPARATOR;
+			
+		}
+		
+
+		$keyConfigsProcessedData = '';
+		
+		if(isset($options['optimize_images_handle_again_files_different_configuration_enable']) && ('on' === $options['optimize_images_handle_again_files_different_configuration_enable'])) {
+			
+			$fieldsKeysProcessedData = array(
+				'optimize_images_watermarks_enable'
+				,'optimize_images_watermarks_watermark_position'
+				,'optimize_images_watermarks_watermark_type'
+				,'optimize_images_watermarks_watermark_text_value'
+				,'optimize_images_watermarks_watermark_text_font_name'
+				,'optimize_images_watermarks_watermark_text_size'
+				,'optimize_images_watermarks_watermark_text_color'
+				,'optimize_images_watermarks_watermark_text_margin_x'
+				,'optimize_images_watermarks_watermark_text_margin_y'
+				,'optimize_images_watermarks_watermark_text_opacity_value'
+				,'optimize_images_watermarks_watermark_text_background_enable'
+				,'optimize_images_watermarks_watermark_text_background_color'
+				,'optimize_images_watermarks_watermark_image_url'
+				,'optimize_images_watermarks_watermark_image_width'
+				,'optimize_images_watermarks_watermark_image_margin_x'
+				,'optimize_images_watermarks_watermark_image_margin_y'
+				,'optimize_images_image_quality_value'
+				,'optimize_images_rename_img_filename_value'
+			);
+			
+			$keyConfigsProcessedData = array();
+			foreach($fieldsKeysProcessedData as $value1) {
+				if($value1) {
+					if(isset($options[$value1])) {
+						$keyConfigsProcessedData[$value1] = $options[$value1];
+					}
+				}
+			}
+			
+			
+			$keyConfigsProcessedData = PepVN_Data::createKey($keyConfigsProcessedData);
+		}
+		
+		$keyConfigsProcessedData = trim($keyConfigsProcessedData);
+		
+		$keyFileConfigsProcessedData = $keyConfigsProcessedData;
+		$keyFileConfigsProcessedData = md5($keyFileConfigsProcessedData);
+		$keyFileConfigsProcessedData = PepVN_Data::mhash($keyFileConfigsProcessedData,2);
+		
+		$input_parameters['optimized_image_file_name'] = PepVN_Data::replaceSpecialChar($input_parameters['optimized_image_file_name'],' ');
+		$input_parameters['optimized_image_file_name'] = PepVN_Data::removeVietnameseSign($input_parameters['optimized_image_file_name']);
+		$input_parameters['optimized_image_file_name'] = PepVN_Data::reduceSpace($input_parameters['optimized_image_file_name']);
+		$input_parameters['optimized_image_file_name'] = trim($input_parameters['optimized_image_file_name']);
+		$input_parameters['optimized_image_file_name'] = preg_replace('#[ \t]+#i','-',$input_parameters['optimized_image_file_name']);
+		
+		$imgOptimizedFilePathExists1  = false;
+		$input_parameters['optimized_image_file_name'] = $this->optimize_images_fixFileName($input_parameters['optimized_image_file_name']);
+		$imgOptimizedFilePath1 = $input_parameters['optimized_image_folder_path'] . $input_parameters['optimized_image_file_name'] . '-' . $keyFileConfigsProcessedData;
+		
+		if(
+			($input_parameters['resize_max_width']>0)
+			|| ($input_parameters['resize_max_height']>0)
+		) {
+			$imgOptimizedFilePath1 .= '-'.$input_parameters['resize_max_width'].'x'.$input_parameters['resize_max_height'];
+		}
+		
+		foreach($this->imgExtensionsAllow as $keyTwo => $valueTwo) {
+			if($valueTwo) {
+				$valueTwoTemp1 = $imgOptimizedFilePath1.'.'.$valueTwo;
+				if(file_exists($valueTwoTemp1)) {
+					if(filesize($valueTwoTemp1)>0) {
+						$imgOptimizedFilePathExists1 = $valueTwoTemp1;
+						break;
+					}
+				}
+			
+			}
+		}
+		
+		if($imgOptimizedFilePathExists1) {
+			$resultData['image_optimized_file_path'] = $imgOptimizedFilePathExists1;
+			$resultData['image_optimized_file_url'] = str_replace($this->pepvn_UploadsImgFolderPath,$this->pepvn_UploadsImgFolderUrl,$resultData['image_optimized_file_path']);
+		}
+		
+		
+		
+		$checkStatus1 = false;
+		
+		if(isset($input_parameters['action']) && $input_parameters['action']) {
+			if('do_process_image' === $input_parameters['action']) {
+				$checkStatus1 = true;
+			}
+		}
+		
+		if(!$checkStatus1) {
+			return $resultData;
+		}
+		
 		if(isset($input_parameters['original_image_src']) && $input_parameters['original_image_src']) {
-			if(preg_match_all('#https?://.+#i', $input_parameters['original_image_src'], $matched1)) {
+			//if(preg_match('#^https?://.+#i', $input_parameters['original_image_src'], $matched1)) {
+			if(PepVN_Data::isUrl($input_parameters['original_image_src'])) {
 				
 				$imgOptimizedFilePath = false;
 				
@@ -334,8 +547,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 				
 				if($input_parameters['optimized_image_folder_path'] && file_exists($input_parameters['optimized_image_folder_path'])) {
 				} else {
-					
-								
 					PepVN_Data::createFolder($input_parameters['optimized_image_folder_path'], WPOPTIMIZEBYXTRAFFIC_CHMOD);
 					PepVN_Data::chmod($input_parameters['optimized_image_folder_path'],WPOPTIMIZEBYXTRAFFIC_PATH,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 					
@@ -343,52 +554,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 				
 				if(file_exists($input_parameters['optimized_image_folder_path'])  && PepVN_Data::isAllowReadAndWrite(PepVN_Data::getFolderPath($input_parameters['optimized_image_folder_path']))) {
 					
-					$originalImageSrcHash = PepVN_Data::mhash($input_parameters['original_image_src'],4);
 					$originalImageSrcMd5 = md5($input_parameters['original_image_src']);
-					
-					$input_parameters['optimized_image_file_name'] = $this->optimize_images_fixFileName($input_parameters['optimized_image_file_name']);
-					
-					
-					$optimizedImageFileName1 = $input_parameters['optimized_image_file_name'].'-'.$originalImageSrcHash;
-					
-					$imgOptimizedFilePath1 = $input_parameters['optimized_image_folder_path'] . $this->optimize_images_fixFileName($optimizedImageFileName1);
-					
-					$keyConfigsProcessedData = false;
-					if(isset($options['optimize_images_handle_again_files_different_configuration_enable']) && ('on' == $options['optimize_images_handle_again_files_different_configuration_enable'])) {
-						
-						$fieldsKeysProcessedData = array(
-							'optimize_images_watermarks_enable'
-							,'optimize_images_watermarks_watermark_position'
-							,'optimize_images_watermarks_watermark_type'
-							,'optimize_images_watermarks_watermark_text_value'
-							,'optimize_images_watermarks_watermark_text_font_name'
-							,'optimize_images_watermarks_watermark_text_size'
-							,'optimize_images_watermarks_watermark_text_color'
-							,'optimize_images_watermarks_watermark_text_margin_x'
-							,'optimize_images_watermarks_watermark_text_margin_y'
-							,'optimize_images_watermarks_watermark_text_opacity_value'
-							,'optimize_images_watermarks_watermark_text_background_enable'
-							,'optimize_images_watermarks_watermark_text_background_color'
-							,'optimize_images_watermarks_watermark_image_url'
-							,'optimize_images_watermarks_watermark_image_width'
-							,'optimize_images_watermarks_watermark_image_margin_x'
-							,'optimize_images_watermarks_watermark_image_margin_y'
-							,'optimize_images_image_quality_value'
-							,'optimize_images_rename_img_filename_value'
-						);
-						
-						$keyConfigsProcessedData = array();
-						foreach($fieldsKeysProcessedData as $value1) {
-							if($value1) {
-								if(isset($options[$value1])) {
-									$keyConfigsProcessedData[$value1] = $options[$value1];
-								}
-							}
-						}
-						
-						
-						$keyConfigsProcessedData = PepVN_Data::createKey($keyConfigsProcessedData);
-					}
 					
 					$filePathStoreConfigsProcessedData = $input_parameters['optimized_image_folder_path'].'processed_data.txt';
 					
@@ -446,6 +612,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						
 						if($checkStatus1) {
 							$resultData['image_optimized_file_path'] = $imgOptimizedFilePath2;
+							$resultData['image_optimized_file_url'] = str_replace($this->pepvn_UploadsImgFolderPath,$this->pepvn_UploadsImgFolderUrl,$resultData['image_optimized_file_path']);
 							break;
 						}
 					}
@@ -457,34 +624,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 					}
 					
 					
-					if($resultData['image_optimized_file_path']) {
-						
-						if($keyConfigsProcessedData) {
-							if(isset($options['optimize_images_remove_files_available_different_configuration_enable']) && ('on' == $options['optimize_images_remove_files_available_different_configuration_enable'])) {
-							
-								$globPaths1 = $input_parameters['optimized_image_folder_path'] . '*-'.$originalImageSrcHash.'.*';
-								$globPaths1 = glob($globPaths1);
-								
-								
-								if($globPaths1 && (count($globPaths1)>0)) {
-									
-									foreach ($globPaths1 as $filename1) {
-										
-										if($filename1 && file_exists($filename1)) {
-											if($filename1 !== $resultData['image_optimized_file_path']) {
-												unlink($filename1);
-											}
-											
-										}
-										
-									}
-								}
-								
-								
-							}
-						}
-						
-					} else {
+					if(!$resultData['image_optimized_file_path']) {
 					
 						$imgFolderCachePath = $this->pepvn_ImgFolderCachePath;
 						
@@ -525,8 +665,69 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										
 										if(isset($imgOriginalCacheFile_RsGetImageFileInfo['image_type']) && $imgOriginalCacheFile_RsGetImageFileInfo['image_type']) {
 											
+											PepVN_Data::$defaultParams['optimize_images']['number_images_processed_request']++;
+											
 											$imgOptimizedFilePath1 .= '.'.$imgOriginalCacheFile_RsGetImageFileInfo['image_type'];
+											
+											if(!file_exists($imgOptimizedFilePath1)) {
+												@file_put_contents($imgOptimizedFilePath1,'');
+											}
+											
+											
+											
+											$isCanProcessFileStatus1 = true;
+											
+											if(
+												($options['optimize_images_file_minimum_width_height']>0) 
+												|| ($options['optimize_images_file_maximum_width_height']>0) 
+											) {
 												
+												$isCanProcessFileStatus1 = false;
+												
+												if(
+													isset($imgOriginalCacheFile_RsGetImageFileInfo['width'])
+													&& ($imgOriginalCacheFile_RsGetImageFileInfo['width'] > 0)
+													&& isset($imgOriginalCacheFile_RsGetImageFileInfo['height'])
+													&& ($imgOriginalCacheFile_RsGetImageFileInfo['height'] > 0)
+												) {
+													
+													$isCanProcessFileStatus1 = true;
+													
+													if($isCanProcessFileStatus1) {
+														if($options['optimize_images_file_minimum_width_height']>0) {
+															if(
+																($imgOriginalCacheFile_RsGetImageFileInfo['width'] >= $options['optimize_images_file_minimum_width_height'])
+																&& ($imgOriginalCacheFile_RsGetImageFileInfo['height'] >= $options['optimize_images_file_minimum_width_height'])
+															) {
+																
+															} else {
+																$isCanProcessFileStatus1 = false;
+															}
+														}
+													}
+													
+													if($isCanProcessFileStatus1) {
+														if($options['optimize_images_file_maximum_width_height']>0) {
+															if(
+																($imgOriginalCacheFile_RsGetImageFileInfo['width'] <= $options['optimize_images_file_maximum_width_height'])
+																&& ($imgOriginalCacheFile_RsGetImageFileInfo['height'] <= $options['optimize_images_file_maximum_width_height'])
+															) {
+																
+															} else {
+																$isCanProcessFileStatus1 = false;
+															}
+														}
+													}
+												}
+												
+												
+											}
+											
+											if(!$isCanProcessFileStatus1) {
+												return $resultData;
+											}
+											
+											
 											$resultData['image_original_file_path'] = $imgOriginalCacheFilePath;
 											
 											
@@ -536,7 +737,96 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											}
 											$pepVN_PHPImage->setQuality($options['optimize_images_image_quality_value']);
 											
-											if($paramsWatermarkOptions['text']) {
+											
+											$imgOriginalCacheFile_RatioWidthPerHeight = $imgOriginalCacheFile_RsGetImageFileInfo['width'] / $imgOriginalCacheFile_RsGetImageFileInfo['height'];
+											$imgOriginalCacheFile_RatioWidthPerHeight = (float)$imgOriginalCacheFile_RatioWidthPerHeight;
+											
+
+											$resizeImgNewWidth = 0;
+											$resizeImgNewHeight = 0;
+											
+											$isCanWatermarkStatus1 = true;
+											
+											if(
+												($input_parameters['resize_max_width']>0)
+												|| ($input_parameters['resize_max_height']>0)
+											) {
+												if($isCanWatermarkStatus1) {
+													if($options['optimize_images_file_minimum_width_height']>0) {
+														if(
+															($input_parameters['resize_max_width'] >= $options['optimize_images_file_minimum_width_height'])
+															&& ($input_parameters['resize_max_height'] >= $options['optimize_images_file_minimum_width_height'])
+														) {
+															
+														} else {
+															$isCanWatermarkStatus1 = false;
+														}
+													}
+												}
+												
+												if($isCanWatermarkStatus1) {
+													if($options['optimize_images_file_maximum_width_height']>0) {
+														if(
+															($input_parameters['resize_max_width'] <= $options['optimize_images_file_maximum_width_height'])
+															&& ($input_parameters['resize_max_height'] <= $options['optimize_images_file_maximum_width_height'])
+														) {
+															
+														} else {
+															$isCanWatermarkStatus1 = false;
+														}
+													}
+												}
+												
+												
+												$resizeImgNewWidth = $input_parameters['resize_max_width'];
+												$resizeImgNewHeight = $input_parameters['resize_max_height'];
+												
+												if($resizeImgNewWidth>$imgOriginalCacheFile_RsGetImageFileInfo['width']) {
+													$resizeImgNewWidth = $imgOriginalCacheFile_RsGetImageFileInfo['width'];
+												}
+												
+												if($resizeImgNewHeight>$imgOriginalCacheFile_RsGetImageFileInfo['height']) {
+													$resizeImgNewHeight = $imgOriginalCacheFile_RsGetImageFileInfo['height'];
+												}
+												
+												if($resizeImgNewWidth>0) {
+													if(0 === $resizeImgNewHeight) {
+														$resizeImgNewHeight = ceil($resizeImgNewWidth / $imgOriginalCacheFile_RatioWidthPerHeight);
+													}
+												}
+												
+												if($resizeImgNewHeight>0) {
+													if(0 === $resizeImgNewWidth) {
+														$resizeImgNewWidth = ceil($resizeImgNewHeight * $imgOriginalCacheFile_RatioWidthPerHeight);
+													}
+												}
+												
+												
+												if(
+													($resizeImgNewWidth>0)
+													&& ($resizeImgNewHeight>0)
+												) {
+													$pepVN_PHPImage->resize($resizeImgNewWidth, $resizeImgNewHeight, false, false);
+												}
+												
+											}
+
+											
+											
+											if(
+												($resizeImgNewWidth>0)
+												&& ($resizeImgNewHeight>0)
+											) {
+												$targetImgNeedWatermark_Width = $resizeImgNewWidth;
+												$targetImgNeedWatermark_Height = $resizeImgNewHeight;
+											} else {
+												$targetImgNeedWatermark_Width = $imgOriginalCacheFile_RsGetImageFileInfo[0];
+												$targetImgNeedWatermark_Height = $imgOriginalCacheFile_RsGetImageFileInfo[1];
+											}
+											
+
+											
+											if($paramsWatermarkOptions['text'] && $isCanWatermarkStatus1) {
 												
 												$watermarkTextBoxWidth = 0;
 												$watermarkTextBoxHeight = 0;
@@ -565,7 +855,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 																$valueTemp = 100;
 															}
 															
-															$watermarkTextBoxWidth = $imgOriginalCacheFile_RsGetImageFileInfo[0] * ($valueTemp / 100);
+															$watermarkTextBoxWidth = $targetImgNeedWatermark_Width * ($valueTemp / 100);
 															$watermarkTextBoxWidth = floor($watermarkTextBoxWidth);
 															$watermarkTextBoxWidth = (int)$watermarkTextBoxWidth;
 															
@@ -668,9 +958,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 																		if(false !== stripos($value1,'_left')) {
 																			$paramsWatermarkOptions_Temp1['x'] = 0 + abs((int)$options['optimize_images_watermarks_watermark_text_margin_x']);
 																		} else if(false !== stripos($value1,'_center')) {
-																			$paramsWatermarkOptions_Temp1['x'] = floor(abs($imgOriginalCacheFile_RsGetImageFileInfo[0] - $watermarkTextBoxWidth)/2) + $options['optimize_images_watermarks_watermark_text_margin_x'];
+																			$paramsWatermarkOptions_Temp1['x'] = floor(abs($targetImgNeedWatermark_Width - $watermarkTextBoxWidth)/2) + $options['optimize_images_watermarks_watermark_text_margin_x'];
 																		} else if(false !== stripos($value1,'_right')) {
-																			$paramsWatermarkOptions_Temp1['x'] = $imgOriginalCacheFile_RsGetImageFileInfo[0] - $watermarkTextBoxWidth - abs((int)$options['optimize_images_watermarks_watermark_text_margin_x']);
+																			$paramsWatermarkOptions_Temp1['x'] = $targetImgNeedWatermark_Width - $watermarkTextBoxWidth - abs((int)$options['optimize_images_watermarks_watermark_text_margin_x']);
 																		}
 																		
 																		$paramsWatermarkOptions_Temp1['boxPaddingX'] = abs((int)$boxPaddingX); 
@@ -697,7 +987,8 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											}
 											
 											
-											if($paramsWatermarkOptions['image']) {
+											if($paramsWatermarkOptions['image'] && $isCanWatermarkStatus1) {
+											
 												if(isset($paramsWatermarkOptions['image']['watermark_image_file_path']) && $paramsWatermarkOptions['image']['watermark_image_file_path']) {
 												
 													$options['optimize_images_watermarks_watermark_image_margin_x'] = (int)$options['optimize_images_watermarks_watermark_image_margin_x'];
@@ -745,7 +1036,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 																	$percentNewSize = 100;
 																}
 																
-																$watermarkNewBoxWidth = floor($imgOriginalCacheFile_RsGetImageFileInfo[0] * ($percentNewSize/100));
+																$watermarkNewBoxWidth = floor($targetImgNeedWatermark_Width * ($percentNewSize/100));
 																$watermarkNewBoxWidth = (int)$watermarkNewBoxWidth;
 																
 																$watermarkNewBoxHeight = floor($watermarkNewBoxWidth / $watermarkActualBoxRatio_WidthPerHeight);
@@ -802,9 +1093,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 																		if(false !== stripos($value1,'_left')) {
 																			$paramsWatermarkOptions_Temp1['x'] = 0 + abs((int)$options['optimize_images_watermarks_watermark_image_margin_x']);
 																		} else if(false !== stripos($value1,'_center')) {
-																			$paramsWatermarkOptions_Temp1['x'] = floor(abs($imgOriginalCacheFile_RsGetImageFileInfo[0] - $watermarkNewBoxWidth)/2) + $options['optimize_images_watermarks_watermark_image_margin_x'];
+																			$paramsWatermarkOptions_Temp1['x'] = floor(abs($targetImgNeedWatermark_Width - $watermarkNewBoxWidth)/2) + $options['optimize_images_watermarks_watermark_image_margin_x'];
 																		} else if(false !== stripos($value1,'_right')) {
-																			$paramsWatermarkOptions_Temp1['x'] = $imgOriginalCacheFile_RsGetImageFileInfo[0] - $watermarkNewBoxWidth - abs((int)$options['optimize_images_watermarks_watermark_image_margin_x']);
+																			$paramsWatermarkOptions_Temp1['x'] = $targetImgNeedWatermark_Width - $watermarkNewBoxWidth - abs((int)$options['optimize_images_watermarks_watermark_image_margin_x']);
 																		}
 																																			
 																		
@@ -849,19 +1140,12 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 												}
 												
 												
-												
-												
-												
-												
-												
 											}
 											
 											
 											
 											$pepVN_PHPImage->save($imgOptimizedFilePath1,false,true);
 											$pepVN_PHPImage->cleanup();
-											
-											PepVN_Data::$defaultParams['optimize_images']['number_images_processed_request']++;
 											
 										}
 										
@@ -872,6 +1156,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											if($valueTemp2 && ($valueTemp2>0)) {
 												
 												$resultData['image_optimized_file_path'] = $valueTemp1;
+												$resultData['image_optimized_file_url'] = str_replace($this->pepvn_UploadsImgFolderPath,$this->pepvn_UploadsImgFolderUrl,$resultData['image_optimized_file_path']);
 												
 											}
 											
@@ -887,6 +1172,22 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						
 					}
 					
+					
+					if($resultData['image_optimized_file_path']) {
+						
+						if($keyConfigsProcessedData) {
+						
+							if(isset($options['optimize_images_remove_files_available_different_configuration_enable']) && ('on' === $options['optimize_images_remove_files_available_different_configuration_enable'])) {
+								
+								$this->optimize_images_clean_unuse_image(array(
+									'optimized_image_folder_path' => $input_parameters['optimized_image_folder_path']
+									,'key_file' => $keyFileConfigsProcessedData
+								));
+								
+							}
+						}
+						
+					}
 					
 					
 					
@@ -917,13 +1218,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$resultData = array(
 		);
 		
-		
-		
-		
-		
-		
 		$options = false;
-		
 		
 		if(isset($input_parameters['options']) && $input_parameters['options']) {
 			$options = $input_parameters['options'];
@@ -931,7 +1226,20 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		}
 		
 		if(!$options) {
-			$options = $this->get_options();
+			$options = $this->get_options(array(
+				'cache_status' => 1
+			));
+		}
+		
+		
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,$options
+			,'optimize_images_setting_watermarks_first_options'
+		));
+		
+		if(isset($this->baseCacheData[$keyCache1]) && $this->baseCacheData[$keyCache1]) {
+			return $this->baseCacheData[$keyCache1];
 		}
 		
 		$options['optimize_images_watermarks_watermark_text_background_opacity_value'] = 100;
@@ -1245,6 +1553,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$resultData['options'] = $options;
 		$resultData['paramsWatermarkOptions'] = $paramsWatermarkOptions;
 		
+		$this->baseCacheData[$keyCache1] = $resultData;
+		
+		
 		return $resultData;
 	}
 	
@@ -1300,7 +1611,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		$patternsEscaped = array();
 		
-		$options = $this->get_options();
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
 		
 		if(!isset($options['optimize_images_alttext'])) {
 			$options['optimize_images_alttext'] = '';
@@ -1346,6 +1659,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		$patternsReplace = array();
 		$patternsReplaceImgSrc = array();
+		$patternsPregReplace = array();
 		
 		
 		
@@ -1459,7 +1773,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						$checkStatus2 = false;
 						
 						if($this->hostHasToolToProcessImage) {
-							//if(PepVN_Data::isImg($imgSrc)) {
 							if(PepVN_Data::isUrl($imgSrc)) { 
 								$checkStatus2 = true;
 							}
@@ -1467,21 +1780,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						}
 						
 						if($checkStatus2) {
-							
-							$uploadsImgFolderPath1 = $this->pepvn_UploadsImgFolderPath;
-							$valueTemp = $this->fullDomainName;
-							if($valueTemp) {
-								$valueTemp = PepVN_Data::strtolower($valueTemp);
-								$valueTemp = trim($valueTemp);
-								if($valueTemp) {
-									$uploadsImgFolderPath1 .= $valueTemp . DIRECTORY_SEPARATOR;
-								}
-								
-							}
-							
-							$uploadsImgFolderPath1 .= 'post-'.$currentPostId . DIRECTORY_SEPARATOR;
-							
-							
 							
 							$imgNewName = $imgName;
 							
@@ -1504,44 +1802,30 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 								
 							}
 							
-							$imgNewName = PepVN_Data::replaceSpecialChar($imgNewName,' ');
-							$imgNewName = PepVN_Data::removeVietnameseSign($imgNewName);
-							$imgNewName = PepVN_Data::reduceSpace($imgNewName);
-							$imgNewName = trim($imgNewName);
-							$imgNewName = preg_replace('#[ \t]+#i','-',$imgNewName);
+							$imgOptimizedFilePathExists1 = false;
+							
+							$rsProcessImage1 = $this->optimize_images_process_image(array(
+								'optimized_image_file_name' => $imgNewName
+								,'original_image_src' => $imgSrc
+								,'options' => $options
+								,'paramsWatermarkOptions' => $paramsWatermarkOptions
+							));
 							
 							
-							$imgOptimizedFilePathExists1  = false;
-							
-							
-							$originalImageSrcHash1 = PepVN_Data::mhash($imgSrc,4);
-							$imgNewName1 = $this->optimize_images_fixFileName($imgNewName);
-							$optimizedImageFileName1 = $imgNewName1.'-'.$originalImageSrcHash1;
-							$imgOptimizedFilePath1 = $uploadsImgFolderPath1 . $this->optimize_images_fixFileName($optimizedImageFileName1);
-							foreach($this->imgExtensionsAllow as $keyTwo => $valueTwo) {
-								if($valueTwo) {
-									$valueTwoTemp1 = $imgOptimizedFilePath1.'.'.$valueTwo;
-									if(file_exists($valueTwoTemp1)) {
-										if(filesize($valueTwoTemp1)>0) {
-											$imgOptimizedFilePathExists1 = $valueTwoTemp1;
-											break;
-										}
-									}
-								
-								}
+							if($rsProcessImage1['image_optimized_file_path']) {
+								$imgOptimizedFilePathExists1 = $rsProcessImage1['image_optimized_file_path'];
 							}
-							
 							
 							if(!$imgOptimizedFilePathExists1) {
 							
 								if(isset($options['optimize_images_optimize_image_file_enable']) && $options['optimize_images_optimize_image_file_enable']) {
 									
 									$rsProcessImage1 = $this->optimize_images_process_image(array(
-										'optimized_image_folder_path' => $uploadsImgFolderPath1
-										,'optimized_image_file_name' => $imgNewName
+										'optimized_image_file_name' => $imgNewName
 										,'original_image_src' => $imgSrc
 										,'options' => $options
 										,'paramsWatermarkOptions' => $paramsWatermarkOptions
+										,'action' => 'do_process_image'
 									));
 									
 									
@@ -1562,6 +1846,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 										$newImgTag = str_replace($imgSrc,$imgSrc2,$newImgTag);
 										
 										$patternsReplaceImgSrc[$imgSrc] = $imgSrc2;
+										
+										//$oldImgSrc2 = preg_replace('#\-[0-9]+x[0-9]+\.(jpe?g|gif|png)$#i','',$imgSrc);
+										//$patternsPregReplace['#'.PepVN_Data::preg_quote($oldImgSrc2).'(\-[0-9]+x[0-9]+)?\.(jpe?g|gif|png)#i'] = $imgSrc2;
 									}
 								}
 							}
@@ -1574,7 +1861,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 					
 					
 					if($oldImgTag !== $newImgTag) {
-						$patternsReplace[$oldImgTag] = $newImgTag;
+						$patternsReplace[$oldImgTag] = $newImgTag; 
 					}
 					
 				}
@@ -1584,6 +1871,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			
 			if(count($patternsReplace)>0) {
 				$text = str_replace(array_keys($patternsReplace),array_values($patternsReplace),$text);
+			}
+			
+			if(count($patternsPregReplace)>0) {
+				$text = preg_replace(array_keys($patternsPregReplace),array_values($patternsPregReplace),$text);
 			}
 			
 			
@@ -1611,8 +1902,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 	
 	
 	
-
-		
 	public function optimize_images_the_content_filter($text) 
 	{
 		if(is_single() || is_page() || is_singular()) {
@@ -1686,6 +1975,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 									,'original_image_src' => $imgSrc
 									,'options' => $options
 									,'paramsWatermarkOptions' => $paramsWatermarkOptions
+									,'action' => 'do_process_image'
 								));
 								
 								if($rsProcessImage1['image_optimized_file_path']) {
@@ -1742,6 +2032,9 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$optimize_images_watermarks_watermark_position = $options['optimize_images_watermarks_watermark_position'];
 		$optimize_images_watermarks_watermark_opacity_value = $options['optimize_images_watermarks_watermark_opacity_value'];
 		$optimize_images_watermarks_watermark_type = $options['optimize_images_watermarks_watermark_type'];
+		
+		$optimize_images_file_minimum_width_height = (int)$options['optimize_images_file_minimum_width_height'];
+		$optimize_images_file_maximum_width_height = (int)$options['optimize_images_file_maximum_width_height'];
 		
 		
 		$optimize_images_watermarks_watermark_text_value = $options['optimize_images_watermarks_watermark_text_value'];
@@ -2000,6 +2293,21 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							<br /><hr /><br />
 							
 							<div id="optimize_images_optimize_file_container">
+							
+								<ul>
+									<h3>',__('Images Limit Size (Width & Height)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h3>
+									<li>
+										<label for="optimize_images_file_minimum_width_height">',__('Miminum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :  </label> &nbsp;
+										<input type="text" name="optimize_images_file_minimum_width_height" class="" value="',$optimize_images_file_minimum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+										
+									</li>
+									<li>
+										<label for="optimize_images_file_maximum_width_height"> ',__('Maximum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label> &nbsp; 
+										<input type="text" name="optimize_images_file_maximum_width_height" class="" value="',$optimize_images_file_maximum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+										
+									</li>
+									
+								</ul>
 								
 								<h3>WATERMARK</h3>
 								
@@ -2056,6 +2364,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 											',$watermark_type_html,'
 										</div>
 									</div>
+									
 									<br /> 
 									
 									

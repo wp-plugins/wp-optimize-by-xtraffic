@@ -1,5 +1,8 @@
 <?php
 
+
+
+
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Cache.php');
 
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Data.php');
@@ -7,6 +10,8 @@ require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Data.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Images.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_CSSmin.php');
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_JSMin.php'); 
+
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Minify_HTML.php');
 
 require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/PepVN_Mobile_Detect.php');
 
@@ -288,7 +293,7 @@ class WPOptimizeByxTraffic_Base
 	public function base_clear_config_content($htaccess_content)
 	{
 		
-		$htaccess_content = preg_replace('/\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#/is','',$htaccess_content);
+		$htaccess_content = preg_replace('/\s*?\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#\s*?/is', PHP_EOL ,$htaccess_content);
 		
 		return $htaccess_content;
 	}
@@ -358,53 +363,56 @@ ExpiresByType application/rss+xml "access plus 3600 seconds"
 ExpiresByType application/atom+xml "access plus 3600 seconds"
 
 # Favicon
-ExpiresByType image/x-icon "access plus 1296000 seconds"
+ExpiresByType image/x-icon "access plus 15552000 seconds"
 
 # Media: images, video, audio
-ExpiresByType image/gif "access plus 1296000 seconds"
-ExpiresByType image/png "access plus 1296000 seconds"
-ExpiresByType image/jpeg "access plus 1296000 seconds"
-ExpiresByType image/jpg "access plus 1296000 seconds"
-ExpiresByType video/ogg "access plus 1296000 seconds"
-ExpiresByType audio/ogg "access plus 1296000 seconds"
-ExpiresByType video/mp4 "access plus 1296000 seconds"
-ExpiresByType video/webm "access plus 1296000 seconds"
+ExpiresByType image/gif "access plus 15552000 seconds"
+ExpiresByType image/png "access plus 15552000 seconds"
+ExpiresByType image/jpeg "access plus 15552000 seconds"
+ExpiresByType image/jpg "access plus 15552000 seconds"
+ExpiresByType video/ogg "access plus 15552000 seconds"
+ExpiresByType audio/ogg "access plus 15552000 seconds"
+ExpiresByType video/mp4 "access plus 15552000 seconds"
+ExpiresByType video/webm "access plus 15552000 seconds"
 
 # HTC files  (css3pie)
-ExpiresByType text/x-component "access plus 1296000 seconds"
+ExpiresByType text/x-component "access plus 15552000 seconds"
 
 # Webfonts
-ExpiresByType application/x-font-ttf "access plus 1296000 seconds"
-ExpiresByType font/opentype "access plus 1296000 seconds"
-ExpiresByType application/x-font-woff "access plus 1296000 seconds"
-ExpiresByType image/svg+xml "access plus 1296000 seconds"
-ExpiresByType application/vnd.ms-fontobject "access plus 1296000 seconds"
+ExpiresByType application/x-font-ttf "access plus 15552000 seconds"
+ExpiresByType font/opentype "access plus 15552000 seconds"
+ExpiresByType font/woff2 "access plus 15552000 seconds"
+ExpiresByType application/x-font-woff "access plus 15552000 seconds"
+ExpiresByType image/svg+xml "access plus 15552000 seconds"
+ExpiresByType application/vnd.ms-fontobject "access plus 15552000 seconds"
 
 # CSS and JavaScript
-ExpiresByType text/css "access plus 1296000 seconds"
-ExpiresByType application/javascript "access plus 1296000 seconds"
-ExpiresByType text/javascript "access plus 1296000 seconds"
-ExpiresByType application/javascript "access plus 1296000 seconds"
-ExpiresByType application/x-javascript "access plus 1296000 seconds"
+ExpiresByType text/css "access plus 15552000 seconds"
+ExpiresByType application/javascript "access plus 15552000 seconds"
+ExpiresByType text/javascript "access plus 15552000 seconds"
+ExpiresByType application/javascript "access plus 15552000 seconds"
+ExpiresByType application/x-javascript "access plus 15552000 seconds"
 
 # Others files
-ExpiresByType application/x-shockwave-flash "access plus 1296000 seconds"
+ExpiresByType application/x-shockwave-flash "access plus 15552000 seconds"
+ExpiresByType application/octet-stream "access plus 15552000 seconds"
 </ifModule>
 
 
 <ifModule mod_headers.c>
 	<filesMatch "\.(ico|jpe?g|png|gif|swf)$">
-		Header set Cache-Control "public, max-age=1296000"
+		Header set Cache-Control "public, max-age=15552000"
 		Header set Pragma "public"
 	</filesMatch>
 	<filesMatch "\.(css)$">
-		Header set Cache-Control "public, max-age=1296000"
+		Header set Cache-Control "public, max-age=15552000"
 		Header set Pragma "public"
 	</filesMatch>
 	<filesMatch "\.(js)$">
-		Header set Cache-Control "public, max-age=1296000"
+		Header set Cache-Control "public, max-age=15552000"
 		Header set Pragma "public"
 	</filesMatch>
+	
 	Header set X-Powered-By "'.$pluginNameVersion.'"
 	Header set Server "'.$pluginNameVersion.'"
 </ifModule>
@@ -418,6 +426,7 @@ AddDefaultCharset UTF-8
 
 RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_URI} !^.*(wp-includes|wp-content|wp-admin|\.php).*$
 RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{QUERY_STRING} !.*=.*
 RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
@@ -433,6 +442,7 @@ RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.
 
 RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_URI} !^.*(wp-includes|wp-content|wp-admin|\.php).*$
 RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{QUERY_STRING} !.*=.*
 RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
@@ -452,7 +462,7 @@ RewriteRule ^(.*) "/wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.
 ';
 
 				$myHtaccessConfig = preg_replace('#\#[^\r\n]+#is','',$myHtaccessConfig);
-				$myHtaccessConfig = preg_replace('#[\r\n]+#is',PHP_EOL,$myHtaccessConfig);
+				$myHtaccessConfig = preg_replace('#[\r\n]{2,}#is',PHP_EOL . PHP_EOL,$myHtaccessConfig);
 				
 				$myHtaccessConfig = trim($myHtaccessConfig);
 				
@@ -567,25 +577,34 @@ location ~ /\. {
 	deny all;
 }
 
-keepalive_timeout 15;
+keepalive_timeout 60s;
+server_tokens off;
 
 gzip on;
 gzip_comp_level 2;
 gzip_min_length 1100;
-gzip_buffers  4 32k;
+gzip_buffers 4 8k;
 gzip_types text/css text/x-component application/json application/x-javascript application/javascript text/javascript text/x-js text/richtext image/svg+xml text/plain text/xsd text/xsl application/xml application/xml+rss text/xml image/x-icon;
 gzip_vary on;
+gzip_proxied any;
+gzip_disable "MSIE [1-6]\.";
+
+add_header X-Powered-By "'.$pluginNameVersion.'";
+add_header Server "'.$pluginNameVersion.'";
+add_header Connection "keep-alive";
 
 location ~ \.(css|htc|less|js|js2|js3|js4)$ {
-    expires 604800s;
+    expires 15552000s;
     add_header Pragma "public";
-    add_header Cache-Control "max-age=604800, public";
+    add_header Cache-Control "max-age=15552000, public";
+	access_log off; log_not_found off;
 }
 
-location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|woff|xla|xls|xlsx|xlt|xlw|zip)$ {
-    expires 1296000s;
+location ~ \.(asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|woff|woff2|xla|xls|xlsx|xlt|xlw|zip)$ {
+    expires 15552000s;
     add_header Pragma "public";
-    add_header Cache-Control "max-age=1296000, public";
+    add_header Cache-Control "max-age=15552000, public";
+	access_log off; log_not_found off;
 }
 
 
@@ -604,8 +623,7 @@ location ~ \.(rtf|rtx|svg|svgz|txt|xsd|xsl|xml)$ {
 #}
 
 
-add_header X-Powered-By "'.$pluginNameVersion.'";
-add_header Server "'.$pluginNameVersion.'";
+
 
 # '.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.' rules.
 
@@ -679,7 +697,7 @@ if ($http_user_agent ~* (1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a\ wa|abac|
 
 location / {
 	root '.$pathRootWP.';
-	index index.html index.php;
+	index index.php index.html index.htm default.html default.htm;
 	try_files /wp-content/cache/'.WPOPTIMIZEBYXTRAFFIC_OPTIMIZE_CACHE_SLUG.'/data/$http_host/$scheme/pc/$cache_uri/data/index.html $uri $uri/ /index.php?$args;
 }
 
@@ -1561,6 +1579,8 @@ LIMIT 0,'.($input_parameters['limit']).'
 			
 			'optimize_images_watermarks_watermark_opacity_value' => 100,
 			'optimize_images_watermarks_watermark_type' => 'text',
+			'optimize_images_file_minimum_width_height' => 150,	//x pixel
+			'optimize_images_file_maximum_width_height' => 0,		//x pixel
 			'optimize_images_watermarks_watermark_text_value' => $rs_parse_url['host'],
 			
 			'optimize_images_watermarks_watermark_text_font_name' => 'arial',
@@ -1942,6 +1962,8 @@ LIMIT 0,'.($input_parameters['limit']).'
 					,'optimize_images_watermarks_watermark_position'
 					,'optimize_images_watermarks_watermark_opacity_value'
 					,'optimize_images_watermarks_watermark_type'
+					,'optimize_images_file_minimum_width_height'
+					,'optimize_images_file_maximum_width_height'
 					,'optimize_images_watermarks_watermark_text_value'
 					,'optimize_images_watermarks_watermark_text_font_name'
 					,'optimize_images_watermarks_watermark_text_size'
@@ -1977,6 +1999,12 @@ LIMIT 0,'.($input_parameters['limit']).'
 						$options[$value1] = '';
 					}
 				}
+				
+				$keyField1 = 'optimize_images_file_minimum_width_height';
+				$options[$keyField1] = (int)$options[$keyField1];
+				
+				$keyField1 = 'optimize_images_file_maximum_width_height';
+				$options[$keyField1] = (int)$options[$keyField1];
 				
 			}
 			

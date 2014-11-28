@@ -75,6 +75,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
     * Asynchronous CSS Loading
   * Optimize HTML
     * Minify HTML
+  * CDN (Content Delivery Network) 
 * ***Optimize Traffic*** : this feature help reduce website's bounce rate, increase Time on Site, increase Pageviews per Visitor.
 	
 = Languages : =
@@ -106,6 +107,11 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.8 =
+* Improve feature "CDN"
+* Improve feature "Optimize Images"
+* Fix Optimize Links's bugs
 
 = 4.1.7 =
 * Improve performance plugin

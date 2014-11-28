@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Optimize By xTraffic\n"
-"POT-Creation-Date: 2014-10-27 23:31+0700\n"
-"PO-Revision-Date: 2014-10-27 23:31+0700\n"
+"POT-Creation-Date: 2014-11-28 09:43+0700\n"
+"PO-Revision-Date: 2014-11-28 09:45+0700\n"
 "Last-Translator: \n"
 "Language-Team: xTraffic.pep.vn <xtraffic.pep.vn@gmail.com>\n"
 "Language: vi\n"
@@ -15,78 +15,78 @@ msgstr ""
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:213
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:226
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:218
 #: ../inc/class/WPOptimizeByxTraffic_Base.php:231
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
 msgid "Your server should set"
 msgstr "Máy chủ của bạn nên thiết lập"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:213
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:226
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:218
 #: ../inc/class/WPOptimizeByxTraffic_Base.php:231
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:102
 #: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:115
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:128
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:142
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:156
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:55
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:74
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:100
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:117
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:129
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:143
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:116
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:135
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:161
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:178
 msgid "readable"
 msgstr "khả năng đọc"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:213
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:226
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:218
 #: ../inc/class/WPOptimizeByxTraffic_Base.php:231
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:102
 #: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:115
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:128
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:156
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:55
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:74
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:100
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:117
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:143
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:116
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:135
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:161
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:178
 msgid "writable"
 msgstr "khả năng ghi"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:213
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:226
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:218
 #: ../inc/class/WPOptimizeByxTraffic_Base.php:231
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:102
 #: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:115
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:128
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:142
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:156
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:55
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:74
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:129
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:143
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:116
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:135
 msgid "folder"
 msgstr "thư mục"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:213
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:226
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:218
 #: ../inc/class/WPOptimizeByxTraffic_Base.php:231
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
 msgid "to achieve maximum performance"
 msgstr "để đạt được hiệu suất tối đa"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:241
 msgid "Your server need support \"Multibyte String\" to use this plugin"
 msgstr "Máy chủ của bạn cần hỗ trợ \"Multibyte String\" để dung plugin này"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:236
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:241
 msgid "Read more here"
 msgstr "Xem thêm tại đây"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2147
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2176
 msgid "Options saved"
 msgstr "Các tuỳ chon đã được lưu thành công"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2216
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2245
 msgid "Overview \""
 msgstr "Tổng quan"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2218
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2247
 msgid "Thank you for your interest and use plugin \""
 msgstr "Cảm ơn bạn đã quan tâm và sử dung plugin \""
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2219
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2248
 msgid ""
 "We created this plugin with the highest goal is to make WordPress website "
 "more powerful and utilities through it's functions"
@@ -94,7 +94,7 @@ msgstr ""
 "Chúng tôi tạo ra plugin này với mục tiêu cao nhất là làm website WordPress "
 "mạnh mẽ và tiện ích hơn thong qua các chức năng của nó"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2220
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2249
 msgid ""
 "There is one thing you should know is that all the functionality of this "
 "plugin include : \"Optimize Links\", \"Optimize Images\", \"Optimize Speed"
@@ -107,16 +107,16 @@ msgstr ""
 "bật/tắt một trong những chức năng này mà không làm ảnh hưởng đến các chức "
 "năng khác."
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2223
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1342
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2252
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1346
 msgid "Settings"
 msgstr "Các thiết lập"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2227
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2256
 msgid "Custom Post Types"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2229
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2258
 msgid ""
 "You may wish to add the \"Custom Post Types\" so plugin can process them. "
 "Separate them by comma. (ignored this if you do not know)."
@@ -124,11 +124,11 @@ msgstr ""
 "Bạn có thể muốn thêm vào \"Custom Post Types\" để plugin có thể xử lý chúng. "
 "Phân cách chúng bằng dấu phẩy. (bỏ qua nếu bạn không biết)"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2235
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2264
 msgid "Custom Taxonomies"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2237
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2266
 msgid ""
 "You may wish to add the \"Custom Taxonomies\" so plugin can process them. "
 "Separate them by comma. (ignored this if you do not know)."
@@ -136,12 +136,12 @@ msgstr ""
 "Bạn có thể muốn thêm vào \"Custom Taxonomies\" để plugin có thể xử lý chúng. "
 "Phân cách chúng bằng dấu phẩy. (bỏ qua nếu bạn không biết)"
 
-#: ../inc/class/WPOptimizeByxTraffic_Base.php:2242
+#: ../inc/class/WPOptimizeByxTraffic_Base.php:2271
 #: ../inc/class/WPOptimizeByxTraffic_HeaderFooter.php:288
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2426
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1415
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2671
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1608
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2735
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1419
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2739
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1653
 msgid "Update Options"
 msgstr "Cập nhật tuỳ chọn"
 
@@ -169,168 +169,180 @@ msgstr "Mã được chèn vào TRƯỚC mỗi BÀI VIẾT"
 msgid "Code to be inserted AFTER each ARTICLE"
 msgstr "Mã được chèn vào SAU mỗi BÀI VIẾT"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:103
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:90
 msgid "Your server need to install the GD library to use"
 msgstr "Máy chủ của bạn cần cài đặt thư viện GD để sử dụng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:103
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:90
 msgid "details here"
 msgstr "chi tiết tại đây"
 
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:102
 #: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:115
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:128
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:142
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:156
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:55
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:74
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:129
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:143
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:116
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:135
 msgid "Your server must set"
 msgstr "Máy chủ của bạn phải thiết lập"
 
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:102
 #: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:115
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:128
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:142
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:156
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:55
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:62
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:74
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:129
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:143
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:116
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:123
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:135
 msgid "to use"
 msgstr "để sử dụng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1876
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2169
 msgid "Your Logo"
 msgstr "Logo của bạn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1935
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2362
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2228
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2671
 msgid "You can enter any text in the field including these special tags"
 msgstr "Bạn có thể nhập bất kỳ nội dung nào, bao gồm những thẻ đặc biệt này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1939
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2366
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2232
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2675
 msgid "post title"
 msgstr "tiêu đề bài viết"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1940
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2367
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2233
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2676
 msgid "post category"
 msgstr "chuyên mục của bài viết"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1941
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2368
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2234
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2677
 msgid "post tags"
 msgstr "thẻ của bài viết"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1942
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2369
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2235
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2678
 msgid "image file name (without extension)"
 msgstr "Tên tập tin hình ảnh (không có phần mở rộng)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1943
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2370
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2236
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2679
 msgid "image title attributes"
 msgstr "thuộc tính title của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1944
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2371
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2237
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2680
 msgid "image alt attributes"
 msgstr "thuộc tính alt của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1951
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1952
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2379
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2244
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2245
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2688
 msgid "ALT attribute"
 msgstr "Thuộc tính ALT"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1951
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1956
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2378
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2244
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2249
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2687
 msgid "example"
 msgstr "ví dụ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1956
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1957
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2249
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2250
 msgid "TITLE attribute"
 msgstr "thuộc tính TITLE"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1964
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2257
 msgid "Override default Wordpress image alt tag"
 msgstr "Ghi đè lên alt mặc định của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1964
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2325
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2337
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2344
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2351
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2358
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2398
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2467
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2598
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2608
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2257
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2393
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2405
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2412
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2419
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2426
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2466
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2535
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2666
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2676
 msgid "Recommended"
 msgstr "Khuyến nghị"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1970
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2263
 msgid "Override default Wordpress image title"
 msgstr "Ghi đè lên title mặc định của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1976
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2385
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1367
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2269
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2694
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1371
 msgid "Example"
 msgstr "Ví dụ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1978
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2387
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2271
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2696
 msgid "In a post titled"
 msgstr "Trong bài viết có tiêu đề"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1978
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2387
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2271
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2696
 msgid "there is a image named"
 msgstr "có một hình ảnh có tên"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1980
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2273
 msgid "Setting alt attribute to"
 msgstr "Thiết lập thuộc tính alt thành"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1980
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1981
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2273
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2274
 msgid "will set"
 msgstr "sẽ thiết lập"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1981
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2274
 msgid "Setting title attribute to"
 msgstr "Thiết lập thuộc tính title thành"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:1995
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2288
 msgid "Enable \"Optimize Image File\""
 msgstr "Kích hoạt \"Optimize Image File\""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2010
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2298
+msgid "Images Limit Size (Width & Height)"
+msgstr "Giới hạn kích cỡ của hình ảnh (Chiều rộng & Chiều cao)"
+
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2300
+msgid "Miminum Images's size (width & height) will be processed"
+msgstr "Kích cỡ tối thiểu của hình ảnh (Chiều rộng & Chiều cao) sẽ được xử lý"
+
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2305
+msgid "Maximum Images's size (width & height) will be processed"
+msgstr "Kích cỡ tối đa của hình ảnh (Chiều rộng & Chiều cao) sẽ được xử lý"
+
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2318
 msgid "Enable Watermark Images"
 msgstr "Kích hoạt Watermark hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2018
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2326
 msgid "Watermark Position"
 msgstr "Vị trí của Watermark"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2054
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2362
 msgid "Watermark Type"
 msgstr "Kiểu Watermark"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2064
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2373
 msgid "Type Text Watermark"
 msgstr "Kiểu Watermark bằng chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2068
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2377
 msgid "Watermark text value"
 msgstr "Nội dung chữ Watermark"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2088
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2397
 msgid "Text size"
 msgstr "Kích cỡ của chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2092
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2401
 msgid ""
 "In case you set Text size by percent (Ex: 20%), plugin will create watermark "
 "having its width is about 20% of Image's width"
@@ -338,47 +350,47 @@ msgstr ""
 "Trong trường hợp bạn thiết lập cỡ chữ bằng % (vd: 20%), plugin sẽ tạo "
 "watermark có chiều rộng bằng 20% chiều rộng của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2100
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2409
 msgid "Text color"
 msgstr "Màu chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2110
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2419
 msgid "Text Margin"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2126
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2435
 msgid "Text Opacity"
 msgstr "Độ trong suốt của chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2147
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2456
 msgid "Text background"
 msgstr "Nền chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2152
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2461
 msgid "Enable Watermark Text Background"
 msgstr "Kích hoạt nền chữ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2164
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2473
 msgid "Background color"
 msgstr "Màu nền"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2256
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2565
 msgid "Type Image Watermark (Your Logo)"
 msgstr "Kiểu Watermark bằng hình ảnh (Logo của bạn)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2260
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2569
 msgid "Watermark image url (your logo url)"
 msgstr "Url hình watermark  (url logo của bạn)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2271
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2580
 msgid "Watermark image size (your logo)"
 msgstr "Kích cỡ hình watermark (logo của bạn)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2277
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2586
 msgid "Width"
 msgstr "Chiều rộng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2278
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2587
 msgid ""
 "In the case of you set \"Watermark image size\" is number percent (Ex: 20%), "
 "plugin will resize watermark (your logo) has width is 20% of Image's width"
@@ -387,31 +399,31 @@ msgstr ""
 "plugin sẽ định lại kích cỡ watermark (logo của bạn) có chiều rộng bằng 20% "
 "chiều rộng của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2311
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2620
 msgid "Preview Processed Image"
 msgstr "Xem trước hình ảnh đã được xử lý"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2311
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2620
 msgid "Show/Hide"
 msgstr "Hiện/Ẩn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2315
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2624
 msgid "Example image url"
 msgstr "Url hình ảnh mẫu"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2328
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2637
 msgid "Preview"
 msgstr "Xem trước"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2338
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2647
 msgid "Optimize Image Quality"
 msgstr "Tối ưu hoá chất lượng hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2350
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2659
 msgid "Image Quality Value (10 to 100)"
 msgstr "Giá trị chất lượng hình ảnh (10 đến 100)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2354
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2663
 msgid ""
 "To reduce the size of image file, you can reduce value in image's Quality "
 "Bar above. If you set a value of 100, your image keeps the original quality "
@@ -422,38 +434,38 @@ msgstr ""
 "bạn giữ nguyên chất lượng và kích cỡ tập tin gốc. (Giá trị tốt nhất nên dùng "
 "là từ 80 đến 90)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2359
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2411
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2668
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2720
 msgid "Rename Image Filename"
 msgstr "Đổi tên tập tin của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2378
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2687
 msgid "New Image Filename"
 msgstr "Tên mới của tập tin hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2380
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2689
 msgid "Leave a blank if you want to keep image's original filename"
 msgstr "Bỏ trống nếu bạn muốn giữ tên tập tin gốc của hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2389
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2390
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2698
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2699
 msgid "Setting New Image Filename to"
 msgstr "Thiết lập tên tập tin mới thành"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2389
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2390
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2698
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2699
 msgid "will set new image's filename"
 msgstr "sẽ thiết lập tên tập tin hình ảnh"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2398
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2707
 msgid "Performance"
 msgstr "Hiệu năng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2403
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2712
 msgid "The maximum number of files are handled for each request"
 msgstr "Số tập tin tối đa được xử lý mỗi truy vấn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2405
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2714
 msgid ""
 "In the case of your hosting is in low performance, you should set the "
 "maximum number of files handled for each query to avoid overloading your "
@@ -465,7 +477,7 @@ msgstr ""
 "máy chủ. Trong trường hợp bạn bỏ trống hoặc thiết lập giá trị là 0, plugin "
 "sẽ xủ lý tất cả các tập tin hình ảnh chưa được xử lý"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2410
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2719
 msgid ""
 "Enable to reprocess files which have different configuration with its "
 "current configuration"
@@ -473,7 +485,7 @@ msgstr ""
 "Kích hoạt xử lý lại các tập tin hình ảnh mà có cấu hình khác với cấu hình "
 "hiện tại của nó"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2411
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2720
 msgid ""
 "In case you change configuration, plugin will check and reprocess all "
 "processed files that are different with the current configuration, by "
@@ -485,21 +497,21 @@ msgstr ""
 "ghi đè lên tập tin cũ có cùng tên hoặc tạo tập tin mới nếu tên tập tin là "
 "khác nhau"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2411
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2720
 msgid "Set at"
 msgstr "Được thiết lập ở"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2413
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeImages.php:2722
 msgid ""
 "Enable to remove old files (if available) that are different with the "
 "current configuration"
 msgstr "Kích hoạt xoá bỏ các tập tin cũ (nếu có) mà khác với cấu hình hiện tại"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1266
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1270
 msgid "Overview"
 msgstr "Tổng quan"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1268
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1272
 msgid ""
 "can automatically link keywords in your posts and comments with your focused "
 "links or best related posts"
@@ -508,7 +520,7 @@ msgstr ""
 "bình luận với những links mà bạn muốn tập trung hoặc những bài viết liên "
 "quan nhất với từ khoá"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1269
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1273
 msgid ""
 "This plugin allows you to set nofollow attribute and open links in a new "
 "window"
@@ -516,19 +528,19 @@ msgstr ""
 "Plugin này cho phép bạn thiết lập thuộc tính nofollow và mở những link trong "
 "cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1275
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1279
 msgid "Enable"
 msgstr "Kích hoạt"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1284
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1288
 msgid "Internal Links"
 msgstr "Liên kết nội bộ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1286
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1290
 msgid "Process Internal Links In Posts/Pages"
 msgstr "Xử lý liên kết nội bộ trong những bài viết/trang"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1288
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1292
 msgid ""
 "can automatically process your posts, pages, comments and feed's content "
 "with keywords and links"
@@ -536,40 +548,40 @@ msgstr ""
 "có thể xử lý tự động những bài viết, trang, bình luận và nội dung rss với "
 "những từ khoá và link"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1292
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1296
 msgid "Process Posts's Content"
 msgstr "Xử lý nội dung của bài viết"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1297
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1304
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1301
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1308
 msgid "Allow links to self"
 msgstr "Cho phép liên kết đến chính nó"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1301
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1305
 msgid "Process Pages's Content"
 msgstr "Xử lý nội dung của trang"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1308
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1312
 msgid "Process Comments's Content"
 msgstr "Xử lý nội dung bình luận"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1312
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1316
 msgid "Process RSS feeds Content"
 msgstr "Xử lý nội dung RSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1320
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1324
 msgid "Excluding"
 msgstr "Bỏ qua"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1321
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1325
 msgid "Prevent linking in heading tags (h1,h2,h3,h4,h5,h6)"
 msgstr "Không liên kết trong phần tiêu đề (h1, h2, h3, h4, h5, h6)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1323
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1327
 msgid "Target Links"
 msgstr "Link mục tiêu"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1325
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1329
 msgid ""
 "The targeted links should be considered. The match will be based on post/"
 "page title or category/tag name, case insensitive"
@@ -578,23 +590,23 @@ msgstr ""
 "tiêu đề của bài viết / trang, tên chuyên mục / thẻ, không phân biệt chữ hoa "
 "và thường"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1328
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1332
 msgid "Categories"
 msgstr "Các chuyên mục"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1331
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1335
 msgid "Tags"
 msgstr "Các thẻ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1335
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1339
 msgid "Posts"
 msgstr "Các bài viết"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1338
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1342
 msgid "Pages"
 msgstr "Các trang"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1344
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1348
 msgid ""
 "To reduce database load you can choose \"Optimize Links\" process only on "
 "single posts and pages (for example not on main page or archives)"
@@ -602,31 +614,31 @@ msgstr ""
 "Để giảm tải cơ sở dữ liệu, bạn có thể chọn \"Optimize Links\" chỉ xử lý các "
 "bài viết/trang đơn lẻ (không phải trên trang chính hoặc các trang lưu trữ)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1345
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1349
 msgid "Process only single posts and pages"
 msgstr "Chỉ xử lý các bài viết/trang đơn lẻ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1347
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1351
 msgid "Set whether matching should be case sensitive"
 msgstr "Thiết lập khi kết quả so khớp có phân biệt chữ hoa và thường"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1348
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1352
 msgid "Case sensitive matching"
 msgstr "Từ khoá có phân biệt chữ hoa và thường"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1351
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1355
 msgid "Set open autolinks in new window"
 msgstr "Mở bằng cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1352
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1356
 msgid "Open autolinks in new window"
 msgstr "Mở liên kết bằng cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1355
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1359
 msgid "Ignore Posts and Pages"
 msgstr "Bỏ qua các bài viết và trang"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1357
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1361
 msgid ""
 "You may wish to forbid automatically linking on certain posts or pages. "
 "Separate them by comma. (id, slug or name)"
@@ -634,11 +646,11 @@ msgstr ""
 "Bạn có thể không cho tự động liên kết đến các bài viết/trang nhất định. Phân "
 "cách chúng bằng dấu phẩy. (id, slug hoặc tiêu đề)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1361
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1365
 msgid "Custom Keywords/Targets Links"
 msgstr "Các từ khoá tuỳ chỉnh/Các link mục tiêu"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1363
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1367
 msgid ""
 "Here you can enter manually the extra keywords you want to automatically "
 "link. Use comma (,) to separate keywords and target url. Use a new line for "
@@ -650,7 +662,7 @@ msgstr ""
 "các từ khoá và link. Bạn có thể thêm vào bất kỳ link nào không chỉ link của "
 "website này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1364
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1368
 msgid ""
 "If you don't set any url with keywords, this plugin will automatically find "
 "posts/pages having the best related content and link to these keywords"
@@ -658,7 +670,7 @@ msgstr ""
 "Nếu bạn không thiết lập bất kỳ url nào với các từ khoá, plugin sẽ tự động "
 "tìm các bài viết/trang có nội dung liên quan nhất với các từ khoá này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1365
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1369
 msgid ""
 "You must use full link with http:// or https:// (example : http://wordpress."
 "org/plugins/ or https://wordpress.org/plugins/)"
@@ -666,7 +678,7 @@ msgstr ""
 "Bạn phải sử dụng đầy đủ link với http:// hoặc https:// (ví dụ : http://"
 "wordpress.org/plugins/ hoặc https://wordpress.org/plugins/)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1376
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1380
 msgid ""
 "Load custom keywords & links from a URL. (Note: this appends to the list "
 "above.)"
@@ -674,19 +686,19 @@ msgstr ""
 "Nạp các từ khoá & link tuỳ chỉnh từ url. (Lưu ý : các từ khoá & link này sẽ "
 "nối thêm vào danh sách bên trên)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1382
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1386
 msgid "Use categories's name as keywords"
 msgstr "Sử dụng tên của chuyên mục làm từ khoá"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1386
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1390
 msgid "Use tags's name as keywords"
 msgstr "Sử dụng tên của thẻ làm từ khoá"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1392
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1396
 msgid "Limits"
 msgstr "Giới hạn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1394
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1398
 msgid ""
 "You can limit the maximum number of different links \"Optimize Links\" which "
 "will generate per post. Set to 0 for no limit."
@@ -694,15 +706,15 @@ msgstr ""
 "Bạn có thể giới hạn số link tối đa được tạo trên mỗi bài viết. Thiết lập 0 "
 "để không giới hạn."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1395
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1399
 msgid "Max Links"
 msgstr "Số link tối đa"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1399
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1403
 msgid "External Links"
 msgstr "Link bên ngoài"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1400
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1404
 msgid ""
 "\"Optimize Links\" can open external links in new window and add nofollow "
 "attribute."
@@ -710,23 +722,23 @@ msgstr ""
 "\"Optimize Links\" có thể mở những liên kết bên ngoài bằng cửa sổ mới và "
 "thêm vào thuộc tính nofollow cho các liên kết bên ngoài này."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1402
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1406
 msgid "Add nofollow attribute"
 msgstr "Thêm thuộc tính nofollow"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1403
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1407
 msgid "Open in new window"
 msgstr "Mở bằng cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1404
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1408
 msgid "Exclude urls"
 msgstr "Bỏ qua các url"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1406
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1410
 msgid "Nofollow Links"
 msgstr "Những liên kết nofollow"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1408
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1412
 msgid ""
 "You may wish to add nofollow links (include internal links & external "
 "links). Separate them by comma. (contained in url)"
@@ -734,25 +746,25 @@ msgstr ""
 "Bạn có thể muốn thêm vào các link nofollow (bao gồm các link nội bộ & link "
 "bên ngoài). Phân cách chúng bằng dấu phẩy. (chứa trong url)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1410
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeLinks.php:1414
 msgid "Add nofollow attribute to urls"
 msgstr "Thêm thuộc tính nofollow vào url"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:62
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:123
 msgid "Your server must support"
 msgstr "Máy chủ của bạn phải hỗ trợ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:100
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:161
 msgid "Your server is using Apache. You should create file "
 msgstr "Server của bạn đang sử dung Apache. Bạn nên tạo tập tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:100
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:117
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:161
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:178
 msgid "to achieve the highest performance with "
 msgstr "để đạt được hiệu suất cao nhất với"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:100
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:117
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:161
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:178
 msgid ""
 "After change, please deactivate & reactivate this plugin for the changes to "
 "be updated"
@@ -760,11 +772,11 @@ msgstr ""
 "Sau khi thay đổi, bạn vui lòng ngừng kích hoạt và kích hoạt lại plugin này "
 "để cập nhật những thay đổi"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:117
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:178
 msgid "Your server is using Nginx. You should create file "
 msgstr "Server của bạn đang sử dung Nginx. Bạn nên tạo tập tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:121
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:182
 msgid ""
 "To achieve the highest performance with the plugin on your Nginx server, you "
 "should follow the instructions below (if you have not already done) : "
@@ -772,11 +784,11 @@ msgstr ""
 "Để đạt được hiệu suất cao nhất với plugin trên máy chủ Nginx của bạn, bạn "
 "nên làm theo các hướng dẫn bên dưới (nếu bạn chưa thực hiện)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:126
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:187
 msgid "Step 1"
 msgstr "Bước 1"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:126
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:187
 msgid ""
 "Find and remove <i style=\"color: red;font-weight: 900;\">red block below</"
 "i> (if exists) in your config \"<i>server {...}</i>\" block (at file .conf)"
@@ -784,11 +796,11 @@ msgstr ""
 "Tìm và xoá <i style=\"color: red;font-weight: 900;\">khối màu đỏ bên dưới</"
 "i> (nếu có) trong khối cấu hình \"<i>server {...}</i>\" (tại tập tin .conf)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:142
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:203
 msgid "Step 2"
 msgstr "Bước 2"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:142
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:203
 msgid ""
 "Add <i style=\"color: blue;font-weight: 900;\">blue line below</i> into your "
 "config \"<i>server {...}</i>\" block (at file .conf)"
@@ -796,19 +808,19 @@ msgstr ""
 "Thêm <i style=\"color: blue;font-weight: 900;\">dòng màu xanh bên dưới</i> "
 "vào khối cấu hình \"<i>server {...}</i>\" (tại tập tin .conf)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:156
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:217
 msgid "Step 3"
 msgstr "Bước 3"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:156
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:217
 msgid "Restart your Nginx through SSH command"
 msgstr "Khởi động lại Nginx thông qua lệnh SSH"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2296
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2364
 msgid "Overview \"Optimize Speed\""
 msgstr "Tổng quan \"Optimize Speed\""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2298
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2366
 msgid ""
 "Although we have tried and optimal features \"Optimize Javascript\" & "
 "\"Optimize CSS\" operate effectively on many websites, they make your "
@@ -818,7 +830,7 @@ msgstr ""
 "\"Optimize CSS\" hoạt động hiệu quả trên nhiều website, chúng làm website "
 "của bạn nạp nhanh hơn và có điểm số cao hơn trên các công cụ đo lường."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2299
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2367
 msgid ""
 "But there are some exceptions make website's layout is broken or not running "
 "properly like before. If your website is in the unfortunate case, you just "
@@ -831,15 +843,15 @@ msgstr ""
 "chỉ cần tắt 2 tính năng  \"Optimize Javascript\" & \"Optimize CSS\" và trải "
 "nghiệm những tính năng khác vì chúng hoạt động độc lập với nhau."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2325
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2393
 msgid "Enable Optimize Cache"
 msgstr "Kích hoạt tối ưu hoá Cache"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2337
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2405
 msgid "Enable Cache Front Page"
 msgstr "Kích hoạt cache cho Front Page"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2338
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2406
 msgid ""
 "Front Page include : Home page, category page, tag page, author page, date "
 "page, archives page,..."
@@ -847,33 +859,33 @@ msgstr ""
 "Front Page bao gồm các trang : Home page, category page, tag page, author "
 "page, date page, archives page,..."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2344
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2412
 msgid "Enable Cache Feed (RSS/Atom) Page"
 msgstr "Kích hoạt cache cho trang Feed (RSS/Atom)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2351
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2419
 msgid "Enable Browser Cache"
 msgstr "Kích hoạt cache cho trình duyệt"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2358
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2426
 msgid "Enable Database Cache"
 msgstr "Kích hoạt cache cho cơ sở dữ liệu"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2366
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2434
 msgid "Enable Cache SSL (https) Requests"
 msgstr "Kích hoạt cache cho các truy vấn SSL (https)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2373
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2441
 msgid "Enable Cache For Mobile Device"
 msgstr "Kích hoạt cache cho các thiết bị di động"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2374
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2445
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2529
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2442
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2513
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2597
 msgid "Warning"
 msgstr "Cảnh báo"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2374
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2442
 msgid ""
 "Don't turn on this option if you use one of these plugins: WP Touch, WP "
 "Mobile Detector, wiziApp, and WordPress Mobile Pack."
@@ -881,23 +893,23 @@ msgstr ""
 "Đừng bật lựa chon này nếu bạn đang dung một trong những plugin này : WP "
 "Touch, WP Mobile Detector, wiziApp, and WordPress Mobile Pack."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2380
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2448
 msgid "Enable Cache URIs with GET query string variables"
 msgstr "Kích hoạt cache cho url có truy vấn biến GET"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2381
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2449
 msgid "Ex : \"/?s=query...\" at the end of a url"
 msgstr "Ví dụ : url có \"/?s=query...\" ở phía cuối"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2389
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2457
 msgid "Enable Cache For Logged Users"
 msgstr "Kích hoạt cache cho người dung đã đăng nhập"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2398
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2466
 msgid "Enable Prebuild Cache"
 msgstr "Kích hoạt tạo trước cache"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2399
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2467
 msgid ""
 "Prebuild cache help your site load faster by creating cache of pages is the "
 "most visited."
@@ -905,15 +917,15 @@ msgstr ""
 "Tạo trước cache giúp trang web của bạn nạp nhanh hơn bằng cách tạo cache "
 "những trang được truy cập nhiều nhất."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2403
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2471
 msgid "Maximum number of pages is prebuilt each process"
 msgstr "Số trang tối đa được tạo mỗi lần xử lý"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2403
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2471
 msgid "pages"
 msgstr "trang"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2404
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2472
 msgid ""
 "This number depends on the performance of the server, if your server is fast "
 "then you should set this number higher and vice versa."
@@ -921,11 +933,11 @@ msgstr ""
 "Con số này phụ thuộc vào tốc độ của server, nếu server của bạn nhanh thì bạn "
 "nên thiết lập con số này cao hơn và ngược lại."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2415
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2483
 msgid "Cache Timeout"
 msgstr "Thời gian lưu trữ cache"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2416
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2484
 msgid ""
 "How long should cached pages remain fresh? You should set this value from "
 "21600 seconds (6 hours) to 86400 seconds (24 hours). Minimum value is 300 "
@@ -935,12 +947,12 @@ msgstr ""
 "này trong khoảng từ 21600 giây (6 tiếng) to 86400 giây  (24 tiếng). Giá trị "
 "nhỏ nhất là 300 giây (5 phút)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2444
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2512
 msgid "Enable Optimize Javascript"
 msgstr "Kích hoạt tối ưu hoá Javascript"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2445
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2529
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2513
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2597
 msgid ""
 "This option will help your site load faster. However, in some cases, web "
 "layout will be error. If an error occurs, you should disable this option."
@@ -949,90 +961,90 @@ msgstr ""
 "trường hợp thì giao diện trang web sẽ bị lỗi. Nếu có lỗi xảy ra, bạn nên tắt "
 "tuỳ chon này."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2455
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2523
 msgid "Enable Combine Javascript"
 msgstr "Kích hoạt hợp nhất Javascript"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2467
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2478
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2535
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2546
 msgid "Enable Minify Javascript"
 msgstr "Kích hoạt làm nhỏ gọn (minify) mã javascript"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2485
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2553
 msgid "Enable Asynchronous Javascript Loading"
 msgstr "Kích hoạt chế độ nạp javascript không đồng bộ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2492
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2560
 msgid "Exclude External Javascript File"
 msgstr "Bỏ qua các tập tin javscript bên ngoài"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2493
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2561
 msgid "Plugin will ignore all external javascript files"
 msgstr "Plugin sẽ bỏ qua những tập tin javascript bên ngoài"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2493
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2561
 msgid "Which not scripts in your self-hosted"
 msgstr "Những mã không chứa trong host của bạn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2493
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2563
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2570
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2561
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2631
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2638
 msgid "You should not enable this feature unless an error occurs"
 msgstr "Bạn không nên kích hoạt tính năng này, trừ khi có lỗi xảy ra"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2499
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2567
 msgid "Exclude Inline Javascript Code"
 msgstr "Bỏ qua các mã inline javascript"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2500
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2568
 msgid "Plugin will ignore all javascript code in your html"
 msgstr "Plugin sẽ bỏ qua các mã javascript trong html của trang web"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2500
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2568
 msgid "You should enable this feature unless an error occurs"
 msgstr "Bạn nên kích hoạt tính năng này, trừ khi có lỗi xảy ra"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2505
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2575
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2647
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2573
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2643
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2715
 msgid "Exclude"
 msgstr "Bỏ qua"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2505
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2575
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2647
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2573
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2643
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2715
 msgid "Contained in url, separate them by comma"
 msgstr "Chứa trong url, phân cách chúng bằng dấu phẩy"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2507
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2575
 msgid "Plugin will ignore these javascript files urls"
 msgstr "Plugin sẽ bỏ qua những url của các tập tin javascript này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2523
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2591
 msgid "Optimize CSS (Style)"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2528
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2596
 msgid "Enable Optimize CSS"
 msgstr "Kích hoạt tối ưu hoá CSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2538
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2606
 msgid "Enable Combine CSS"
 msgstr "Kích hoạt hợp nhất CSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2546
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2614
 msgid "Enable Minify CSS"
 msgstr "Kích hoạt làm nhỏ gọn (minify) mã CSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2555
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2623
 msgid "Enable Asynchronous CSS Loading"
 msgstr "Kích hoạt nạp CSS không đồng bộ"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2562
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2630
 msgid "Exclude External CSS Files"
 msgstr "Bỏ qua những tập tin CSS bên ngoài"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2563
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2631
 msgid ""
 "Plugin will ignore all external CSS files ( Which not CSS files in your self-"
 "hosted )"
@@ -1040,11 +1052,11 @@ msgstr ""
 "Plugin sẽ bỏ qua tất cả các tập tin CSS bên ngoài (những tập tin nằm ngoài "
 "tên miền của trang web này)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2569
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2637
 msgid "Exclude Inline CSS Code"
 msgstr "Bỏ qua mã inline CSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2570
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2638
 msgid ""
 "Plugin will ignore all style (wrap by &#x3C;style&#x3E;&#x3C;/style&#x3E;) "
 "in your html"
@@ -1052,57 +1064,57 @@ msgstr ""
 "Plugin sẽ bỏ qua tất cả các mã CSS (chứa trong &#x3C;style&#x3E;&#x3C;/"
 "style&#x3E;) trong mã html của trang web"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2577
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2645
 msgid "Plugin will ignore these css files urls"
 msgstr "Plugin sẽ bỏ qua những đường dẫn (link/url) của các tập tin CSS này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2593
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2661
 msgid "Optimize HTML"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2598
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2666
 msgid "Enable Optimize HTML"
 msgstr "Kích hoạt tối ưu hoá HTML"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2608
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2676
 msgid "Enable Minify HTML"
 msgstr "Kích hoạt làm nhỏ gọn (minify) mã HTML"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2632
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2700
 msgid "Enable CDN"
 msgstr "Kích hoạt CDN"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2641
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2709
 msgid "CNAME (CDN)"
 msgstr ""
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2649
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php:2717
 msgid "Plugin will ignore these urls"
 msgstr "Plugin sẽ bỏ qua những đường dẫn (link/url) này"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1175
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1220
 msgid "Module will appear at fixed location as your choice in post's content"
 msgstr ""
 "Mô-đun sẽ xuất hiện ở vị trí cố định trong nội dung bài viết theo sự lựa "
 "chon của bạn"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1176
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1221
 msgid "Module will appear on the right or left of user's screen"
 msgstr "Mô-đun sẽ xuất hiện ở bên phải hoặc bên trái màn hình của người dùng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1221
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1266
 msgid "When should the Module appear?"
 msgstr "Khi nào Mô-đun xuất hiện?"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1227
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1272
 msgid "When user scroll length of site's height"
 msgstr "Khi người dùng cuộn đến độ dài của chiều cao trang web"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1235
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1280
 msgid "When the user scrolls to the location you set, the module will appear."
 msgstr "Khi người dung cuộn đến vị trí bạn thiết lập, Mô-đun sẽ xuất hiện"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1236
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1281
 msgid ""
 "You can set up the \"80%\" or \"80\" (px). All values are based on the "
 "height of the site"
@@ -1110,11 +1122,11 @@ msgstr ""
 "Bạn có thể thiết lập \"80%\" hoặc \"80\" (px). Tất cả các giá trị điều dựa "
 "trên chiều cao của trang web"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1245
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1290
 msgid "When user view for seconds"
 msgstr "Khi người dùng xem bao nhiêu giây"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1253
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1298
 msgid ""
 "When the user access and view your website in number of seconds, the module "
 "will appear."
@@ -1122,11 +1134,11 @@ msgstr ""
 "Khi người dùng truy cập và xem website của bạn trong một số giây, Mô-đun sẽ "
 "xuất hiện."
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1292
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1337
 msgid "Position of Module"
 msgstr "Vị trí của Mô-đun"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1304
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1349
 msgid ""
 "When the position is %, module will appear in post's content corresponding "
 "to the value you set"
@@ -1134,7 +1146,7 @@ msgstr ""
 "Khi vị trí là %, Mô-đun sẽ xuất hiện trong nội dung bài viết tại vị trí bạn "
 "thiết lập"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1305
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1350
 msgid ""
 "When the position is Left/Right, module will appear on Left/Right side of "
 "user's screen"
@@ -1142,84 +1154,84 @@ msgstr ""
 "Khi vị trí là Left/Right, Mô-đun sẽ xuất hiện ở phía trái/phải trên màn hình "
 "người dùng"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1319
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1364
 msgid "Title of Module"
 msgstr "Tiêu đề của Mô-đun"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1341
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1386
 msgid ""
 "This option will help you design module according to your wishes through CSS"
 msgstr ""
 "Lựa chon này sẽ giúp bạn thiết kế Mô-đun theo ý muốn của bạn thong qua CSS"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1361
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1406
 msgid "Maximum Number of Items"
 msgstr "Số tin tối đa"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1379
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1424
 msgid "Maximum number of items (posts) in this module"
 msgstr "Số tin tối đa (bài viết) trong Mô-đun"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1395
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1440
 msgid "Enable Thumbnails"
 msgstr "Kích hoạt hình đại diện"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1401
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1446
 msgid "Default Thumbnail Url (include http:// or https://)"
 msgstr "Url hình đại diện mặc định (bao gồm http:// hoặc https://)"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1409
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1454
 msgid ""
 "When the item does not have thumbnail image, plugin will get this image to "
 "make an thumbnail"
 msgstr ""
 "Khi tin không có hình đại diện, plugin sẽ lấy hình này làm hình đại diện"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1417
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1462
 msgid "Thumbnail Width"
 msgstr "Chiều rộng của hình đại diện"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1424
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1469
 msgid "Thumbnail Height"
 msgstr "Chiều cao của hình đại diện"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1439
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1484
 msgid "Maximum width of each item?"
 msgstr "Chiều rộng tối đa của mỗi tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1451
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1496
 msgid "Items's Title"
 msgstr "Tiêu đề của tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1459
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1504
 msgid "Maximum number of characters for items's title?"
 msgstr "Số ký tự tối đa của tiêu đề tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1472
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1517
 msgid "Items's Excerpt"
 msgstr "Tóm tắt của tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1475
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1520
 msgid "Enable Items's Excerpt"
 msgstr "Kích hoạt tóm tắt của tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1480
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1525
 msgid "Maximum number of characters for items's excerpt?"
 msgstr "Số ký tự tối đa của tóm tắt tin"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1494
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1539
 msgid "Open Links In New Window"
 msgstr "Mở liên kết bằng cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1497
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1542
 msgid "Enable Open Links In New Window"
 msgstr "Kích hoạt mở liên kết bằng cửa sổ mới"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1508
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1553
 msgid "Preview Module"
 msgstr "Xem trước Mô-đun"
 
-#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1508
+#: ../inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php:1553
 msgid "Show me"
 msgstr "Cho tôi xem"
 

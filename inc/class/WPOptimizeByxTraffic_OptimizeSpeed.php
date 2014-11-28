@@ -16,6 +16,9 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 	private $optimize_speed_loadCssTimeDelay = 10;//miliseconds
 	
 	private $optimize_speed_numberLoadCssAsync = 0;
+	
+	
+	public $optimize_speed_cdn_patternFilesTypeAllow = '';
 		
 	public function __construct() 
 	{
@@ -30,6 +33,64 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 			PepVN_Data::createFolder($this->optimize_speed_UploadsStaticFilesFolderPath, WPOPTIMIZEBYXTRAFFIC_CHMOD);
 			PepVN_Data::chmod($this->optimize_speed_UploadsStaticFilesFolderPath,WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN,WPOPTIMIZEBYXTRAFFIC_CHMOD);
 		}
+		
+		
+		
+		
+		$this->optimize_speed_cdn_patternFilesTypeAllow = array(
+			//img
+			'jpg'
+			,'jpeg'
+			,'gif'
+			,'png'
+			,'ico'
+			,'svg'
+			
+			//js & css
+			,'css'
+			,'js'
+			
+			//font
+			,'ttf'
+			,'woff2'
+			
+			//audio
+			,'wav'
+			,'ogg'
+			,'mp3'
+			,'wma'
+			,'mid'
+			,'midi'
+			,'rm'
+			,'ram'
+			,'aac'
+			,'mp4'
+						
+			
+			//video
+			,'mpg'
+			,'mpeg'
+			,'avi'
+			,'wmv'
+			,'mov'
+			,'rm'
+			,'ram'
+			,'ogg'
+			,'webm'
+			,'mp4'
+			
+			//flash
+			,'swf'
+			,'flv'
+			
+			//document
+			,'pdf'
+			
+		);
+		
+		$this->optimize_speed_cdn_patternFilesTypeAllow = array_unique($this->optimize_speed_cdn_patternFilesTypeAllow);
+		$this->optimize_speed_cdn_patternFilesTypeAllow = implode('|',$this->optimize_speed_cdn_patternFilesTypeAllow);
+		
 		
 		
 	}
@@ -337,13 +398,9 @@ setTimeout(function() {
 				
 			} else if('div_tag' === $input_parameters['load_by']) {
 				
-				
 				$resultData = ' <div class="wp-optimize-by-xtraffic-js-loader-data" id="'.$jsLoaderId.'" pepvn_data_loader_id="'.$jsLoaderId.'" pepvn_data_append_to="'.$input_parameters['append_to'].'" pepvn_data_src="'.($input_parameters['url']).'" pepvn_data_id="'.$input_parameters['id'].'" pepvn_data_file_type="'.$input_parameters['file_type'].'" pepvn_data_media="'.$input_parameters['media'].'" pepvn_data_time_delay="'.$loadTimeDelay.'" style="display:none;" ></div> ';  
 				
 			} else if('js_data' === $input_parameters['load_by']) {
-				
-				
-				//wpOptimizeByxTraffic_JsLoaderFilesData	//wpOptimizeByxTraffic_JsLoaderData
 				
 				$resultData = ' <script language="javascript" type="text/javascript" id="'.$jsLoaderId.'" > (function(e) { if(typeof(e.wpOptimizeByxTraffic_JsLoaderData) === "undefined") { e.wpOptimizeByxTraffic_JsLoaderData = []; } e.wpOptimizeByxTraffic_JsLoaderData.push({ 
 "pepvn_data_loader_id" : "'.$jsLoaderId.'"
@@ -571,7 +628,7 @@ setTimeout(function() {
 								
 								if(isset($options['optimize_speed_optimize_javascript_exclude_external_javascript_enable']) && $options['optimize_speed_optimize_javascript_exclude_external_javascript_enable']) {
 									
-									//if(!preg_match('#^(https?:)?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
+									
 									if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
 										
 										$isProcessStatus1 = false;
@@ -861,30 +918,7 @@ setTimeout(function() {
 									
 									if(isset($options['optimize_speed_optimize_javascript_minify_javascript_enable']) && $options['optimize_speed_optimize_javascript_minify_javascript_enable']) {
 										
-										/*
-										$rsOne = PepVN_Data::escapeByPattern($jsContent1,array(
-											'pattern' => '#[\+\-]+[ \t\s]+[\+\-]+#is'
-											,'target_patterns' => array(
-												0
-											)
-											,'wrap_target_patterns' => '+'
-										));
-										
-										
-										$pepVN_JavaScriptPacker = false;$pepVN_JavaScriptPacker = new PepVN_JavaScriptPacker($rsOne['content'], 'Normal', true, false);
-										$rsOne['content'] = $pepVN_JavaScriptPacker->pack();unset($pepVN_JavaScriptPacker);$pepVN_JavaScriptPacker=false;
-										
-										
-										if(!PepVN_Data::isEmptyArray($rsOne['patterns'])) {
-											$rsOne['content'] = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$rsOne['content']);
-										}
-										
-										$jsContent1 = $rsOne['content']; $rsOne = false;
-										//*/ 
-										
 										$jsContent1 = PepVN_Data::minifyJavascript($jsContent1);
-										
-										
 										
 									}
 									
@@ -1016,7 +1050,6 @@ setTimeout(function() {
 									
 									if(isset($options['optimize_speed_optimize_css_exclude_external_css_enable']) && ($options['optimize_speed_optimize_css_exclude_external_css_enable'])) {
 										
-										//if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
 										if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$matched2[2],$matched3)) {
 											$isProcessStatus1 = false;
 										}
@@ -1029,23 +1062,7 @@ setTimeout(function() {
 									
 								}
 							} 
-							
-							/*
-							else if(preg_match('/(<style[^><]*?>)(.*?)<\/style>/is',$value1,$matched2)) {
-								
-								if(isset($matched2[2]) && $matched2[2]) {
-									if(!$options['optimize_speed_optimize_css_exclude_inline_css_enable']) {
-										if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
-											$arrayDataTextNeedReplace[$value1] = $matched2[1].PepVN_Data::minifyCss($matched2[2]).'</style>';
-										}
-										
-									}
-								}
-								
-								
-							}
-							*/
-							
+														
 							if($cssLink1) {
 								
 								$mediaType1 = 'all';
@@ -1105,7 +1122,7 @@ setTimeout(function() {
 												));
 												
 												if($cssContent1) {
-												
+													
 													$pepVN_CSSFixer = false;
 													$pepVN_CSSFixer = new PepVN_CSSFixer();
 													
@@ -1122,9 +1139,12 @@ setTimeout(function() {
 															,'minify_status' => false
 														));
 													}
+													
 													if($valueTemp) {
 														$cssContent1 = $valueTemp;
 													}
+													
+													$cssContent1 = $this->optimize_speed_cdn_process_text($cssContent1,'css');
 													
 													@file_put_contents($cssFilePath2,$cssContent1);
 													
@@ -1227,7 +1247,6 @@ setTimeout(function() {
 									
 									if(isset($options['optimize_speed_optimize_css_exclude_external_css_enable']) && ($options['optimize_speed_optimize_css_exclude_external_css_enable'])) {
 										
-										//if(!preg_match('#^https?://'.$fullDomainNamePregQuote.'#i',$cssContent1,$matched3)) {
 										if(!preg_match('#^(https?)?:?(//)?'.$fullDomainNamePregQuote.'#i',$cssContent1,$matched3)) {
 											$isProcessStatus1 = false;
 										}
@@ -1388,6 +1407,8 @@ setTimeout(function() {
 									
 									if(!$breakProcessStatus1) {
 										
+										$combinedAllCssFilesContents = $this->optimize_speed_cdn_process_text($combinedAllCssFilesContents,'css');
+										
 										if(isset($options['optimize_speed_optimize_css_minify_css_enable']) && ($options['optimize_speed_optimize_css_minify_css_enable'])) {
 											$combinedAllCssFilesContents = PepVN_Data::minifyCss($combinedAllCssFilesContents);
 										}
@@ -1464,7 +1485,7 @@ setTimeout(function() {
 		$jsUrl = WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL;
 		$jsUrl = PepVN_Data::removeProtocolUrl($jsUrl);
 		$jsUrl .= 'js/optimize_speed_by_xtraffic.min.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION; 
-		//$jsUrl .= 'js/optimize_speed_by_xtraffic.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION . time();//test 
+		//$jsUrl .= 'js/optimize_speed_by_xtraffic.js?v=' . WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION . time();//test  
 		$jsId = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-optimize-speed';
 		$jsLoaderId = $jsId.'-js-loader'; 
 		
@@ -1511,6 +1532,7 @@ setTimeout(function() {
 	
 	public function optimize_speed_cdn_get_cdn_link($input_link) 
 	{
+		
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
@@ -1570,9 +1592,9 @@ setTimeout(function() {
 			
 			
 			$input_link1 = PepVN_Data::removeProtocolUrl($input_link);
-			if(preg_match('#^'.PepVN_Data::preg_quote($this->fullDomainName).'.+#i',$input_link1,$matched3)) {
+			if(preg_match('#^'.PepVN_Data::preg_quote($this->fullDomainName).'.+$#i',$input_link1,$matched3)) {
 				
-				$checkStatus2 = true;
+				$checkStatus2 = true; 
 	
 				if($optimize_speed_cdn_exclude_url) {
 					if(preg_match('#('.implode('|',$optimize_speed_cdn_exclude_url).')#i',$input_link1,$matched4)) {
@@ -1596,7 +1618,11 @@ setTimeout(function() {
 	}
 	
 	
-	public function optimize_speed_cdn_process_html_pages($text) 
+	
+	/*
+	*	input_type (string) : html | css | js
+	*/
+	public function optimize_speed_cdn_process_text($text, $input_type) 
 	{
 		
 		$options = $this->get_options(array(
@@ -1626,12 +1652,13 @@ setTimeout(function() {
 				if(isset($options['optimize_speed_cdn_domain']) && ($options['optimize_speed_cdn_domain'])) {
 					$options['optimize_speed_cdn_domain'] = trim($options['optimize_speed_cdn_domain']);
 					if($options['optimize_speed_cdn_domain']) {
-						$checkStatus1 = true;
+						if($this->fullDomainName) {
+							$checkStatus1 = true;
+						}
 					}
 				}
 			}
 		}
-		
 		
 		if(!$checkStatus1) {
 			return $text;
@@ -1657,7 +1684,9 @@ setTimeout(function() {
 		$allTargetElements = array();
 		$arrayDataTextNeedReplace = array();
 		
-		preg_match_all('#<script[^><]+src=[^><]+/?>.*?(</\1>)?#is',$text,$matched1);
+		/*
+		
+		preg_match_all('#<script[^><]+src=[^><]+/?>.*?(</script>)?#is',$text,$matched1);
 		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
 			$allTargetElements = array_merge($allTargetElements, $matched1[0]);
 		}
@@ -1671,7 +1700,7 @@ setTimeout(function() {
 		
 		
 		
-		preg_match_all('#<link[^><]+href=[^><]+/?>.*?(</\1>)?#is',$text,$matched1);
+		preg_match_all('#<link[^><]+href=[^><]+/?>.*?(</link>)?#is',$text,$matched1);
 		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
 			
 			foreach($matched1[0] as $key1 => $value1) {
@@ -1683,9 +1712,27 @@ setTimeout(function() {
 			}
 		}
 		
+		preg_match_all('#<a[^><]+href=[^><]+>.*?</a>#is',$text,$matched1);
+		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+			$allTargetElements = array_merge($allTargetElements, $matched1[0]);
+		}
+		*/
+		
+		
+		
+		if('css' === $input_type) {
+			preg_match_all('#(\'|\"|\(|\))(https?:)?//'.PepVN_Data::preg_quote($this->fullDomainName).'[^\'\"\(\)]+\.('.$this->optimize_speed_cdn_patternFilesTypeAllow.')\??[^\'\"\(\)]*?(\'|\"|\(|\))#is',$text,$matched1);
+		} else {
+			preg_match_all('#(\'|\")(https?:)?//'.PepVN_Data::preg_quote($this->fullDomainName).'[^\'\"]+\.('.$this->optimize_speed_cdn_patternFilesTypeAllow.')\??[^\'\"]*?\1#is',$text,$matched1);
+		}
+		
+		if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+			$allTargetElements = array_merge($allTargetElements, $matched1[0]);
+		}
+		
 		$allTargetElements = array_unique($allTargetElements);
 		
-		if(!PepVN_Data::isEmptyArray($allTargetElements)) {
+		if(count($allTargetElements)>0) {
 			
 			foreach($allTargetElements as $key1 => $value1) {
 				
@@ -1693,32 +1740,47 @@ setTimeout(function() {
 				
 				if($value1) {
 				
-					if(preg_match('#(href|src)=(\'|")((https?:)?//[^"\']+)\2#i',$value1,$matched2)) {
+					//if(preg_match('#(href|src)?=?(\'|")((https?:)?//[^"\']+)\2#i',$value1,$matched2)) {
+					
+					$matched2 = false;
+					
+					if('css' === $input_type) {
+						preg_match('#(\'|\"|\(|\))((https?:)?//[^\'|\"|\(|\)]+)(\'|\"|\(|\))#i',$value1,$matched2);
+					} else {
+						preg_match('#(\'|\")((https?:)?//[^\"\']+)\1#i',$value1,$matched2);
+					}
+					
+					
+					
+					if(isset($matched2[2]) && $matched2[2]) {
 						
-						if(isset($matched2[3]) && $matched2[3]) {
-							$matched2[3] = trim($matched2[3]);
-							if($matched2[3]) {
-								$valueTemp1 = $matched2[3];
-								$valueTemp2 = $this->optimize_speed_cdn_get_cdn_link($valueTemp1);
-								$valueTemp1 = PepVN_Data::removeProtocolUrl($valueTemp1);
-								$valueTemp2 = PepVN_Data::removeProtocolUrl($valueTemp2);
-								if($valueTemp1 !== $valueTemp2) {
-									//$arrayDataTextNeedReplace[$value1] = str_replace($valueTemp1,$valueTemp2,$value1);
-									$arrayDataTextNeedReplace[$valueTemp1] = $valueTemp2;
-								}
+						$matched2[2] = trim($matched2[2]);
+						if($matched2[2]) {
+							$valueTemp1 = $matched2[2];
+							$valueTemp2 = $this->optimize_speed_cdn_get_cdn_link($valueTemp1);
+							$valueTemp1 = PepVN_Data::removeProtocolUrl($valueTemp1);
+							$valueTemp2 = PepVN_Data::removeProtocolUrl($valueTemp2);
+							if($valueTemp1 !== $valueTemp2) {
+								
+								$valueTemp1 = '//'.$valueTemp1;
+								$valueTemp2 = '//'.$valueTemp2;
+								$arrayDataTextNeedReplace[$valueTemp1] = $valueTemp2;
 								
 							}
+							
 						}
 					}
+					
 				}
 				
 			}
 		}
 		
-		if(!PepVN_Data::isEmptyArray($arrayDataTextNeedReplace)) {
+		if(count($arrayDataTextNeedReplace)>0) {
 			$text = str_replace(array_keys($arrayDataTextNeedReplace),array_values($arrayDataTextNeedReplace),$text);
 		}
-		$arrayDataTextNeedReplace = array();
+		
+		$arrayDataTextNeedReplace = 0; 
 		
 		$text = trim($text); 
 		

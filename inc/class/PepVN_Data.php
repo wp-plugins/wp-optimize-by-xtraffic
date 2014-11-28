@@ -270,7 +270,10 @@ class PepVN_Data
 	
 	public static function minifyHtml($input_data)
 	{
+		$input_data = (string)$input_data;
+		$input_data = trim($input_data);
 		
+		/*
 		$patterns = array(
 			1 => "/(\<\!\-\-)(.*?)(\-\-\>)/s", // Remove all comments
 			2 => '/([\t])+/',
@@ -292,6 +295,39 @@ class PepVN_Data
 		);
 		
 		$input_data = preg_replace($patterns, $replacements, $input_data);
+		//*/
+		
+		
+		
+		
+		
+		//*
+		
+		$patternsEscaped1 = array();
+		
+		
+		$rsOne = '';
+		
+		$rsOne = self::escapeHtmlTagsAndContents($input_data,'pre;code');
+		$input_data = $rsOne['content'];
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped1 = array_merge($patternsEscaped1, $rsOne['patterns']);
+		}
+		
+		$rsOne = '';
+		
+		$input_data = PepVN_Minify_HTML::minify($input_data, array(
+			'jsCleanComments' => true
+			,'xhtml' => true
+		));
+		
+		if(!self::isEmptyArray($patternsEscaped1)) {
+			$input_data = str_replace(array_values($patternsEscaped1),array_keys($patternsEscaped1),$input_data); 
+		}
+		
+		//*/
+		
+		$input_data = trim($input_data); 
 		
 		return $input_data;
 	}
@@ -306,6 +342,8 @@ class PepVN_Data
 		$input_data = (string)$input_data;
 		$input_data = trim($input_data);
 		
+		
+		/*
 		$rsOne = self::escapeByPattern($input_data,array(
 			'pattern' => '#(\'|\").*?\1#is'
 			,'target_patterns' => array(
@@ -330,6 +368,27 @@ class PepVN_Data
 		if(!self::isEmptyArray($rsOne['patterns'])) {
 			$input_data = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$input_data);
 		}
+		*/
+		
+		$rsOne = self::escapeByPattern($input_data,array(
+			'pattern' => '#[\+\-]+[ \t\s]+[\+\-]+#is'
+			,'target_patterns' => array(
+				0
+			)
+			,'wrap_target_patterns' => '+'
+		));
+		
+		
+		$pepVN_JavaScriptPacker = false;$pepVN_JavaScriptPacker = new PepVN_JavaScriptPacker($rsOne['content'], 'Normal', true, false);
+		$rsOne['content'] = $pepVN_JavaScriptPacker->pack();unset($pepVN_JavaScriptPacker);$pepVN_JavaScriptPacker=false;
+		
+		
+		if(!self::isEmptyArray($rsOne['patterns'])) {
+			$rsOne['content'] = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$rsOne['content']);
+		}
+		
+		$input_data = $rsOne['content']; $rsOne = false;
+		
 		
 		$input_data = trim($input_data);
 		
@@ -409,40 +468,40 @@ class PepVN_Data
 	public static function mhash($str,$length = 8)
 	{
 		
-		$methodHash = 'sha1';
 		
-		if($length<=64) {
-			$methodHash = 'sha256';
-		} else if($length<=96) {
-			$methodHash = 'sha384';
-		} else {
-			$methodHash = 'sha512';
-		}
+		$length1 = $length * 2;
 		
-		$resultData = sha1($str);
+		$resultData = md5($str);
 		
-		while(strlen($resultData) < $length) {
+		while(strlen($resultData) < $length1) {
 			
-			$resultData .= hash($methodHash,$resultData,false);
+			$resultData .= md5($resultData);
 			
 		}
 		
-		$resultData .= hash($methodHash,$resultData,false);
-		$resultData .= hash($methodHash,$resultData,false);
+		$resultData .= md5($resultData);
+		$resultData .= md5($resultData);
 		
-		while(strlen($resultData) > $length) {
-			$valueTemp = str_split($resultData,1);
-			$valueTemp_Count = count($valueTemp);
-			
-			$resultData = '';
-			
-			for($i=0;$i<$valueTemp_Count;$i++) {
-				if(0 === ($i % 2)) {
-					$resultData .= $valueTemp[$i];
+		
+		$totalChars = strlen($resultData);
+		$totalChars = (int)$totalChars;
+		$stepNum = ceil($totalChars / $length);
+		
+		
+		$valueTemp = str_split($resultData,1);
+		$valueTemp_Count = count($valueTemp);
+		$valueTemp_Count = (int)$valueTemp_Count;
+		
+		$resultData = '';
+		
+		for($i=0;$i<$valueTemp_Count;$i++) {
+			if(0 === ($i % $stepNum)) {
+				
+				$resultData .= $valueTemp[$i];
+				if(strlen($resultData) >= $length) {
+					break;
 				}
 			}
-			
-			
 		}
 		
 		
@@ -897,7 +956,7 @@ class PepVN_Data
 		$patternsEscape1 = array();
 
 		$matched1 = false;
-		preg_match_all('/<a[^><]*?>.*?<\/a>/is',$input_content,$matched1);
+		preg_match_all('/<a(\s+[^><]*?)?>.*?<\/a>/is',$input_content,$matched1);
 		if(isset($matched1[0]) && $matched1[0]) {
 			if(count($matched1[0])>0) {
 				foreach($matched1[0] as $key1 => $value1) {
@@ -965,7 +1024,7 @@ class PepVN_Data
 				$tagName = trim($tagName);
 				if($tagName) {
 					$matched1 = false;
-					preg_match_all('/<'.$tagName.'[^><]*?>.*?<\/'.$tagName.'>/is',$input_content,$matched1);
+					preg_match_all('#<('.self::preg_quote($tagName).')(\s+[^><]*?)?>(.*?</\1>)?#is',$input_content,$matched1);
 					if(isset($matched1[0]) && $matched1[0]) {
 						if(count($matched1[0])>0) {
 							foreach($matched1[0] as $key1 => $value1) {
@@ -1137,8 +1196,8 @@ class PepVN_Data
 		if(isset($parseUrl1['host']) && $parseUrl1['host']) {
 			$parseUrl2 = parse_url($input_link2);
 			if(isset($parseUrl2['host']) && $parseUrl2['host']) {
-				$parseUrl1['host'] = self::strtolower($parseUrl1['host']);
-				$parseUrl2['host'] = self::strtolower($parseUrl2['host']);
+				$parseUrl1['host'] = self::strtolower(trim($parseUrl1['host']));
+				$parseUrl2['host'] = self::strtolower(trim($parseUrl2['host']));
 				if($parseUrl2['host'] === $parseUrl1['host']) {
 					return true;
 				}

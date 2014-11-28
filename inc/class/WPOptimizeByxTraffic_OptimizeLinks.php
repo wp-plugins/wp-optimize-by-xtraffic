@@ -505,7 +505,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 					if($valueOne && in_array('fulltext',$valueOne)) {
 					} else {
-						$wpdb->get_results(' ALTER TABLE '.$wpdb->posts.'_ftind ADD FULLTEXT `wppepvn_'.$keyOne.'` (`'.$keyOne.'`) ');
+						$wpdb->get_results(' ALTER TABLE '.$wpdb->posts.' ADD FULLTEXT `wppepvn_'.$keyOne.'_ftind` (`'.$keyOne.'`) ');
 					}
 					
 					$dbFieldsHasIndexTypes[$keyOne][] = 'fulltext';
@@ -545,8 +545,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 		
-		
-				
 		return true;
 		
 	}
@@ -582,12 +580,12 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		if($isProcessTextStatus) {
 			
 			if (is_feed() && !$options['optimize_links_process_in_feed']) {
-				//return $text;
+				
 				$isProcessTextStatus = false;
 			} else if ($options['optimize_links_onlysingle']) {
 				if(is_single() || is_page() || is_singular()) {
 				} else {
-					//return $text;
+					
 					$isProcessTextStatus = false;
 				}
 				
@@ -602,7 +600,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 			if($arrignorepost && (count($arrignorepost)>0)) {
 				if (is_page($arrignorepost) || is_single($arrignorepost)) {
-					//return $text;
+					
 					$isProcessTextStatus = false;
 				}
 			}
@@ -614,12 +612,10 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 				if ($post->post_type=='post' && !$options['optimize_links_process_in_post']) {
 					
-					//return $text;
 					$isProcessTextStatus = false;
 					
 				} else if ($post->post_type=='page' && !$options['optimize_links_process_in_page']) {
 					
-					//return $text;
 					$isProcessTextStatus = false;
 					
 				}
@@ -706,6 +702,14 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		if ($options['optimize_links_link_to_pages']) {
 			$array_base_custom_post_types[] = 'page';
 		}
+		
+		
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'a;script;style;link;meta');
+		$text = $rsOne['content'];
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
+		}
+		$rsOne = false;
 		
 		
 		if ($options['optimize_links_excludeheading'] == 'on') {
