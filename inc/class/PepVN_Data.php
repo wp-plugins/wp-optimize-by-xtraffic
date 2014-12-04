@@ -399,11 +399,15 @@ class PepVN_Data
 	
 	public static function minifyCss($input_data)
 	{
+		$input_data = (string)$input_data;
+		$input_data = trim($input_data);
+		
+		/*
 		$input_data = self::removeCommentInCss($input_data);
 		
 		$patterns = array(
 			'#\s+#is' => ' ' // Compress all spaces into single space
-			//,'#/\*[^*]*\*+([^/][^*]*\*+)*/#' => ''
+			//,'#/\*[^*]*\*+([^/][^*]*\*+)* /#' => ''
 			//,'#(\/\*|\<\!\-\-)(.*?)(\*\/|\-\-\>)#s' => ' '// Remove all comments
 			,'#(\/\*)(.*?)(\*\/)#is' => ' '// Remove all comments
 			//,'#(\s+)?([,{};:>\+]+)(\s+)?#s' => '$2' // Remove un-needed spaces around special characters
@@ -418,6 +422,12 @@ class PepVN_Data
 		);
 		
 		$input_data = preg_replace(array_keys($patterns), array_values($patterns), $input_data);
+		*/
+		
+		
+		$pepVN_CSSmin = new PepVN_CSSmin();
+		$input_data = $pepVN_CSSmin->run($input_data,FALSE);
+		
 		
 		return $input_data;
 		
@@ -549,6 +559,9 @@ class PepVN_Data
 		}
 		return false;
 	}
+	
+	
+	
 	
 	public static function removeVietnameseSign($input_text)
 	{

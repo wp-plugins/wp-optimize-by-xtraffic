@@ -298,6 +298,12 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		}
 		
 		
+		if(isset($options['optimize_images_optimize_image_file_enable']) && $options['optimize_images_optimize_image_file_enable']) {
+		} else {
+			return $resultData;
+		}
+		
+		
 		if(!$paramsWatermarkOptions) {
 		
 			$rsSettingWatermarksFirstOptions = $this->optimize_images_setting_watermarks_first_options(array(
@@ -404,7 +410,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			}
 		}
 		
-		
 		if(!$isProcessStatus) {
 			return $resultData;
 		}
@@ -498,7 +503,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$input_parameters['optimized_image_file_name'] = $this->optimize_images_fixFileName($input_parameters['optimized_image_file_name']);
 		$imgOptimizedFilePath1 = $input_parameters['optimized_image_folder_path'] . $input_parameters['optimized_image_file_name'] . '-' . $keyFileConfigsProcessedData;
 		
-		if(
+		if( 
 			($input_parameters['resize_max_width']>0)
 			|| ($input_parameters['resize_max_height']>0)
 		) {
@@ -1677,6 +1682,58 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		$options['optimize_images_rename_img_filename_value'] = trim($options['optimize_images_rename_img_filename_value']);
 		
 		
+		
+		if($this->hostHasToolToProcessImage) {
+		
+			preg_match_all('#<(\'|\")(https?:)?//'.PepVN_Data::preg_quote($this->fullDomainName).'[^\'\"]+\.('.implode('|',$this->imgExtensionsAllow).')\??[^\'\"]*?\1#is',$text,$matched1);
+			
+			if(isset($matched1[0]) && $matched1[0] && (!PepVN_Data::isEmptyArray($matched1[0]))) {
+				foreach($allTargetElements as $key1 => $value1) {
+					if($value1) {
+					
+						preg_match('#(\'|\")((https?:)?//[^\"\']+)\1#i',$value1,$matched2);
+						
+						if(isset($matched2[2]) && $matched2[2]) {
+							
+							$matched2[2] = trim($matched2[2]);
+							if($matched2[2]) {
+								
+								$imgName1 = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG;
+								
+								$imgInfo1 = pathinfo($matched2[2]);
+								if(isset($imgInfo1['filename'])) {
+									$imgName1 = $imgInfo1['filename'];
+								}
+								
+								$rsProcessImage1 = $this->optimize_images_process_image(array(
+									'optimized_image_file_name' => trim($imgName1)
+									,'original_image_src' => $matched2[2]
+									,'action' => 'do_process_image'
+								));
+								
+								
+								if($rsProcessImage1['image_optimized_file_url']) {
+								
+									$valueTemp1 = '//'.PepVN_Data::removeProtocolUrl($matched2[2]);
+									$valueTemp2 = '//'.PepVN_Data::removeProtocolUrl($rsProcessImage1['image_optimized_file_url']);
+									
+									$patternsReplaceImgSrc[$valueTemp1] = $valueTemp2;
+									
+									
+								}
+								
+								
+								
+							}
+						}
+					}
+				}
+				
+			}
+			
+		}
+		
+		
 		if(preg_match_all('#<img[^>]+\\\?>#i', $text, $matched1)) {
 			
 			if(isset($matched1[0]) && is_array($matched1[0]) && (count($matched1[0])>0)) {
@@ -1768,7 +1825,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 					
 					if($imgSrc) {
 						
-						//Begin Process Watermark Image
+						//Begin Process Watermark Image 
 						
 						$checkStatus2 = false;
 						
@@ -1857,9 +1914,6 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 						
 					}
 					
-					
-					
-					
 					if($oldImgTag !== $newImgTag) {
 						$patternsReplace[$oldImgTag] = $newImgTag; 
 					}
@@ -1891,6 +1945,10 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		}
 		
 		
+		if($options['optimize_images_images_lazy_load_enable']) {
+			$text = $this->optimize_images_process_allimagestags_lazyload($text,0);
+		}
+		
 		$text = trim($text);
 		
 		$this->cacheObj->set_cache($keyCacheProcessText,$text);
@@ -1899,6 +1957,135 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 
 	} 
 
+	/*
+	*	$type : 1 : front page ; 0 : posts,pages
+	*/
+	
+	public function optimize_images_process_allimagestags_lazyload($text,$type)
+	{
+		
+		$keyCacheProcessText = PepVN_Data::createKey(array(
+			__METHOD__
+			,$text
+			,$type
+			,'optimize_images_process_allimagestags_lazyload'
+		));
+		
+		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessText);
+		
+		if($valueTemp) {
+			return $valueTemp;
+		}
+		
+		
+		
+		$patternsReplace = array();
+		$patternsEscaped = array();
+		
+		
+		
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'script');
+		$text = $rsOne['content'];
+		if(count($rsOne['patterns'])>0) {
+			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
+		}
+		$rsOne = false;
+		
+		
+		
+		/*
+		if(0 === $type) {
+			$patternMatch = '#<img[^>]+\\\?>#';
+		} else {
+			$patternMatch = '#<img[^>]+class=(\"|\')[^\'\"]*?(wp-post-image)\\\?>#'; 
+		}
+		*/
+		
+		$patternMatch = '#<img[^>]+\\\?>#';
+		
+		if(preg_match_all($patternMatch, $text, $matched1)) {
+			
+			if(isset($matched1[0]) && is_array($matched1[0]) && (count($matched1[0])>0)) {
+				
+				foreach($matched1[0] as $keyOne => $valueOne) {
+					
+					$rsOne = $this->optimize_images_process_imagetag_lazyload(array(
+						'img_tag' => $valueOne
+					));
+					
+					if($rsOne['img_tag']) {
+						$patternsReplace[$valueOne] = $rsOne['img_tag']; 
+					}
+				}
+			}
+			
+		}
+		
+		if(count($patternsReplace)>0) {
+			$text = str_replace(array_keys($patternsReplace),array_values($patternsReplace),$text);
+		}
+		
+		
+		if(count($patternsEscaped)>0) {
+			$text = str_replace(array_values($patternsEscaped), array_keys($patternsEscaped), $text);
+		}
+		
+		$this->cacheObj->set_cache($keyCacheProcessText,$text);
+		
+		return $text;
+		
+	}
+	
+	
+	
+	
+	public function optimize_images_process_imagetag_lazyload($input_parameters)
+	{
+		$resultData = array();
+		$resultData['img_tag'] = false;
+		
+		
+		$checkStatus1 = false;
+		
+		$imgSrcOriginal = false;
+		
+		if(isset($input_parameters['img_tag']) && $input_parameters['img_tag']) {
+			
+			preg_match('#<img[^>]+src=(\'|\")((https?:)?//[^\'\"]+\.('.implode('|',$this->imgExtensionsAllow).')\??[^\'\"]*?)\1#is',$input_parameters['img_tag'],$matched1);
+			
+			if(isset($matched1[2]) && $matched1[2]) {
+				
+				$checkStatus1 = true;
+				$imgSrcOriginal = $matched1[2];
+			}
+		}
+		
+		if($checkStatus1) {
+			if(preg_match('#class=(\'|\")[^\'\"]*?wpxtrlzld[^\'\"]*?#is',$input_parameters['img_tag'],$matched2)) {
+				$checkStatus1 = false;
+			}
+		}
+		
+		
+		if($checkStatus1) {
+			$input_parameters['img_tag'] = preg_replace('#src=(\'|\")[^\'\"]*?\1#i',' ',$input_parameters['img_tag']);
+			$input_parameters['img_tag'] = preg_replace('#data-original=(\'|\")[^\'\"]*?\1#i',' ',$input_parameters['img_tag']);
+			
+			$input_parameters['img_tag'] = preg_replace('#<img#i','<img src="'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'images/transparent-1x1.gif" ',$input_parameters['img_tag']);
+			$input_parameters['img_tag'] = preg_replace('#<img#i','<img data-original="'.$imgSrcOriginal.'" ',$input_parameters['img_tag']);
+			
+			if(preg_match('#class=(\'|\")#is',$input_parameters['img_tag'],$matched2)) {
+				$input_parameters['img_tag'] = preg_replace('#class=(\'|\")#i','class=$1 wpxtrlzld ',$input_parameters['img_tag']);
+			} else {
+				$input_parameters['img_tag'] = preg_replace('#<img#i','<img class="wpxtrlzld" ',$input_parameters['img_tag']);
+			}
+			
+			$resultData['img_tag'] = $input_parameters['img_tag'];
+		}
+		
+		
+		return $resultData;
+	}
 	
 	
 	
@@ -2026,6 +2213,13 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 		
 		
 		$optimize_images_optimize_image_file_enable = $options['optimize_images_optimize_image_file_enable'] === 'on' ? 'checked':'';
+		
+		
+		//Images lazy load
+		$optimize_images_images_lazy_load_enable = $options['optimize_images_images_lazy_load_enable'] === 'on' ? 'checked':'';
+		$optimize_images_images_lazy_load_frontpage_enable = $options['optimize_images_images_lazy_load_frontpage_enable'] === 'on' ? 'checked':''; 
+		
+		
 		
 		//Watermark Options
 		$optimize_images_watermarks_enable = $options['optimize_images_watermarks_enable'] === 'on' ? 'checked':'';
@@ -2295,17 +2489,52 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 							<div id="optimize_images_optimize_file_container">
 							
 								<ul>
-									<h3>',__('Images Limit Size (Width & Height)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h3>
+								
 									<li>
-										<label for="optimize_images_file_minimum_width_height">',__('Miminum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :  </label> &nbsp;
-										<input type="text" name="optimize_images_file_minimum_width_height" class="" value="',$optimize_images_file_minimum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+										
+										<h3>',__('Images Lazy Load',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h3>
+										<ul>
+											<li>
+												<input type="checkbox" name="optimize_images_images_lazy_load_enable" class="wpoptimizebyxtraffic_show_hide_trigger" data-target="#optimize_images_images_lazy_load_frontpage_container" ',$optimize_images_images_lazy_load_enable,' /> &nbsp; 
+												<label for="optimize_images_images_lazy_load_enable"> ',__('Enable "Images Lazy Load"',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label> 
+												
+												<div id="optimize_images_images_lazy_load_frontpage_container">
+							
+													<ul>
+													
+														<li>
+															<input type="checkbox" name="optimize_images_images_lazy_load_frontpage_enable" ',$optimize_images_images_lazy_load_frontpage_enable,' /> &nbsp; 
+															<label for="optimize_images_images_lazy_load_frontpage_enable"> ',__('Enable "Images Lazy Load" in Front Page',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</label> 
+															<p style="margin-bottom: 3%;" class="description">',__('Front Page include : Home page, category page, tag page, author page, date page, archives page,...',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+														</li>
+													</ul>
+											</li>
+											
+										</ul>
 										
 									</li>
+									
 									<li>
-										<label for="optimize_images_file_maximum_width_height"> ',__('Maximum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label> &nbsp; 
-										<input type="text" name="optimize_images_file_maximum_width_height" class="" value="',$optimize_images_file_maximum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+										
+										<h3>',__('Images Limit Size (Width & Height)',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :</h3>
+										<ul>
+											<li>
+												<label for="optimize_images_file_minimum_width_height">',__('Miminum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' :  </label> &nbsp;
+												<input type="text" name="optimize_images_file_minimum_width_height" class="" value="',$optimize_images_file_minimum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+												
+											</li>
+											<li>
+												<label for="optimize_images_file_maximum_width_height"> ',__('Maximum Images\'s size (width & height) will be processed',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' : </label> &nbsp; 
+												<input type="text" name="optimize_images_file_maximum_width_height" class="" value="',$optimize_images_file_maximum_width_height,'" style="width: 60px;" />&nbsp;px (pixel)
+												
+											</li>
+										</ul>
 										
 									</li>
+									
+									
+									
+									
 									
 								</ul>
 								

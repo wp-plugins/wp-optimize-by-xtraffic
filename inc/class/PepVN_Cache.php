@@ -134,6 +134,7 @@ class PepVN_Cache
 	//Helper function to validate filenames
 	public function safe_filename($filename)
 	{
+		$filename = md5( WPOPTIMIZEBYXTRAFFIC_SITE_CONSTANT_ID . '_' . $filename ); 
 		return preg_replace('/[^0-9a-z\.\_\-]/i','', strtolower($filename)); 
 	}
 	

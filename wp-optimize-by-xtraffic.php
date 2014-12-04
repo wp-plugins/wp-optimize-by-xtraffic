@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.8
+Version: 4.1.9
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.8' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.9' );
 }
 
 
@@ -142,6 +142,8 @@ class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_OptimizeTraffic
 
 
 }//class WPOptimizeByxTraffic
+
+
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )
 
@@ -334,7 +336,6 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
 			wp_enqueue_style( $handleRegister ); 
 			
-			//wp_enqueue_style( 'core', 'style.css', false ); 
 		}
 
 		function wpOptimizeByxTraffic_load_custom_wp_scripts() 
@@ -350,8 +351,6 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
 			wp_enqueue_script( $handleRegister ); 
 			
-			
-			//wp_enqueue_script( 'my-js', 'filename.js', false );
 		}
 
 		add_action( 'wp_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_styles' );
@@ -374,41 +373,49 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			if(function_exists('ob_start')) {
 				ob_start('wpOptimizeByxTraffic_process_html_pages'); 
 			}
+			
 		}
+		
+		
 
-		function wpOptimizeByxTraffic_process_html_pages($input_html)
+		function wpOptimizeByxTraffic_process_html_pages($buffer)
 		{
 			/** 
 			* some minify codes here ...
 			*/
-
+			
 			global $wpOptimizeByxTraffic;
 			
+			$buffer = $wpOptimizeByxTraffic->optimize_speed_process_html_pages($buffer);
 			
-			$input_html = $wpOptimizeByxTraffic->optimize_speed_process_html_pages($input_html);
 			
-			$input_html = $wpOptimizeByxTraffic->optimize_speed_cdn_process_text($input_html,'html');
 			
-			$input_html = $wpOptimizeByxTraffic->base_add_plugin_info_html($input_html);
-			
-			$wpOptimizeByxTraffic->optimize_speed_optimize_cache_check_and_create_page_cache(array(
-				'content' => $input_html
+			$options = $wpOptimizeByxTraffic->get_options(array(
+				'cache_status' => 1
 			));
 			
 			
+			if($options['optimize_images_images_lazy_load_enable']) { 
+				if($options['optimize_images_images_lazy_load_frontpage_enable']) {
+					$buffer = $wpOptimizeByxTraffic->optimize_images_process_allimagestags_lazyload($buffer,1); 
+				}
+			}
+			
+			
+			$buffer = $wpOptimizeByxTraffic->optimize_speed_cdn_process_text($buffer,'html');
+			
+			$buffer = $wpOptimizeByxTraffic->base_add_plugin_info_html($buffer);
+			
+			$wpOptimizeByxTraffic->optimize_speed_optimize_cache_check_and_create_page_cache(array(
+				'content' => $buffer
+			));
 			
 			$wpOptimizeByxTraffic->optimize_speed_optimize_cache_check_and_flush_http_browser_cache();
 			
-			return $input_html;
+			return $buffer;
 			
 		}
-
 		
-
-
-
-
-
 		function wpOptimizeByxTraffic_clear_cache()
 		{
 			global $wpOptimizeByxTraffic;
@@ -456,6 +463,54 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		
 		
 		
+		function wpOptimizeByxTraffic_post_thumbnail_custom( $html, $post_id, $post_thumbnail_id, $size, $attr ) 
+		{
+			global $wpOptimizeByxTraffic;
+			
+			$post_thumbnail_id = get_post_thumbnail_id();
+			$post_thumbnail_id = (int)$post_thumbnail_id;
+			if($post_thumbnail_id>0) {
+				
+				$imgClass = 'wp-post-image';
+				if(!is_array($size)) {
+					$imgClass .= ' attachment-'.(string)$size;
+				}
+				
+				$attachment_metadata = wp_get_attachment_metadata($post_thumbnail_id);
+				
+				$image_src = wp_get_attachment_image_src($post_thumbnail_id, $size);
+				
+				$imgName = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG;
+				
+				$imgInfo = pathinfo($image_src[0]);
+				if(isset($imgInfo['filename'])) {
+					$imgName = $imgInfo['filename'];
+				}
+				
+				
+				$rsProcessImage1 = $wpOptimizeByxTraffic->optimize_images_process_image(array(
+					'optimized_image_file_name' => $imgName
+					,'original_image_src' => $image_src[0]
+					,'resize_max_width' => $image_src[1]
+					,'resize_max_height' => $image_src[2]
+					,'action' => 'do_process_image'
+				));
+				
+				
+				if($rsProcessImage1['image_optimized_file_url']) {
+					$image_src[0] = $rsProcessImage1['image_optimized_file_url'];
+					
+				}
+				
+				$html = '<img width="'.$image_src[1].'" height="'.$image_src[2].'" src="'.$image_src[0].'" class="'.$imgClass.'" alt="'.$attachment_metadata['image_meta']['caption'].' - '.$attachment_metadata['image_meta']['title'].'">';
+				
+			}
+			
+			return $html;
+		}
+
+		
+		
 		
 		
 		
@@ -482,6 +537,10 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			add_action('save_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
 			
 			add_action('admin_bar_menu', 'wpOptimizeByxTraffic_admin_bar_menu', 999999999);
+			
+			add_filter( 'post_thumbnail_html', 'wpOptimizeByxTraffic_post_thumbnail_custom', 999999999.0000000001, 5 );
+			
+			
 			
 		}
 
@@ -510,6 +569,10 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 				}
 				
 			}
+			
+			
+			
+			
 		}
 
 
@@ -523,6 +586,8 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		function wpOptimizeByxTraffic_wp_init_first() 
 		{
 			global $wpOptimizeByxTraffic;
+			
+			
 			
 		}
 
@@ -547,6 +612,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		function wpOptimizeByxTraffic_wp_shutdown_first() 
 		{
 			
+			
 		}
 		
 		function wpOptimizeByxTraffic_wp_shutdown_last() 
@@ -566,7 +632,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		* @init 1
 		* Runs after WordPress has finished loading but before any headers are sent. Useful for intercepting $_GET or $_POST triggers.
 		*/
-		add_action('init', 'wpOptimizeByxTraffic_init_first', 0.0000000001);
+		add_action('init', 'wpOptimizeByxTraffic_init_first', 0);
 
 		add_action('init', 'wpOptimizeByxTraffic_init_last', 999999999.0000000001);
 		

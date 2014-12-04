@@ -704,12 +704,14 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		}
 		
 		
-		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'a;script;style;link;meta');
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'a;script;style;link;meta;input;textarea;iframe;video;audio;object');
 		$text = $rsOne['content'];
 		if(count($rsOne['patterns'])>0) {
 			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
 		}
 		$rsOne = false;
+		
+		
 		
 		
 		if ($options['optimize_links_excludeheading'] == 'on') {

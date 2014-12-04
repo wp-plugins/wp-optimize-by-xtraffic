@@ -15,7 +15,7 @@ class WPOptimizeByxTraffic_OptimizeSpeed extends WPOptimizeByxTraffic_OptimizeLi
 	private $optimize_speed_loadJsTimeDelay = 1000;//miliseconds
 	private $optimize_speed_loadCssTimeDelay = 10;//miliseconds
 	
-	private $optimize_speed_numberLoadCssAsync = 0;
+	private $optimize_speed_numberLoadCssAsync = 0; 
 	
 	
 	public $optimize_speed_cdn_patternFilesTypeAllow = '';
@@ -1750,8 +1750,6 @@ setTimeout(function() {
 						preg_match('#(\'|\")((https?:)?//[^\"\']+)\1#i',$value1,$matched2);
 					}
 					
-					
-					
 					if(isset($matched2[2]) && $matched2[2]) {
 						
 						$matched2[2] = trim($matched2[2]);
@@ -1963,7 +1961,45 @@ setTimeout(function() {
 			}
 		}
 		
-		return $isCacheStatus;
+		
+		
+		
+		if($isCacheStatus) {
+			$options['optimize_speed_optimize_cache_exclude_url'] = trim($options['optimize_speed_optimize_cache_exclude_url']);
+			$valueTemp = $options['optimize_speed_optimize_cache_exclude_url'];
+			$valueTemp = PepVN_Data::cleanPregPatternsArray($valueTemp);
+			if($valueTemp) {
+				if(count($valueTemp)>0) {
+					if(preg_match('#('.implode('|',$valueTemp).')#i',$this->urlFullRequest)) {
+						$isCacheStatus = false;
+					}
+				}
+			}
+		}
+		
+		if($isCacheStatus) {
+			$rs_get_woocommerce_urls = $this->base_get_woocommerce_urls();
+			if(
+				isset($rs_get_woocommerce_urls['urls_paths'])
+				&& ($rs_get_woocommerce_urls['urls_paths'])
+				&& is_array($rs_get_woocommerce_urls['urls_paths'])
+			) {
+			
+				$valueTemp = $rs_get_woocommerce_urls['urls_paths'];
+				$valueTemp = PepVN_Data::cleanPregPatternsArray($valueTemp);
+				if($valueTemp) {
+					if(count($valueTemp)>0) {
+						if(preg_match('#('.implode('|',$valueTemp).')#i',$this->urlRequestNoParameters)) {
+							$isCacheStatus = false; 
+						}
+					}
+				}
+				
+			}
+		}
+		
+		
+		return $isCacheStatus; 
 	}
 	
 	
@@ -1971,7 +2007,7 @@ setTimeout(function() {
 	{
 		
 		
-		$options = $this->get_options(array(
+		$options = $this->get_options(array( 
 			'cache_status' => 1
 		));
 		
@@ -2281,6 +2317,8 @@ setTimeout(function() {
 		
 		$optimize_speed_optimize_cache_cachetimeout = abs((int)$options['optimize_speed_optimize_cache_cachetimeout']);
 		
+		$optimize_speed_optimize_cache_exclude_url = trim($options['optimize_speed_optimize_cache_exclude_url']);
+		
 		
 		
 		
@@ -2479,13 +2517,17 @@ setTimeout(function() {
 								
 								
 						
-								<li>
+								<li style="margin-bottom: 3%;">
 									<h6> ',__('Cache Timeout',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'&nbsp;:&nbsp;<input type="text" name="optimize_speed_optimize_cache_cachetimeout" class="" value="',$optimize_speed_optimize_cache_cachetimeout,'" style="width: 100px;" />&nbsp;seconds </h6> 
 									<p class="description">',__('How long should cached pages remain fresh? You should set this value from 21600 seconds (6 hours) to 86400 seconds (24 hours). Minimum value is 300 seconds (5 minutes).',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
 								</li>
 								
 								
-								
+								<li style="margin-bottom: 3%;">
+									<h6> ',__('Exclude',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),' (',__('Contained in url, separate them by comma',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),')</h6> 
+									<input type="text" name="optimize_speed_optimize_cache_exclude_url" class="" value="',$optimize_speed_optimize_cache_exclude_url,'" style="width: 50%;" /> &nbsp;  
+									<p class="description">',__('Plugin will ignore these urls',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),'</p>
+								</li>
 								
 								
 							</ul>						
@@ -2761,6 +2803,17 @@ setTimeout(function() {
 
 
 }//class WPOptimizeByxTraffic  
+
+
+
+
+
+
+
+
+
+
+
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )
 

@@ -290,12 +290,13 @@ class WPOptimizeByxTraffic_Base
 
 	
 	
-	public function base_clear_config_content($htaccess_content)
+	public function base_clear_config_content($input_data)
 	{
+		$input_data = preg_replace('/[\s \t]+(\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#)/s', PHP_EOL . ' $1' ,$input_data);
+		$input_data = preg_replace('/(\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#)[\s \t]+/s', '$1 ' . PHP_EOL ,$input_data);
+		$input_data = preg_replace('/([\s \t]*?)\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#([\s \t]*?)/s', PHP_EOL ,$input_data);
 		
-		$htaccess_content = preg_replace('/\s*?\#\#\# BEGIN WPOPTIMIZEBYXTRAFFIC \#\#\#.+\#\#\# END WPOPTIMIZEBYXTRAFFIC \#\#\#\s*?/is', PHP_EOL ,$htaccess_content);
-		
-		return $htaccess_content;
+		return $input_data;
 	}
 	
 	
@@ -577,6 +578,11 @@ location ~ /\. {
 	deny all;
 }
 
+location ~ /('.WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/inc)/ {
+   deny all;
+   return 403;
+}
+
 keepalive_timeout 60s;
 server_tokens off;
 
@@ -749,7 +755,7 @@ if(file_exists(\''.$pathFile2.'\')) {
 ### END WPOPTIMIZEBYXTRAFFIC ###
 
 ';
-				$patterns['wp_initial_constants();'] = $replace1;
+				$patterns['wp_initial_constants();'] = $replace1; 
 				
 				$fileContent1 = str_replace(array_keys($patterns),array_values($patterns),$fileContent1);
 				
@@ -949,8 +955,8 @@ if(file_exists(\''.$pathFile2.'\')) {
 	{
 		
 		$textAppendToEndBodyTagHtml = PHP_EOL . '<!-- '
-		. PHP_EOL . '+ This website has been optimized by plugin "WP Optimize By xTraffic".'
-		. PHP_EOL . '+ Served from : '.$this->fullDomainName.' @ '.date('Y-m-d H:i:s').' by "WP Optimize By xTraffic".'
+		. PHP_EOL . '+ This website has been optimized by plugin "WP Optimize By xTraffic".' 
+		. PHP_EOL . '+ Served from : '.$this->fullDomainName.' @ ' . date('Y-m-d H:i:s') . ' by "WP Optimize By xTraffic".'
 		//. PHP_EOL . '+ Page Caching using disk.'
 		//. PHP_EOL . '+ Processing time before use cache : '.number_format(microtime(true) - WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART, 10, '.', '').' seconds.'
 		. PHP_EOL . '+ Learn more here : http://wordpress.org/plugins/wp-optimize-by-xtraffic/ '
@@ -1573,6 +1579,11 @@ LIMIT 0,'.($input_parameters['limit']).'
 			
 			'optimize_images_optimize_image_file_enable' => 'on',//on
 			
+			//image lazy load
+			'optimize_images_images_lazy_load_enable' => '',//on
+			'optimize_images_images_lazy_load_frontpage_enable' => 'on',//on 
+			
+			
 			//watermark image
 			'optimize_images_watermarks_enable' => '',//on
 			'optimize_images_watermarks_watermark_position' => 'bottom_right',
@@ -1631,6 +1642,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			'optimize_speed_optimize_cache_prebuild_cache_enable' => '',//on
 			'optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process' => 1,//int 
 			'optimize_speed_optimize_cache_cachetimeout' => 86400,//int 
+			'optimize_speed_optimize_cache_exclude_url' => '/cart/,/checkout/',//text
 			
 			
 			
@@ -1717,6 +1729,91 @@ LIMIT 0,'.($input_parameters['limit']).'
 
 	}
 
+	
+	
+	public function base_get_woocommerce_urls()
+	{
+		
+		$keyCache1 = PepVN_Data::createKey(array(
+			__METHOD__
+			,'base_get_woocommerce_urls'
+		));
+		
+		$valueTemp = $this->cacheObj->get_cache($keyCache1);
+		
+		if($valueTemp) {
+			return $valueTemp;
+		}
+		
+		$resultData = array();
+		$resultData['urls'] = false;
+		
+		if(function_exists('woocommerce_get_page_id')) {
+			global $woocommerce;
+			if(isset($woocommerce) && $woocommerce) {
+				$resultData['urls'] = array();
+				
+				$resultData['urls']['cart_url'] = $woocommerce->cart->get_cart_url();
+				$resultData['urls']['checkout_url'] = $woocommerce->cart->get_checkout_url();
+				
+				$pageId1 = woocommerce_get_page_id( 'shop' );
+				if($pageId1) {
+					$pageId1 = (int)$pageId1;
+					if($pageId1>0) {
+						$resultData['urls']['shop_page_url'] = get_permalink( $pageId1 );
+					}
+				}
+				
+				
+				$pageId1 = get_option( 'woocommerce_myaccount_page_id' );
+				if($pageId1) {
+					$pageId1 = (int)$pageId1;
+					if($pageId1>0) {
+						$resultData['urls']['myaccount_page_url'] = get_permalink( $pageId1 );
+						$resultData['urls']['logout_url'] = wp_logout_url( $resultData['urls']['myaccount_page_url'] );
+					}
+				}
+				
+				$pageId1 = woocommerce_get_page_id( 'pay' );
+				if($pageId1) {
+					$pageId1 = (int)$pageId1;
+					if($pageId1>0) {
+						$resultData['urls']['payment_page_url'] = get_permalink( $pageId1 );
+					}
+				}
+				
+			}
+			
+		}
+		
+		if($resultData['urls']) {
+			if($this->fullDomainName) {
+				foreach($resultData['urls'] as $key1 => $value1) {
+					if($value1) {
+						$value1 = PepVN_Data::removeProtocolUrl($value1);
+						$value1 = preg_replace('#^'.PepVN_Data::preg_quote($this->fullDomainName).'#is','',$value1,1);
+						$value1 = trim($value1);
+						if(strlen($value1)>0) {
+							$value1 = explode('?',$value1,2);
+							$value1[0] = trim($value1[0]);
+							if(strlen($value1[0])>0) {
+								$resultData['urls_paths'][$key1] = $value1[0];
+							}
+						}
+						
+						
+					}
+				}
+			}
+		}
+		
+		$this->cacheObj->set_cache($keyCache1,$resultData);
+		
+		return $resultData;
+		
+	}
+	
+	
 	
 	public function base_clear_data($input_action='')
 	{
@@ -1956,6 +2053,10 @@ LIMIT 0,'.($input_parameters['limit']).'
 					
 					,'optimize_images_optimize_image_file_enable'
 					
+					//lazy load
+					,'optimize_images_images_lazy_load_enable'
+					,'optimize_images_images_lazy_load_frontpage_enable'
+					
 					//watermark image
 					
 					,'optimize_images_watermarks_enable'
@@ -2060,6 +2161,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 					,'optimize_speed_optimize_cache_prebuild_cache_enable'
 					,'optimize_speed_optimize_cache_prebuild_cache_number_pages_each_process'
 					,'optimize_speed_optimize_cache_cachetimeout'
+					,'optimize_speed_optimize_cache_exclude_url'
 					
 				);
 				

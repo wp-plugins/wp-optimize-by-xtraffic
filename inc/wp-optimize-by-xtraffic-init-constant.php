@@ -4,7 +4,7 @@
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.8' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.9' );
 }
 
 
@@ -33,6 +33,29 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_NS' ) ) {
 
 
 
+if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_SITE_CONSTANT_ID' ) ) { 
+	
+	$wpoptimizebyxtraffic_valueTemp1 = '';
+	
+	$wpoptimizebyxtraffic_valueTemp1 .= WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG;
+	$wpoptimizebyxtraffic_valueTemp1 .= __FILE__;
+	
+	if ( defined( 'AUTH_SALT' ) ) {
+		$wpoptimizebyxtraffic_valueTemp1 .= AUTH_SALT;
+	}
+	
+	if ( defined( 'NONCE_SALT' ) ) {
+		$wpoptimizebyxtraffic_valueTemp1 .= NONCE_SALT;
+	}
+	
+	if ( defined( 'ABSPATH' ) ) {
+		$wpoptimizebyxtraffic_valueTemp1 .= ABSPATH;
+	}
+	
+	define( 'WPOPTIMIZEBYXTRAFFIC_SITE_CONSTANT_ID', md5($wpoptimizebyxtraffic_valueTemp1) ); 
+}
+
+
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CHMOD' ) ) {
 	define( 'WPOPTIMIZEBYXTRAFFIC_CHMOD', 0755 ); 
 }
@@ -45,7 +68,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CACHE_PATH' ) ) {
 
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH', WPOPTIMIZEBYXTRAFFIC_CACHE_PATH . 'files/');
+	define( 'WPOPTIMIZEBYXTRAFFIC_CACHE_FILES_PATH', WPOPTIMIZEBYXTRAFFIC_CACHE_PATH . 'files/'); 
 }
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_KEY_DATA_REQUEST' ) ) {
