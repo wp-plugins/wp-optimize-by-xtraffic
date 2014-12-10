@@ -523,9 +523,10 @@ class PepVN_Data
 	
 	public static function createKey($input_data)
 	{
+		//don't change here, it make id for data
 		$input_data = serialize($input_data); 
 		$input_data = (string)$input_data;
-		$input_data = preg_replace('#\s+#is','',$input_data);
+		$input_data = preg_replace('#\s+#is','',$input_data); 
 		$input_data = md5($input_data);
 		return $input_data;
 	}

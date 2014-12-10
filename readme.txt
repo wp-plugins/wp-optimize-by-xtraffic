@@ -1,7 +1,7 @@
 === WP Optimize By xTraffic ===
 Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
-Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer
+Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
 Requires at least: 2.3
 Tested up to: 4.0
 Stable tag: trunk
@@ -83,6 +83,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
 
 * English (default)
 * Vietnamese (vi) - **[Translated by xTraffic.pep.vn](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "Translated by xTraffic.pep.vn")**
+* Serbian (sr_RS) - **[Translated by FirstSiteGuide.com](http://firstsiteguide.com/ "Translated by FirstSiteGuide.com")**
 
 = Official community channels : =
 
@@ -108,6 +109,10 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 4.1.10 =
+* Add Serbian language [translated by FirstSiteGuide.com](http://firstsiteguide.com/ "translated by FirstSiteGuide.com")
+* Fix some bugs "Optimize Speed"
 
 = 4.1.9 =
 * Add feature "Images Lazy Load" make your site load faster

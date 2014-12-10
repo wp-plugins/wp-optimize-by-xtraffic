@@ -1748,38 +1748,56 @@ LIMIT 0,'.($input_parameters['limit']).'
 		$resultData = array();
 		$resultData['urls'] = false;
 		
-		if(function_exists('woocommerce_get_page_id')) {
-			global $woocommerce;
-			if(isset($woocommerce) && $woocommerce) {
-				$resultData['urls'] = array();
-				
-				$resultData['urls']['cart_url'] = $woocommerce->cart->get_cart_url();
-				$resultData['urls']['checkout_url'] = $woocommerce->cart->get_checkout_url();
-				
-				$pageId1 = woocommerce_get_page_id( 'shop' );
-				if($pageId1) {
-					$pageId1 = (int)$pageId1;
-					if($pageId1>0) {
-						$resultData['urls']['shop_page_url'] = get_permalink( $pageId1 );
+		if ( class_exists( 'WooCommerce' ) ) {
+		
+			if(function_exists('woocommerce_get_page_id')) {
+				global $woocommerce;
+				if(isset($woocommerce) && $woocommerce) {
+					if(isset($woocommerce->cart) && $woocommerce->cart) {
+						if(
+							method_exists($woocommerce->cart,'get_cart_url')
+							&& method_exists($woocommerce->cart,'get_checkout_url')
+						) {
+							
+							
+							$resultData['urls'] = array();
+							
+							$resultData['urls']['cart_url'] = $woocommerce->cart->get_cart_url();
+							$resultData['urls']['checkout_url'] = $woocommerce->cart->get_checkout_url();
+							
+							$pageId1 = woocommerce_get_page_id( 'shop' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['urls']['shop_page_url'] = get_permalink( $pageId1 );
+								}
+							}
+							
+							
+							$pageId1 = get_option( 'woocommerce_myaccount_page_id' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['urls']['myaccount_page_url'] = get_permalink( $pageId1 );
+									$resultData['urls']['logout_url'] = wp_logout_url( $resultData['urls']['myaccount_page_url'] );
+								}
+							}
+							
+							$pageId1 = woocommerce_get_page_id( 'pay' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['urls']['payment_page_url'] = get_permalink( $pageId1 ); 
+								}
+							}
+							
+							
+							
+							
+						}
 					}
-				}
-				
-				
-				$pageId1 = get_option( 'woocommerce_myaccount_page_id' );
-				if($pageId1) {
-					$pageId1 = (int)$pageId1;
-					if($pageId1>0) {
-						$resultData['urls']['myaccount_page_url'] = get_permalink( $pageId1 );
-						$resultData['urls']['logout_url'] = wp_logout_url( $resultData['urls']['myaccount_page_url'] );
-					}
-				}
-				
-				$pageId1 = woocommerce_get_page_id( 'pay' );
-				if($pageId1) {
-					$pageId1 = (int)$pageId1;
-					if($pageId1>0) {
-						$resultData['urls']['payment_page_url'] = get_permalink( $pageId1 );
-					}
+					
+					
 				}
 				
 			}

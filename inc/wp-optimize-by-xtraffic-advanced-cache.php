@@ -322,16 +322,6 @@ class WPOptimizeByxTraffic_AdvancedCache
 		}
 		
 		
-		if($isCacheStatus) {
-			if(function_exists('woocommerce_get_page_id')) {
-				global $woocommerce;
-				if(isset($woocommerce) && $woocommerce) {
-					$cart_url = $woocommerce->cart->get_cart_url();
-					$shop_page_url = get_permalink( woocommerce_get_page_id( 'shop' ) );
-				}
-				
-			}
-		}
 		
 		
 		return $isCacheStatus;
