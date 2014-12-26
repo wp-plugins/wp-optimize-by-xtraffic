@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 4.1.10
+Version: 4.1.11
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.10' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '4.1.11' );
 }
 
 
@@ -467,14 +467,31 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		{
 			global $wpOptimizeByxTraffic;
 			
-			$post_thumbnail_id = get_post_thumbnail_id();
+			if(!$html) {
+				$html = '';
+			}
+			$html = (string)$html;
+			
+			if(!$post_thumbnail_id) {
+				$post_thumbnail_id = 0;
+			}
 			$post_thumbnail_id = (int)$post_thumbnail_id;
+			
+			
+			if($post_thumbnail_id>0) {
+			} else {
+				if($post_id) {
+					$post_id = (int)$post_id;
+					if($post_id>0) {
+					
+						$post_thumbnail_id = get_post_thumbnail_id($post_id);
+						$post_thumbnail_id = (int)$post_thumbnail_id;
+					}
+				}
+			}
+			
 			if($post_thumbnail_id>0) {
 				
-				$imgClass = 'wp-post-image';
-				if(!is_array($size)) {
-					$imgClass .= ' attachment-'.(string)$size;
-				}
 				
 				$attachment_metadata = wp_get_attachment_metadata($post_thumbnail_id);
 				
@@ -502,7 +519,20 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 					
 				}
 				
-				$html = '<img width="'.$image_src[1].'" height="'.$image_src[2].'" src="'.$image_src[0].'" class="'.$imgClass.'" alt="'.$attachment_metadata['image_meta']['caption'].' - '.$attachment_metadata['image_meta']['title'].'">';
+				
+				
+				if(strlen($html)>0) {
+					$html = preg_replace('#\s*?src=(\'|\")[^\'\"]*?\1#is',' src=$1'.$image_src[0].'$1',$html);
+				} else {
+					
+					$imgClass = 'wp-post-image';
+					if(!is_array($size)) {
+						$imgClass .= ' attachment-'.(string)$size;
+					}
+					
+					$html = ' <img width="'.$image_src[1].'" height="'.$image_src[2].'" src="'.$image_src[0].'" class="'.$imgClass.'" alt="'.$attachment_metadata['image_meta']['caption'].' - '.$attachment_metadata['image_meta']['title'].'"> ';
+					
+				}
 				
 			}
 			

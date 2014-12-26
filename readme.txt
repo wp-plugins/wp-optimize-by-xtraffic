@@ -110,6 +110,11 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 4.1.11 =
+* Improve feature "Images Lazy Load"
+* Fix some bugs "Optimize Traffic"
+
+
 = 4.1.10 =
 * Add Serbian language [translated by FirstSiteGuide.com](http://firstsiteguide.com/ "translated by FirstSiteGuide.com")
 * Fix some bugs "Optimize Speed"

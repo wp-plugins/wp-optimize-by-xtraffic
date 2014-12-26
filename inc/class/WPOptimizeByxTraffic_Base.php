@@ -2408,6 +2408,38 @@ LIMIT 0,'.($input_parameters['limit']).'
 	
 	
 	
+	
+	public function base_remove_shortcodes($input_data)
+	{
+		$input_data = trim($input_data);
+		if($input_data) {
+			$rsOne = PepVN_Data::escapeByPattern($input_data, array(
+				'pattern' => '#\[\[[^\[\]]+\]\]#is'
+				,'target_patterns' => array(
+					0
+				)
+				,'wrap_target_patterns' => ''
+			)); 
+			
+			
+			$rsOne['content'] = preg_replace('#\[/?[^\[\]]+\]#i','',$rsOne['content']);
+			
+			
+			if(!PepVN_Data::isEmptyArray($rsOne['patterns'])) {
+				$rsOne['content'] = str_replace(array_values($rsOne['patterns']),array_keys($rsOne['patterns']),$rsOne['content']);
+			}
+			
+			$input_data = $rsOne['content']; $rsOne = false;
+			$input_data = trim($input_data);
+			
+		}
+		
+		return $input_data;
+	}
+	
+	
+	
+	
 	public function wpoptimizebyxtraffic_admin_menu()
 	{
 		

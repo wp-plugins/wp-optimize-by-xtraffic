@@ -64,8 +64,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			return $input_text;
 		}
 		
-		
-		
 		$keyCacheProcessText = array(
 			__METHOD__
 			,$input_text
@@ -743,6 +741,13 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		return $resultData;
 	}
 	
+	
+	
+	
+	
+	
+	
+	
 	public function optimize_traffic_create_traffic_module($input_parameters)
 	{
 		global $wpdb;
@@ -1061,6 +1066,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 								}
 								
 								$postTitle1 = $rsGetPost1->post_title;
+								$postTitle1 = $this->base_remove_shortcodes($postTitle1);
 								if($input_parameters['option']['maximum_number_characters_items_title']>0) {
 									if(PepVN_Data::mb_strlen($postTitle1) > $input_parameters['option']['maximum_number_characters_items_title']) {
 										$postTitle1 = PepVN_Data::mb_substr($postTitle1, 0, $input_parameters['option']['maximum_number_characters_items_title']).'...';
@@ -1074,6 +1080,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 									$postExcerpt1 = PepVN_Data::mb_substr($postExcerpt1, 0, 350).'...';
 								}
 								
+								$postExcerpt1 = $this->base_remove_shortcodes($postExcerpt1);
 								
 								if($input_parameters['option']['maximum_number_characters_items_excerpt']>0) {
 									if(PepVN_Data::mb_strlen($postExcerpt1) > $input_parameters['option']['maximum_number_characters_items_excerpt']) {
