@@ -6,14 +6,12 @@ Requires at least: 2.3
 Tested up to: 4.0
 Stable tag: trunk
 
-Plugin "WP Optimize By xTraffic" optimizes your WordPress websites for friendly search engine (SEO) to increase website's ranking.
+Plugin "WP Optimize By xTraffic" optimizes your WordPress websites more useful and powerful through the special features.
 
 
 == Description == 
 
-Plugin **[WP Optimize By xTraffic](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "WP Optimize By xTraffic")** automatically optimizes SEO's benefits for your site by building internal links with keywords and focused links. In case you don't set focus links, this plugin will automatically link to a post/page having the highest related content through optimizated algorithm. This is a perfect solution to set internal links of  all the posts so as to keep  the user to access  your website longer, and to improve SEO effect for your  website. Or you can use this Plugin to add sponsored links to other sites.
-
-This plugin also optimizes post's images for friendly SEO, reduce your images size and allows you to automatically bulk watermark images
+Plugin **[WP Optimize By xTraffic](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "WP Optimize By xTraffic")** automatically optimizes your WordPress site more useful and powerful through the special features.
 
 Everything is done completely automatically, and you can change the options from the administration settings panel.
 
@@ -29,12 +27,10 @@ Everything is done completely automatically, and you can change the options from
 * [Tối ưu website WordPress với Plugin WP Optimize By xTraffic](http://melyweb.net/toi-uu-website-wordpress-voi-plugin-wp-optimize-by-xtraffic.html "Tối ưu website WordPress với Plugin WP Optimize By xTraffic")
 
 
-
-
 Thank the authors who talked about us :) . We always try to do it better in the future!
 
 = The main features : =
-* ***Internal Link Building*** : Build automatically internal link with your focused links or best related posts
+* ***Internal Link Building*** : Build automatically internal link with your keywords and your focused links or best related posts. In case you don't set focus links, this plugin will automatically link to a post/page having the highest related content through optimizated algorithm. This is a perfect solution to set internal links of  all the posts so as to keep  the user to access  your website longer, and to improve SEO effect for your  website. Or you can use this Plugin to add sponsored links to other sites.
 * ***Optimize Images*** : Watermark images + Reduce image's size + Optimize image's Alt/Title + Rename image's filename
 * ***Optimize Speed*** : Make your WordPress website load faster from 200% or more (speed up Apache and Nginx)
 * ***Optimize Traffic*** : create a list of related posts in the middle of article content to do : 
