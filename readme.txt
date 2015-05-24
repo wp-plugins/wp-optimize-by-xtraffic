@@ -3,7 +3,7 @@ Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
 Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
 Requires at least: 2.3
-Tested up to: 4.0
+Tested up to: 4.2.2
 Stable tag: trunk
 
 Plugin "WP Optimize By xTraffic" optimizes your WordPress websites more useful and powerful through the special features.
@@ -45,34 +45,35 @@ Thank the authors who talked about us :) . We always try to do it better in the 
   * Make external links open in new window and add nofollow attribute
   * Add nofollow links (include internal links & external links)
 * ***Optimize Images*** : 
-  * Automatically adds alt and title attributes to all images in all posts specified by your settings (friendly SEO)
+  * Automatically adds alt and title attributes to all images in all posts specified by your settings (friendly SEO).
+  * Auto resize images to fit the screen width of the device (Increase website's Google PageSpeed Insights point).
   * Automatically bulk watermark images by :
-    * Watermark Position : TOP ; MIDDLE ; BOTTOM + LEFT ; CENTER ; RIGHT
+    * Watermark Position : TOP ; MIDDLE ; BOTTOM + LEFT ; CENTER ; RIGHT.
     * Watermark by text : 
-      * Choose fonts for text
-      * Choose text color
-      * Choose text size (% or pt). In case you set text size by %, plugin will create watermark's size based on image's size
-      * Text Opacity
-      * Text background color
+      * Choose fonts for text.
+      * Choose text color.
+      * Choose text size (% or pt). In case you set text size by %, plugin will create watermark's size based on image's size.
+      * Text Opacity.
+      * Text background color.
     * Watermark by image : 
-      * Set image (your logo) url
-      * Set image (your logo) size (px or %). In case you set text size by %, plugin will create watermark's size based on image's size
-  * *Optimize Image Quality* : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 )
-  * *Rename Image Filename* : Rename your image's filename for friendly SEO
+      * Set image (your logo) url.
+      * Set image (your logo) size (px or %). In case you set text size by %, plugin will create watermark's size based on image's size.
+  * *Optimize Image Quality* : To reduce the image file size, you can reduce value Image's Quality Bar. If you set value is 100, your image keep original quality and file size. ( Best Recommend value is from 80 to 90 ).
+  * *Rename Image Filename* : Rename your image's filename for friendly SEO.
   * *Images Lazy Load* : Your image will be loaded after the page finished loading, this will help your site load faster.
-* ***Optimize Speed*** : make page speed load amazingly fast by these features "Optimize Javascript + Optimize CSS (Style) + Optimize HTML"
-  * Optimize Cache : Make your WordPress website load faster from 80% or more. Prebuild cache the most visited pages. This feature compatible with WooCommerce.
+* ***[Optimize Speed](https://wordpress.org/plugins/wp-optimize-speed-by-xtraffic/ "Optimize Speed")*** : make page speed load amazingly fast by these features "Optimize Cache + Optimize Javascript + Optimize CSS (Style) + Optimize HTML + CDN".
+  * Optimize Cache : Make your WordPress website load faster from 80% or more. Support cache database with multi cache (APC + Memcached + File). Prebuild cache the most visited pages. This feature compatible with WooCommerce.
   * Optimize Javascript :
-    * Combine Javascript
-    * Minify Javascript
-    * Asynchronous Javascript Loading
+    * Combine Javascript.
+    * Minify Javascript.
+    * Asynchronous Javascript Loading.
   * Optimize CSS (Style) :
-    * Combine CSS
-    * Minify CSS
-    * Asynchronous CSS Loading
-  * Optimize HTML
-    * Minify HTML
-  * CDN (Content Delivery Network) 
+    * Combine CSS.
+    * Minify CSS.
+    * Asynchronous CSS Loading.
+  * Optimize HTML :
+    * Minify HTML.
+  * CDN (Content Delivery Network).
 * ***Optimize Traffic*** : this feature help reduce website's bounce rate, increase Time on Site, increase Pageviews per Visitor.
 	
 = Languages : =
@@ -106,10 +107,12 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 5.0.0 =
+* Improve & separate feature "Optimize Speed" into ***[WP Optimize Speed By xTraffic](https://wordpress.org/plugins/wp-optimize-speed-by-xtraffic/ "WP Optimize Speed By xTraffic")***
+
 = 4.1.11 =
 * Improve feature "Images Lazy Load"
 * Fix some bugs "Optimize Traffic"
-
 
 = 4.1.10 =
 * Add Serbian language [translated by FirstSiteGuide.com](http://firstsiteguide.com/ "translated by FirstSiteGuide.com")

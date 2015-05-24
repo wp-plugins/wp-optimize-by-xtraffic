@@ -10,18 +10,10 @@ if ( !class_exists('WPOptimizeByxTraffic_OptimizeLinks') ) :
 class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeImages 
 {
 	
-	
-	
-	function __construct() 
+	public function __construct() 
 	{
-	
 		parent::__construct();
-		
-		
-		
 	}
-	
-	
 	
 	public function optimize_links_check_system_ready() 
 	{
@@ -46,9 +38,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	}
 	
 	
-	
-	
-	function optimize_links_explode_and_clean_data($input_data) 
+	public function optimize_links_explode_and_clean_data($input_data) 
 	{
 		$resultData = array();
 		
@@ -65,70 +55,84 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	}
 	
 	
-	function optimize_links_parse_keywords($text, $input_opts = false)
+	public function optimize_links_parse_keywords($text, $input_opts = false)
 	{
-				
-		$resultData = array();
 		
-		if(!isset($input_opts['casesensitive_status'])) {
-			$input_opts['casesensitive_status'] = 0;
-		}
+		$keyCache1 = PepVN_Data::fKey(array(
+			__METHOD__
+			,$text
+			,$input_opts
+		));
 		
-		$input_opts['casesensitive_status'] = (int)$input_opts['casesensitive_status'];
-		
-		
-		$text = (array)$text;
-		$text = implode(PHP_EOL,$text);
-		$text = explode(PHP_EOL,$text);
+		$resultData = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
 
-		foreach($text as $key1 => $value1) {
+		if(null === $resultData) {
+		
+			$resultData = array();
 			
-			$temp1 = $this->optimize_links_explode_and_clean_data($value1);
+			if(!isset($input_opts['casesensitive_status'])) {
+				$input_opts['casesensitive_status'] = 0;
+			}
 			
-			if(count($temp1)>0) {
-				$keywords1 = array();
-				$links1 = array();
-				foreach($temp1 as $key2 => $value2) {
-					
-					$value2 = trim($value2);
-					
-					if(preg_match('#^https?://.+#i',$value2)) {
+			$input_opts['casesensitive_status'] = (int)$input_opts['casesensitive_status'];
+			
+			
+			$text = (array)$text;
+			$text = implode(PHP_EOL,$text);
+			$text = explode(PHP_EOL,$text);
+
+			foreach($text as $key1 => $value1) {
+				
+				$temp1 = $this->optimize_links_explode_and_clean_data($value1);
+				
+				if(count($temp1)>0) {
+					$keywords1 = array();
+					$links1 = array();
+					foreach($temp1 as $key2 => $value2) {
 						
-						$links1[] = $value2;
+						$value2 = trim($value2);
 						
-					} else {
-					
-						if(!$input_opts['casesensitive_status']) {
-						
-							$keywords1[] = mb_strtolower($value2, 'UTF-8');
+						if(preg_match('#^https?://.+#i',$value2)) {
+							
+							$links1[] = $value2;
 							
 						} else {
 						
-							$keywords1[] = $value2;
+							if(!$input_opts['casesensitive_status']) {
+							
+								$keywords1[] = mb_strtolower($value2, 'UTF-8');
+								
+							} else {
+							
+								$keywords1[] = $value2;
+								
+							}
 							
 						}
-						
 					}
-				}
-				
-				
-				if(count($keywords1)>0) {
-				
-					foreach($keywords1 as $key2 => $value2) {
 					
-						if(!isset($resultData[$value2])) {
+					
+					if(count($keywords1)>0) {
+					
+						foreach($keywords1 as $key2 => $value2) {
 						
-							$resultData[$value2] = array();
+							if(!isset($resultData[$value2])) {
+							
+								$resultData[$value2] = array();
+								
+							}
+							
+							$resultData[$value2] = array_merge($resultData[$value2],$links1);
 							
 						}
-						
-						$resultData[$value2] = array_merge($resultData[$value2],$links1);
-						
 					}
+					
+					
 				}
-				
-				
 			}
+			
+			PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $resultData);
+			
 		}
 
 		return $resultData;
@@ -142,11 +146,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		global $wpdb;
 		
 		$resultData = array();
-		
-		
-		$options = $this->get_options(array(
-			'cache_status' => 1
-		));
 		
 		if(isset($input_parameters['post_types']) && $input_parameters['post_types']) {
 			
@@ -165,6 +164,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			return $resultData;
 		}
 		
+		$options = $this->get_options(array(
+			'cache_status' => 1
+		));
 		
 		$keyword = $input_parameters['keyword'];
 		
@@ -175,17 +177,22 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		$input_parameters['keyword'] = $keyword;
 		
-		$keyCache1 = PepVN_Data::createKey(array(
+		$keyCache1 = array(
 			__METHOD__
 			,$input_parameters
-		));
+		);
 		
-		$resultData = $this->cacheObj->get_cache($keyCache1);
+		if(isset($options['db_has_fulltext_status']) && ($options['db_has_fulltext_status'])) {
+			$keyCache1[] = 'db_has_fulltext_status';
+		}
+		
+		$keyCache1 = PepVN_Data::fKey($keyCache1);
+		
+		$resultData = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
 		
 		if(!$resultData) {
 			
 			$resultData = array();
-			
 			
 			$queryString_Where_PostType = array();
 			
@@ -198,16 +205,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 				}
 				
 			}
-			
-			/*
-			if(in_array('post',$input_parameters['post_types'])) {
-				$queryString_Where_PostType[] = ' ( post_type = \'post\' ) ';
-			}
-			
-			if(in_array('page',$input_parameters['post_types'])) {
-				$queryString_Where_PostType[] = ' ( post_type = \'page\' ) ';
-			}
-			*/
 			
 			$queryString_Where_PostType = implode(' OR ',$queryString_Where_PostType);
 			$queryString_Where_PostType = trim($queryString_Where_PostType);
@@ -295,15 +292,8 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 				}
 			}
 			
-		
-		
-			
-			
-			
-			$this->cacheObj->set_cache($keyCache1, $resultData);
+			PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $resultData);
 		}
-		
-		
 		
 		return $resultData;
 		
@@ -320,8 +310,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	{
 		global $wpdb;
 		
-		
-		$keyCache1 = PepVN_Data::createKey(array(
+		$keyCache1 = PepVN_Data::fKey(array(
 			__METHOD__
 		));
 		
@@ -357,26 +346,20 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		if($checkStatus1) {
 			if(isset($options['do_enable_db_fulltext_time']) && $options['do_enable_db_fulltext_time']) {
 				$options['do_enable_db_fulltext_time'] = (int)$options['do_enable_db_fulltext_time'];
-				if((time() - $options['do_enable_db_fulltext_time']) <= 86400) {
+				if((PepVN_Data::$defaultParams['requestTime'] - $options['do_enable_db_fulltext_time']) <= 86400) {
 					$checkStatus1 = false;
 				}
 				
 			}
 		}
 		
-		
-		
-		
 		if(!$checkStatus1) {
 			return false;
 		}
 		
-		
-		$options['do_enable_db_fulltext_time'] = time();
+		$options['do_enable_db_fulltext_time'] = PepVN_Data::$defaultParams['requestTime'];
 		
 		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
-		
-		
 		
 		$dbFieldsHasIndexTypes = array();
 		
@@ -432,11 +415,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			} else {
 				$doAddFulltextIndexStatus = true;
 			}
-			
-			
 		}
-		
-		
 		
 		if($doAddFulltextIndexStatus) {
 			
@@ -541,7 +520,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			,$options
 		));
 		
-		$options['do_enable_db_fulltext_time'] = time();
+		$options['do_enable_db_fulltext_time'] = PepVN_Data::$defaultParams['requestTime'];
 		
 		update_option($this->wpOptimizeByxTraffic_DB_option, $options);
 		
@@ -549,19 +528,15 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 	}
 	
-
 	
-
-	function optimize_links_process_text($text, $mode)
+	public function optimize_links_process_text($text, $mode)
 	{
 		
 		global $wpdb, $post;
 		
-		
 		$options = $this->get_options(array(
 			'cache_status' => 1
 		));
-		
 		
 		$isProcessTextStatus = true;
 		
@@ -571,24 +546,23 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$isProcessTextStatus = false;
 		}
 		
-		
-		
-		
-		
 		$links = 0;
 		
 		if($isProcessTextStatus) {
 			
-			if (is_feed() && !$options['optimize_links_process_in_feed']) {
-				
+			if (PepVN_Data::wp_is_feed() && !$options['optimize_links_process_in_feed']) {
 				$isProcessTextStatus = false;
 			} else if ($options['optimize_links_onlysingle']) {
-				if(is_single() || is_page() || is_singular()) {
+				/*
+				if(PepVN_Data::wp_is_single() || PepVN_Data::wp_is_page() || PepVN_Data::wp_is_singular()) {
 				} else {
 					
 					$isProcessTextStatus = false;
 				}
-				
+				*/
+				if ( is_front_page() || is_home() ) {
+					$isProcessTextStatus = false;
+				}
 			}
 			
 		}
@@ -598,9 +572,8 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$arrignorepost = PepVN_Data::explode(',',$options['optimize_links_ignorepost']);
 			$arrignorepost = PepVN_Data::cleanArray($arrignorepost);
 			
-			if($arrignorepost && (count($arrignorepost)>0)) {
+			if($arrignorepost && (!empty($arrignorepost))) {
 				if (is_page($arrignorepost) || is_single($arrignorepost)) {
-					
 					$isProcessTextStatus = false;
 				}
 			}
@@ -611,13 +584,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			if (!$mode) {
 			
 				if ($post->post_type=='post' && !$options['optimize_links_process_in_post']) {
-					
 					$isProcessTextStatus = false;
-					
 				} else if ($post->post_type=='page' && !$options['optimize_links_process_in_page']) {
-					
 					$isProcessTextStatus = false;
-					
 				}
 				
 				if (($post->post_type=='page' && !$options['optimize_links_allow_link_to_pageself']) || ($post->post_type=='post' && !$options['optimize_links_allow_link_to_postself'])) {
@@ -637,14 +606,10 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			return $text;
 		}
 		
-		
-		
-		
 		$keyCacheMethod = array(
 			__METHOD__
 		);
-		$keyCacheMethod = PepVN_Data::createKey($keyCacheMethod);
-		
+		$keyCacheMethod = PepVN_Data::fKey($keyCacheMethod);
 		
 		$keyCacheProcessText = array(
 			$keyCacheMethod
@@ -653,17 +618,39 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			,'process_text'
 		);
 		
-		$keyCacheProcessText = PepVN_Data::createKey($keyCacheProcessText);
+		$arrayOptionsFactorsAffectingKeyCache = array(
+			'optimize_links_maxlinks'
+			,'optimize_links_maxsingle'
+			,'optimize_links_maxsingleurl'
+			,'optimize_links_minusage'
+			,'optimize_links_link_to_posts'
+			,'optimize_links_excludeheading'
+			,'optimize_links_customkey_url'
+			,'optimize_links_customkey'
+			,'optimize_links_use_tags_as_keywords'
+			,'optimize_links_use_cats_as_keywords'
+			,'optimize_links_casesens'
+			,'optimize_links_allow_link_to_postself'
+			,'optimize_links_allow_link_to_pageself'
+		);
 		
-		
-		
-		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessText); 
-		
-		if($valueTemp) {
-			return $valueTemp; 
+		foreach($arrayOptionsFactorsAffectingKeyCache as $value1) {
+			if(isset($options[$value1])) {
+				$keyCacheProcessText[$value1] = $options[$value1];
+			} else {
+				$keyCacheProcessText[$value1] = 0;
+			}
 		}
 		
+		$arrayOptionsFactorsAffectingKeyCache = 0;
 		
+		$keyCacheProcessText = PepVN_Data::fKey($keyCacheProcessText);
+		
+		$valueTemp = PepVN_Data::$cachePermanentObject->get_cache($keyCacheProcessText); 
+		
+		if(null !== $valueTemp) {
+			return $valueTemp; 
+		}
 		
 		$parametersPrimary = array();
 		$parametersPrimary['group_keywords1'] = array();
@@ -671,13 +658,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$parametersPrimary['group_keywords3'] = array();
 		
 		$patternsEscaped = array();
-		
-		
-		//$options['do_enable_db_fulltext_time'] = 0;update_option($this->wpOptimizeByxTraffic_DB_option, $options);
-		
-		
-
-		
 		
 		$optimize_links_maxlinks = ($options['optimize_links_maxlinks']>0) ? $options['optimize_links_maxlinks'] : 0;	
 		$optimize_links_maxsingle = ($options['optimize_links_maxsingle']>0) ? $options['optimize_links_maxsingle'] : -1;
@@ -703,16 +683,12 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$array_base_custom_post_types[] = 'page';
 		}
 		
-		
-		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'a;script;style;link;meta;input;textarea;iframe;video;audio;object');
+		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($text,'a;pre;script;style;link;meta;input;textarea;iframe;video;audio;object');
 		$text = $rsOne['content'];
 		if(count($rsOne['patterns'])>0) {
 			$patternsEscaped = array_merge($patternsEscaped, $rsOne['patterns']);
 		}
 		$rsOne = false;
-		
-		
-		
 		
 		if ($options['optimize_links_excludeheading'] == 'on') {
 			//escape a and h1 -> h6
@@ -736,12 +712,12 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		$text = ' '.$text.' ';
 		
 		
-		$keyCache1 = PepVN_Data::createKey(array(
+		$keyCache1 = PepVN_Data::fKey(array(
 			__METHOD__ 
 			, 'group_keywords1' 
 		));
 		
-		$parametersPrimary['group_keywords1'] = $this->cacheObj->get_cache($keyCache1);
+		$parametersPrimary['group_keywords1'] = PepVN_Data::$cacheObject->get_cache($keyCache1);
 		
 		if(!$parametersPrimary['group_keywords1']) {
 			
@@ -749,7 +725,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 			if (!empty($options['optimize_links_customkey_url']))
 			{
-								
+			
 				$valueTemp = wp_remote_retrieve_body(wp_remote_get($options['optimize_links_customkey_url']));
 				if($valueTemp) {
 					$valueTemp = strip_tags($valueTemp);
@@ -811,19 +787,10 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 				
 			}
 			
-			
-			
-			
-			$this->cacheObj->set_cache($keyCache1,$parametersPrimary['group_keywords1']);
-			
-			
-			
+			PepVN_Data::$cacheObject->set_cache($keyCache1,$parametersPrimary['group_keywords1']);
 		}
 		
-		
-		
 		$numberTotalLinksAdded = 0;
-		
 		
 		if($parametersPrimary['group_keywords1']) {
 			if(count($parametersPrimary['group_keywords1'])>0) {
@@ -841,7 +808,7 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 						}
 						
 						$numberMatched1 = preg_match_all( $patterns1,$text,$matched1);
-						
+						$matched1 = 0;
 						$numberMatched1 = (int)$numberMatched1;
 						if($numberMatched1>0) {
 							if(isset($parametersPrimary['group_keywords2'][$key1]) && $parametersPrimary['group_keywords2'][$key1]) {
@@ -855,7 +822,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 							$keywordLength1 = $keywordLength1 * 2.8;
 							$keywordLength1 = (int)$keywordLength1;
 							
-							
 							$parametersPrimary['group_keywords2'][$key1] += $numberMatched1 * $keywordLength1;
 						}
 						
@@ -866,8 +832,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			
 				if(count($parametersPrimary['group_keywords2'])>0) {
 					arsort($parametersPrimary['group_keywords2']);
-					
-					
 					
 					$numberTotalLinks = 0;
 					
@@ -921,9 +885,8 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 									
 									$rsTwo = $this->search_posts($parametersTemp2);
 									
-									
-									
 									foreach($rsTwo as $keyTwo => $valueTwo) {
+										unset($rsTwo[$keyTwo]);
 										
 										$checkStatus2 = false;
 										
@@ -956,15 +919,13 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 										
 									}
 									
+									$rsTwo = 0;
 									
 								}
-								
-								
 								
 							}
 							
 							if($targetLink2) {
-								
 								
 								$patterns2 = '#([\s\,\;\.]+?)('.PepVN_Data::preg_quote($key1).')([\s\,\;\.]+?)#';
 								if(!$options['optimize_links_casesens']) {
@@ -989,7 +950,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 								$count2 = (int)$count2;
 
 								if($count2>0) {
-								
 									
 									PepVN_Data::$cacheData[$keyCacheMethod]['linksAdded'][$targetLink2] = 1;
 									PepVN_Data::$cacheData[$keyCacheMethod]['keywordsAdded'][$targetKeywordClean] = 1; 
@@ -1014,20 +974,12 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 							
 						}
 						
-						
-
 					}
-					
 					
 				}
 				
-				
-				
 			}
 		}
-		
-		
-
 		
 		if($patternsEscaped) {
 			if(count($patternsEscaped)>0) {
@@ -1037,17 +989,14 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		$text = trim($text);
 		
-		$this->cacheObj->set_cache($keyCacheProcessText,$text); 
-		
+		PepVN_Data::$cachePermanentObject->set_cache($keyCacheProcessText,$text); 
 		
 		return $text;
 
-	} 
-
+	}
 	
 	
-	
-	function optimize_links_attributes_links($text) 
+	public function optimize_links_attributes_links($text) 
 	{
 		$options = $this->get_options(array(
 			'cache_status' => 1
@@ -1071,7 +1020,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$options['optimize_links_nofolo_blanko_exclude_urls'] = (string)$options['optimize_links_nofolo_blanko_exclude_urls'];
 			$options['optimize_links_nofolo_blanko_exclude_urls'] = trim($options['optimize_links_nofolo_blanko_exclude_urls']);
 			
-			
 			$nofollow_urls = PepVN_Data::cleanPregPatternsArray($options['optimize_links_nofollow_urls']);
 			$nofollow_urls = implode('|',$nofollow_urls);
 			$nofollow_urls = trim($nofollow_urls);
@@ -1080,6 +1028,23 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			$nofolo_blanko_exclude_urls = PepVN_Data::cleanPregPatternsArray($options['optimize_links_nofolo_blanko_exclude_urls']);
 			$nofolo_blanko_exclude_urls = implode('|',$nofolo_blanko_exclude_urls);
 			$nofolo_blanko_exclude_urls = trim($nofolo_blanko_exclude_urls);
+			
+			$keyCacheProcessText = array(
+				__METHOD__
+				,$text
+				,$nofollow_urls
+				,$nofolo_blanko_exclude_urls
+				,$options['optimize_links_blanko']
+				,'process_text'
+			);
+			
+			$keyCacheProcessText = PepVN_Data::fKey($keyCacheProcessText);
+			
+			$valueTemp = PepVN_Data::$cachePermanentObject->get_cache($keyCacheProcessText); 
+			
+			if(null !== $valueTemp) {
+				return $valueTemp; 
+			}
 			
 			$rsOne = PepVN_Data::escapeHtmlTags($text);
 			
@@ -1144,23 +1109,17 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 				
 				}
 				
-				
 				$text = str_ireplace(array_values($patterns1),array_keys($patterns1),$rsOne['content']);
-				
 			}
 			
-			
-
+			PepVN_Data::$cachePermanentObject->set_cache($keyCacheProcessText, $text);
 		}
 		
 		return $text;
 		
 	}
-	
-	
-
 		
-	function optimize_links_the_content_filter($text) 
+	public function optimize_links_the_content_filter($text) 
 	{
 		
 		$text = $this->optimize_links_process_text($text, 0);
@@ -1169,9 +1128,9 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		return $text;
 	}
-
-		
-	function optimize_links_comment_text_filter($text) 
+	
+	
+	public function optimize_links_comment_text_filter($text) 
 	{
 		$text = $this->optimize_links_process_text($text, 1);
 		
@@ -1181,19 +1140,13 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 	}
 	
 	
-	
-
-	function optimize_links_handle_options()
+	public function optimize_links_handle_options()
 	{
 		
 		$rsOne = $this->handle_options();
 		$options = $rsOne['options']; $rsOne = false;
 		
-	
-
 		$action_url = $_SERVER['REQUEST_URI'];	
-		
-		
 		
 		$optimize_links_enable = $options['optimize_links_enable']=='on'?'checked':'';
 
@@ -1235,8 +1188,6 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 		
 		$optimize_links_open_autolink_new_window = $options['optimize_links_open_autolink_new_window']=='on'?'checked':'';
 		
-		
-
 		if (!is_numeric($optimize_links_minusage)) {
 			$optimize_links_minusage = 0;
 		}
@@ -1251,16 +1202,14 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			echo implode(' ',$rsTemp['notice']['error']);
 		}
 		
-		
-		
 		echo '
 
 <div class="wrap wpoptimizebyxtraffic_admin" style="">
 	<h2>WP Optimize By xTraffic (Optimize Links)</h2>
 				
 	<div id="poststuff" style="margin-top:10px;">
-		',$this->base_get_sponsorsblock('vertical_01'),'
-		<div id="mainblock" style="width:710px">
+		
+		<div id="mainblock" style="">
 
 			<div class="dbx-content">
 				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
@@ -1426,19 +1375,17 @@ class WPOptimizeByxTraffic_OptimizeLinks extends WPOptimizeByxTraffic_OptimizeIm
 			<br/><br/>
 			
 		</div>
+		
+		',$this->base_get_sponsorsblock('vertical_01'),'
 
 	</div>
 	
 </div>
 
 '; 
-		
-		
+
 	}
 	
-	
-
-
 }//class WPOptimizeByxTraffic 
 
 endif; //if ( !class_exists('WPOptimizeByxTraffic') )

@@ -151,9 +151,11 @@ class PepVN_Minify_HTML {
 		
 		
 		//Custom PepVN
-		$this->_html = preg_replace('/(<[a-z\\-]+)\\s+([^>]+>)/i', "$1 $2", $this->_html);
-		$this->_html = preg_replace('#>\s+<#is', "> <", $this->_html);
-		$this->_html = preg_replace('#\s+#is', " ", $this->_html);
+		/*
+		$this->_html = preg_replace('/(<[a-z\\-]+)\\s+([^>]+>)/i', '$1 $2', $this->_html);
+		$this->_html = preg_replace('#>[\s \t]+<#is', '><', $this->_html);
+		$this->_html = preg_replace('#[\s \t]+#is', ' ', $this->_html);
+		*/
 		//End Custom PepVN
 		
         

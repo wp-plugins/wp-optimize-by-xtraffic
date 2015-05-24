@@ -1,13 +1,13 @@
 <?php
 
 
-require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_OptimizeSpeed.php');
+require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_OptimizeLinks.php');
 
 
 if ( !class_exists('WPOptimizeByxTraffic_HeaderFooter') ) :
 
 
-class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpeed 
+class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeLinks 
 {
 	
 	
@@ -55,7 +55,7 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 <script language="javascript" type="text/javascript">
 	var wpOptimizeByxTraffic_Plugin_Url = "'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'";
 	var wpOptimizeByxTraffic_Admin_Ajax_Url = "'.WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL.'";
-	var wpOptimizeByxTraffic_AjaxLoadingTag = "<div class=\'wpoptimizebyxtraffic_ajax_loading\' style=\'display:inline-block;width:100%;height:auto;padding:16px;text-align: center;\'><img src=\''.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'images/ajax-loader.gif\' /></div>";
+	var wpOptimizeByxTraffic_AjaxLoadingTag = "'.WPOPTIMIZEBYXTRAFFIC_AJAX_LOADING_TAG.'";
 </script>';
 
 
@@ -237,8 +237,8 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 	<h2>WP Optimize By xTraffic (Header & Footer)</h2>
 				
 	<div id="poststuff" style="margin-top:10px;">
-		',$this->base_get_sponsorsblock('vertical_01'),'
-		<div id="mainblock" style="width:710px">
+		
+		<div id="mainblock" style="">
 
 			<div class="dbx-content">
 				<form name="WPOptimizeByxTraffic" class="wpoptimizebyxtraffic_form_header_footer" action="',$action_url,'" method="post">
@@ -293,6 +293,9 @@ class WPOptimizeByxTraffic_HeaderFooter extends WPOptimizeByxTraffic_OptimizeSpe
 			<br/><br/>
 			
 		</div>
+		
+		',$this->base_get_sponsorsblock('vertical_01'),'
+		
 
 	</div>
 	

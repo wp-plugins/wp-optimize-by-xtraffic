@@ -845,6 +845,7 @@ class PepVN_PHPImage {
 			switch($this->type){
 				case IMAGETYPE_GIF:
 					imagegif($this->img, $path);
+					//$this->optimize_image_file_by_imagick($path,$path,'gif',$this->quality); //imagick not effect with gif
 					break;
 				case IMAGETYPE_PNG:
 					$imageQuality = $this->quality;
@@ -855,10 +856,11 @@ class PepVN_PHPImage {
 					$invertScaleQuality = 9 - $scaleQuality; 
 					
 					imagepng($this->img, $path, 9);
-					
+					//$this->optimize_image_file_by_imagick($path,$path,'png',$this->quality); //imagick make png file bigger size
 					break;
 				default:
-					imagejpeg($this->img, $path, $this->quality); 
+					imagejpeg($this->img, $path, $this->quality);
+					$this->optimize_image_file_by_imagick($path,$path,'jpg',$this->quality);
 					break;
 			}
 		} else {
@@ -874,6 +876,91 @@ class PepVN_PHPImage {
 			return $this;
 		}
 	}
+	
+	
+	/**
+	* Optimizes PNG file with pngquant 1.8 or later (reduces file size of 24-bit/32-bit PNG images).
+	*
+	* You need to install pngquant 1.8 on the server (ancient version 1.0 won't work).
+	* There's package for Debian/Ubuntu and RPM for other distributions on http://pngquant.org
+	*
+	* @param $path_to_png_file string - path to any PNG file, e.g. $_FILE['file']['tmp_name']
+	* @param $max_quality int - conversion quality, useful values from 60 to 100 (smaller number = smaller file)
+	* @return string - content of PNG file after conversion
+	*/
+	private function _compress_png_by_pngquant($path_to_png_file, $max_quality = 80)
+	{
+		if (!$path_to_png_file || !file_exists($path_to_png_file) || !is_file($path_to_png_file)) {
+			//throw new Exception("File does not exist: $path_to_png_file");
+			return false;
+		}
+		
+		
+
+		// guarantee that quality won't be worse than that.
+		$min_quality = 30;
+
+		// '-' makes it use stdout, required to save to $compressed_png_content variable
+		// '<' makes it read from the given file path
+		// escapeshellarg() makes this safe to use with any path
+		$compressed_png_content = shell_exec("pngquant --quality=$min_quality-$max_quality - < ".escapeshellarg(    $path_to_png_file));
+
+		if (!$compressed_png_content) {
+			//throw new Exception("Conversion to compressed PNG failed. Is pngquant 1.8+ installed on the server?");
+			return false; 
+		}
+
+		return $compressed_png_content;
+	}
+	
+	
+	public function optimize_image_file_by_imagick($image_source_path,$image_des_path,$image_type,$image_quality)
+	{
+		if(class_exists('Imagick')) {
+			if($image_source_path && is_file($image_source_path)) {
+				if(!$image_des_path) {
+					$image_des_path = $image_source_path;
+				}
+				if(!$image_type) {
+					$image_type = 'jpg';
+				}
+				
+				$im = new Imagick($image_source_path);
+				if($im) {
+					
+					if('gif' === $image_type) {
+						$im->setImageCompression(Imagick::COMPRESSION_LZW);
+					} else if('png' === $image_type) {
+						$im->setImageCompression(Imagick::COMPRESSION_UNDEFINED);
+					} else {
+						$im->setImageCompression(Imagick::COMPRESSION_JPEG);
+					}
+					
+					$image_quality = (int)$image_quality;
+					$im->setImageCompressionQuality(100);
+					$im->stripImage();
+					
+					if(method_exists($im,'trimImage')) {
+						$im->trimImage(0.1);
+					}
+					
+					if(is_file($image_des_path)) {
+						@unlink($image_des_path);
+					}
+					
+					$im->writeImage($image_des_path);
+					
+					$im->clear(); 
+					$im->destroy();
+				}
+				$im = 0; unset($im);
+				
+			}
+		}
+	}
+	
+	
+	
 
 	/**
 	 * Save the image and return object to continue operations

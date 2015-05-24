@@ -10,18 +10,10 @@ if ( !class_exists('WPOptimizeByxTraffic_OptimizeTraffic') ) :
 class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFooter 
 {
 	
-	
-	
-	function __construct() 
+	public function __construct() 
 	{
-	
 		parent::__construct();
-		
-		
-		
 	}
-	
-	
 	
 	public function optimize_traffic_check_system_ready() 
 	{
@@ -45,11 +37,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 	}
 	
-	
-	
-	
-	
-	
 	public function optimize_traffic_remove_escaped_string($input_text)
 	{
 		$input_text = preg_replace('#______[a-z0-9\_]+______#',' ',$input_text);
@@ -59,29 +46,10 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	
 	public function optimize_traffic_the_content_filter($input_text)
 	{
-		if(is_single() || is_page() || is_singular()) {
+		if(PepVN_Data::wp_is_single() || PepVN_Data::wp_is_page() || PepVN_Data::wp_is_singular()) {
 		} else {
 			return $input_text;
 		}
-		
-		$keyCacheProcessText = array(
-			__METHOD__
-			,$input_text
-			,'process_text'
-		);
-		
-		$keyCacheProcessText = PepVN_Data::createKey($keyCacheProcessText);
-		
-		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessText); 
-		
-		if($valueTemp) {
-			return $valueTemp; 
-		}
-		
-		
-		
-		
-		global $wpdb, $post;
 		
 		
 		$options = $this->get_options(array(
@@ -93,8 +61,20 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			return $input_text;
 		}
 		
+		$keyCacheProcessText = PepVN_Data::fKey(array(
+			__METHOD__
+			,$input_text
+			,'process_text'
+			,$options['optimize_traffic_modules']
+		));
 		
+		$valueTemp = PepVN_Data::$cachePermanentObject->get_cache($keyCacheProcessText); 
 		
+		if(null !== $valueTemp) {
+			return $valueTemp; 
+		}
+		
+		global $wpdb, $post;
 		
 		$patternsEscaped1 = array();
 		
@@ -108,7 +88,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		$input_text = $rsOne['content'];
 		
-		if(count($rsOne['patterns'])>0) {
+		if(!empty($rsOne['patterns'])) {
 			$patternsEscaped1 = array_merge($patternsEscaped1,$rsOne['patterns']);
 		}
 		$rsOne = 0;
@@ -117,7 +97,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		$rsOne = PepVN_Data::escapeHtmlTagsAndContents($input_text,'a;table;pre;ol;ul;blockquote');
 		$input_text = $rsOne['content'];
-		if(count($rsOne['patterns'])>0) {
+		if(!empty($rsOne['patterns'])) {
 			$patternsEscaped1 = array_merge($patternsEscaped1, $rsOne['patterns']);
 		}
 		$rsOne = 0;
@@ -137,10 +117,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		$postExcerpt1 = $post->post_content;
 		$postExcerpt1 = PepVN_Data::mb_substr($postExcerpt1, 0 , 360);
 		
-		
 		$allPostTextCombined = $post->post_title.' '.PHP_EOL.' '.$post->post_excerpt.' '.PHP_EOL.implode(' ',$rsGetTerms2).' '.PHP_EOL.' '.$post->post_content;
 		$allPostTextCombined = $this->optimize_traffic_remove_escaped_string($allPostTextCombined);
-		
 		
 		$patternsModulesReplaceText = array();
 		
@@ -176,7 +154,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		preg_match_all('/<(p|h1|h2|h3|h4|h5|h6)(\s+[^><]*?)?>.*?<\/\1>/is',$original_InputText1,$matchedElementContentInText);
 		
 		if(isset($matchedElementContentInText[0]) && $matchedElementContentInText[0]) {
-			if(count($matchedElementContentInText[0])>0) {
+			if(!empty($matchedElementContentInText[0])) {
+				
 				foreach($matchedElementContentInText[0] as $key1 => $value1) {
 					$valueTemp1 = $value1;
 					$valueTemp1 = $this->base_get_clean_raw_text_for_process_search($valueTemp1);
@@ -204,18 +183,10 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		}
 		
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		if(
 			isset($groupModules_ByModuleType['flyout']) 
-			&& (count($groupModules_ByModuleType['flyout'])>0)
+			&& ($groupModules_ByModuleType['flyout'])
+			&& (!empty($groupModules_ByModuleType['flyout']))
 		) {
 			foreach($groupModules_ByModuleType['flyout'] as $keyOne => $valueOne) {
 				
@@ -255,7 +226,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 					}
 					
 					
-					if(count($postsIdsFound1)>0) {
+					if($postsIdsFound1 && !empty($postsIdsFound1)) {
 						$rsCreateTrafficModule1 = $this->optimize_traffic_create_traffic_module(array(
 							'option' => $valueOne
 							,'data' => array(
@@ -292,8 +263,10 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			}
 			
 			
-			if(count($groupModules_ByFixedTypeBeginOrEnd)>0) {
+			if($groupModules_ByFixedTypeBeginOrEnd && !empty($groupModules_ByFixedTypeBeginOrEnd)) {
+				
 				ksort($groupModules_ByFixedTypeBeginOrEnd);
+				
 				foreach($groupModules_ByFixedTypeBeginOrEnd as $keyOne => $valueOne) {
 					
 					if(isset($valueOne['module_position'])) {
@@ -332,7 +305,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 							}
 						}
 						
-						if(count($postsIdsFound1)>0) {
+						if(!empty($postsIdsFound1)) {
 							$rsCreateTrafficModule1 = $this->optimize_traffic_create_traffic_module(array(
 								'option' => $valueOne
 								,'data' => array(
@@ -348,20 +321,10 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 									$input_text .= ' '.$rsCreateTrafficModule1['module'];
 								}
 							}
-							
 						}
-						
-						
-						
 					}
 				}
 			}
-			
-			
-			
-			
-			
-			
 			
 			
 			if($numberElementContentInText>0) {
@@ -380,11 +343,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 						foreach($matchedElementContentInText[0] as $keyTwo => $valueTwo) {
 							
 							if(!in_array($valueTwo,$arrayMatchedElementContentInTextIsProcessed)) {
-								//$arrayMatchedElementContentInTextIsProcessed[] = $valueTwo;
-								
 								$originalTextNeedProcess1 .= ' '.$valueTwo;
-								
-								
 							}
 							
 							$iNumber1++;
@@ -429,7 +388,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 										}
 									}
 									
-									if(count($postsIdsFound1)>0) {
+									if($postsIdsFound1 && !empty($postsIdsFound1)) {
 										$rsCreateTrafficModule1 = $this->optimize_traffic_create_traffic_module(array(
 											'option' => $valueOne
 											,'data' => array(
@@ -462,19 +421,20 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			
 		}
 		
-		
-		
-		if(count($patternsModulesReplaceText)>0) {
+		if(!empty($patternsModulesReplaceText)) {
 			foreach($patternsModulesReplaceText as $key1 => $value1) {
+				unset($patternsModulesReplaceText[$key1]);
 				$input_text = preg_replace('#'.PepVN_Data::preg_quote($key1).'#', $value1, $input_text, 1);
 			}
-			
+			$patternsModulesReplaceText = 0;
 		}
 		
-		
-		if(count($patternsEscaped1)>0) {
+		if(!empty($patternsEscaped1)) {
 			$input_text = str_replace(array_values($patternsEscaped1),array_keys($patternsEscaped1),$input_text);
+			$patternsEscaped1 = 0;
 		}
+		
+		PepVN_Data::$cachePermanentObject->set_cache($keyCacheProcessText, $input_text);
 		
 		return $input_text;
 	}
@@ -483,6 +443,16 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	
 	public function optimize_traffic_clean_terms($input_terms)
 	{
+		$keyCache1 = PepVN_Data::fKey(array(
+			__METHOD__
+			,$input_terms
+		));
+		
+		$resultData = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+		if(null !== $resultData) {
+			return $resultData;
+		}
+		
 		$input_terms = (array)$input_terms;
 		
 		$input_terms = implode(';',$input_terms);
@@ -493,6 +463,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		$input_terms = explode(';',$input_terms);
 		$input_terms = PepVN_Data::cleanArray($input_terms);
 		
+		PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $input_terms);
 		
 		return $input_terms;
 		
@@ -501,22 +472,16 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	
 	public function optimize_traffic_search_post_by_text($input_text, $input_options = false)
 	{
-		
-		
 		$keyCacheMethod = array(
 			__METHOD__
 		);
-		$keyCacheMethod = PepVN_Data::createKey($keyCacheMethod);
-		
-		
-		
+		$keyCacheMethod = PepVN_Data::fKey($keyCacheMethod);
 		
 		if(!$input_options) {
 			$input_options = array();
 		}
 		
 		$input_options['limit'] = (int)$input_options['limit'];
-		
 		
 		$input_options['exclude_posts_ids'] = (array)$input_options['exclude_posts_ids'];
 		if(
@@ -537,8 +502,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		}
 		$input_options['key_cache'] = (array)$input_options['key_cache'];
 		
-		
-		
 		$keyCacheProcessText = array(
 			$keyCacheMethod
 			,$input_text
@@ -546,25 +509,24 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			,'process_text'
 		);
 		
-		$keyCacheProcessText = PepVN_Data::createKey($keyCacheProcessText);
+		$keyCacheProcessText = PepVN_Data::fKey($keyCacheProcessText);
 		
-		$valueTemp = $this->cacheObj->get_cache($keyCacheProcessText); 
+		$valueTemp = PepVN_Data::$cachePermanentObject->get_cache($keyCacheProcessText); 
 		
-		if($valueTemp) {
+		if(null !== $valueTemp) {
 			return $valueTemp; 
 		}
-		
 		
 		$keyCacheGroupNameOfTagsAndCategories = array(
 			__METHOD__
 			,'groupNameOfTagsAndCategories'
 		);
 		
-		$keyCacheGroupNameOfTagsAndCategories = PepVN_Data::createKey($keyCacheGroupNameOfTagsAndCategories);
+		$keyCacheGroupNameOfTagsAndCategories = PepVN_Data::fKey($keyCacheGroupNameOfTagsAndCategories);
 		
-		$groupNameOfTagsAndCategories = $this->cacheObj->get_cache($keyCacheGroupNameOfTagsAndCategories); 
+		$groupNameOfTagsAndCategories = PepVN_Data::$cacheObject->get_cache($keyCacheGroupNameOfTagsAndCategories); 
 		
-		if(!$groupNameOfTagsAndCategories) {
+		if(null === $groupNameOfTagsAndCategories) {
 			
 			$groupNameOfTagsAndCategories = array();
 			
@@ -580,12 +542,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			
 			$groupNameOfTagsAndCategories = $this->optimize_traffic_clean_terms($groupNameOfTagsAndCategories);
 			
-			$this->cacheObj->set_cache($keyCacheGroupNameOfTagsAndCategories, $groupNameOfTagsAndCategories);
-			
+			PepVN_Data::$cacheObject->set_cache($keyCacheGroupNameOfTagsAndCategories, $groupNameOfTagsAndCategories);
 		}
-		
-		
-		
 		
 		$rsGetKeywordsFromText = PepVN_Data::analysisKeyword_GetKeywordsFromText(array(
 			'contents' => $input_text
@@ -612,7 +570,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		arsort($groupKeywordsFromText);
 		
-		
 		$groupKeywordsFromText2 = $groupKeywordsFromText;
 		$groupKeywordsFromText2 = array_slice($groupKeywordsFromText2,0,10);
 		
@@ -625,8 +582,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		arsort($groupKeywordsFromText3);
 		$groupKeywordsFromText3 = array_slice($groupKeywordsFromText3,0,10);
 		
-		
-		
 		$groupKeywordsFromText4 = array();
 		
 		foreach($groupKeywordsFromText2 as $keyOne => $valueOne) {
@@ -636,15 +591,12 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			$groupKeywordsFromText4[$keyOne] += (int)$valueOne;
 		}
 		
-		
 		foreach($groupKeywordsFromText3 as $keyOne => $valueOne) {
 			if(!isset($groupKeywordsFromText4[$keyOne])) {
 				$groupKeywordsFromText4[$keyOne] = 0;
 			}
 			$groupKeywordsFromText4[$keyOne] += (int)$valueOne * 2;
 		}
-		
-		
 		
 		if(isset($input_options['group_text_weight']) && !PepVN_Data::isEmptyArray($input_options['group_text_weight'])) {
 			foreach($input_options['group_text_weight'] as $keyOne => $valueOne) {
@@ -672,7 +624,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			,'exclude_posts_ids' => $input_options['exclude_posts_ids']
 		)); 
 		
-		if($rsSearchPosts) {
+		if($rsSearchPosts && !empty($rsSearchPosts)) {
 			foreach($rsSearchPosts as $key1 => $value1) {
 				if(isset($value1['post_id']) && $value1['post_id']) {
 					PepVN_Data::$cacheData[$keyCacheMethod]['posts_ids_added'][$value1['post_id']] = $value1;
@@ -680,10 +632,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			}
 		}
 		
-		
-		
-		$this->cacheObj->set_cache($keyCacheProcessText, $rsSearchPosts);
-		
+		PepVN_Data::$cachePermanentObject->set_cache($keyCacheProcessText, $rsSearchPosts);
 		
 		return $rsSearchPosts;
 	}
@@ -710,7 +659,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			$modulesData = array();
 			
 			$modulesIds = PepVN_Data::cleanArray($modulesIds);
-			if(count($modulesIds)>0) {
+			if($modulesIds && !empty($modulesIds)) {
 				foreach($modulesIds as $key1 => $value1) {
 					foreach($input_parameters['preview_optimize_traffic_modules'] as $key2 => $value2) {
 						if($key2) {
@@ -724,7 +673,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 				}
 			}
 			
-			if(count($modulesData)>0) {
+			
+			if($modulesData && !empty($modulesData)) {
 				foreach($modulesData as $key1 => $value1) {
 					
 					$resultData = $this->optimize_traffic_create_traffic_module(array(
@@ -750,6 +700,17 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	
 	public function optimize_traffic_create_traffic_module($input_parameters)
 	{
+		$keyCache1 = PepVN_Data::fKey(array(
+			__METHOD__
+			,$input_parameters
+		));
+		
+		$resultData = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+		
+		if(null !== $resultData) {
+			return $resultData;
+		}
+		
 		global $wpdb;
 		
 		
@@ -760,13 +721,9 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 		
 		if(isset($input_parameters['option']['module_id']) && $input_parameters['option']['module_id']) {
 			
-			
 			$nsModule = 'wpoptimizebyxtraffic_module_traffic';
 			
 			$resultData['module_id'] = $input_parameters['option']['module_id'];
-			
-			
-			
 			
 			$isModuleNoText = true;
 			if(isset($input_parameters['option']['enable_items_title']) && $input_parameters['option']['enable_items_title']) {
@@ -869,10 +826,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			}
 			$input_parameters['option']['module_margin_left'] = (int)$input_parameters['option']['module_margin_left'];
 			
-			
-			
-			
-			
 			if(isset($input_parameters['data']['posts_ids']) && (!PepVN_Data::isEmptyArray($input_parameters['data']['posts_ids']))) {
 			} else {
 				
@@ -885,9 +838,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	ORDER BY RAND()
 	LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 				$rsOne = $wpdb->get_results($queryString1);
-			
-			
-				if($rsOne) {
+				
+				if($rsOne && !empty($rsOne)) {
 					foreach($rsOne as $keyOne => $valueOne) {
 						if($valueOne) {
 							if(isset($valueOne->ID) && $valueOne->ID) {
@@ -899,11 +851,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			
 			}
 			
-			
-			
 			$input_parameters['data']['posts_ids'] = (array)$input_parameters['data']['posts_ids'];
 			$input_parameters['data']['posts_ids'] = array_unique($input_parameters['data']['posts_ids']);
-			
 			
 			$moduleDataPlus = array();
 			
@@ -924,10 +873,6 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 				$moduleClassPlus[] = 'wpoptxtr_shawy';
 			}
 			
-			
-			
-			
-			
 			$moduleStylePlus = array();
 			if('flyout' === $input_parameters['option']['module_type']) {
 				if('style_1' === $input_parameters['option']['module_style']) {
@@ -947,13 +892,10 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 				$moduleStylePlus[] = 'margin-bottom:'.$valueTemp.'px;';
 			}
 			
-			
 			if(0 != $input_parameters['option']['module_margin_left']) {
 				$valueTemp = (int)$input_parameters['option']['module_margin_left'];
 				$moduleStylePlus[] = 'margin-left:'.$valueTemp.'px;';
 			}
-			
-			
 			
 			$moduleDataPlus[] = 'pepvn_data_module_appear_when_user_read_for_seconds="'.$input_parameters['option']['module_appear_when_user_read_for_seconds'].'"';
 			$moduleDataPlus[] = 'pepvn_data_module_appear_when_user_scroll_length="'.$input_parameters['option']['module_appear_when_user_scroll_length'].'"';
@@ -1150,8 +1092,7 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			
 		}
 		
-		
-		
+		PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $resultData);
 		
 		return $resultData;
 	}
@@ -1640,8 +1581,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 	<h2>WP Optimize By xTraffic (Optimize Traffic)</h2>
 				
 	<div id="poststuff" style="margin-top:10px;">
-		',$this->base_get_sponsorsblock('vertical_01'),'
-		<div id="mainblock" style="width:710px">
+		
+		<div id="mainblock" style="">
 
 			<div class="dbx-content">
 				<form name="WPOptimizeByxTraffic" action="',$action_url,'" method="post">
@@ -1666,6 +1607,8 @@ class WPOptimizeByxTraffic_OptimizeTraffic extends WPOptimizeByxTraffic_HeaderFo
 			<br/><br/>
 			
 		</div>
+		
+		',$this->base_get_sponsorsblock('vertical_01'),'
 
 	</div>
 	
