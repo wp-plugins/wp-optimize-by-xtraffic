@@ -156,7 +156,21 @@ class PepVN_Data
 			
 			self::$defaultParams['http']['headers'] = $valueTemp1;
 			
-			
+            self::$defaultParams['wp_cookies_not_cache'] = array(
+                'comment_author'
+                ,'wp-postpass'
+                ,'wptouch_switch_toggle'
+                ,'wordpress_logged_in'
+            );
+            
+            self::$defaultParams['wp_request_uri_not_cache'] = array(
+                's='
+                ,'submit='
+                ,'wp-admin'
+                ,'wp-content'
+                ,'wp-includes'
+                ,'.php'
+            );
 			
 			
 			self::createFolder(WPOPTIMIZEBYXTRAFFIC_CACHE_PATH, WPOPTIMIZEBYXTRAFFIC_CHMOD);

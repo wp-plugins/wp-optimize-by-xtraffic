@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 5.0.0
+Version: 5.0.1
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -13,7 +13,7 @@ if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) :
 define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '5.0.0' );
+	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '5.0.1' );
 }
 
 if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART' ) ) {
@@ -526,8 +526,20 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		//Action when wordpress init : 1
 		function wpOptimizeByxTraffic_init_first()
 		{
-			global $wpOptimizeByxTraffic; 
+            global $wpOptimizeByxTraffic; 
 			
+			global $wpoptimizebyxtraffic_GETActionClearAllCacheKey;
+			
+			if(isset($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey]) && ($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey])) {
+				if($wpOptimizeByxTraffic->base_is_current_user_logged_in_can('activate_plugins')) {
+					wpOptimizeByxTraffic_clear_cache();
+					echo '<div class="updated fade"><p><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('All caches are cleared!',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</p></div>';
+				}
+			}
+            
+            global $wpOptimizeByxTraffic_AdvancedCache; 
+            $wpOptimizeByxTraffic_AdvancedCache->optimize_cache_check_and_get_page_cache(); 
+            
 			if(isset($_GET['action']) && $_GET['action']) {
 				if('wpoptimizebyxtraffic_show_image_captcha_action' === $_GET['action']) {
 					$wpOptimizeByxTraffic->optimize_security_captcha_show_image();
@@ -539,12 +551,14 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 			load_plugin_textdomain( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
 			
 			add_action('comment_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('delete_comment', 'wpOptimizeByxTraffic_on_wp_delete_data', 999999999.0000000001);
+            add_action('wp_insert_comment', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
+            add_action('wp_set_comment_status', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
+			add_action('delete_comment', 'wpOptimizeByxTraffic_on_wp_delete_data', 0.0000000001);
 			add_action('edit_comment', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
 			
 			add_action('publish_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('edit_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('delete_post', 'wpOptimizeByxTraffic_on_wp_delete_data', 999999999.0000000001);
+			add_action('edit_post', 'wpOptimizeByxTraffic_clear_cache', 0.0000000001);
+			add_action('delete_post', 'wpOptimizeByxTraffic_on_wp_delete_data', 0.0000000001);
 			add_action('publish_phone', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
 			add_action('private_to_published', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
 			
@@ -606,17 +620,7 @@ if ( class_exists('WPOptimizeByxTraffic') ) :
 		
 		function wpOptimizeByxTraffic_wp_shutdown_first() 
 		{
-			global $wpOptimizeByxTraffic; 
-			
-			global $wpoptimizebyxtraffic_GETActionClearAllCacheKey;
-			
-			if(isset($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey]) && ($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey])) {
-				if($wpOptimizeByxTraffic->base_is_current_user_logged_in_can('activate_plugins')) {
-					wpOptimizeByxTraffic_clear_cache();
-					echo '<div class="updated fade"><p><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('All caches are cleared!',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</p></div>';
-				}
-			}
-			
+            
 		}
 		
 		function wpOptimizeByxTraffic_wp_shutdown_last() 

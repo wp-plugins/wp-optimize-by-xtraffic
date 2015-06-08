@@ -804,6 +804,10 @@ class PepVN_CSSFixer
 		if(isset($options['css_url'])) {
 			$this->css_url = $options['css_url'];
 		}
+        
+        $options['css_content'] = (array)$options['css_content'];
+		
+		$options['css_content'] = implode(PHP_EOL,$options['css_content']);
 		
 		if($options['minify_status']) {
 			$options['css_content'] = $this->minify($options['css_content']);
@@ -826,7 +830,7 @@ class PepVN_CSSFixer
 		
 		$css = implode(' ',$css);
 		
-		$css = PepVN_Data::minifyCss($css);
+		pepvn_MinifyCss_Ref($css);
 		
 		return trim($css);
 	}

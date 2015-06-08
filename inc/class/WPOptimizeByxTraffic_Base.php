@@ -296,9 +296,6 @@ class WPOptimizeByxTraffic_Base
 			$this->is_admin_init();
 		}
 		
-		
-		//$this->base_get_server_info();
-		//$this->base_test_on_request();
 	}
 	
 	private function is_admin_init() 
@@ -346,30 +343,6 @@ class WPOptimizeByxTraffic_Base
 	}
 	
 	
-	/*
-	* This method for test only
-	*/
-	public function base_test_on_request() 
-	{
-		return false;
-		
-		if(isset($_REQUEST['test_status'])) {
-		
-			$args = array(
-			  'public'   => true
-			); 
-			
-			$output = 'names'; // or objects
-			$operator = 'and'; // 'and' or 'or'
-			$taxonomies = get_taxonomies( $args, $output, $operator ); 
-			
-			$the_term = get_the_terms(299,'product_cat');
-			
-			$rsGetAllAvailableTaxonomies =  $this->base_get_all_available_taxonomies();
-			
-		}
-	
-	}
 	
 	public function base_parse_display_notices($input_notices) 
 	{
@@ -784,7 +757,7 @@ class WPOptimizeByxTraffic_Base
 		if(!$resultData) {
 			$resultData = array();
 			
-			$resultData['config_options'] = ini_get_all();
+			$resultData['config_options'] = @ini_get_all();
 			
 			$resultData['server_memory_limit_kb'] = 0;
 			$resultData['server_max_execution_time_seconds'] = 0;
@@ -3116,7 +3089,9 @@ LIMIT 0,'.($input_parameters['limit']).'
 		return in_array($option_key, array(
 			'optimize_cache_mobile_device_cache_enable'
 			,'optimize_cache_url_get_query_cache_enable'
-			,'optimize_images_auto_resize_images_enable'
+			,'optimize_cache_exclude_url'
+            ,'optimize_cache_exclude_cookie'
+            ,'optimize_images_auto_resize_images_enable'
 		));
 	}
 	
@@ -4160,7 +4135,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 			$arrayPaths[$keyTemp] = 365;	//days
 			
 			$keyTemp = WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN.'static-files'.DIRECTORY_SEPARATOR;
-			$arrayPaths[$keyTemp] = 30;	//days
+			$arrayPaths[$keyTemp] = 90;	//days
 			
 			$arrayFoldersNeedCreate = array_merge($arrayFoldersNeedCreate, array_keys($arrayPaths));
 			
@@ -4198,12 +4173,15 @@ LIMIT 0,'.($input_parameters['limit']).'
 						&& PepVN_Data::isAllowReadAndWrite($path1)
 					) {
 						$rsOne = $this->base_get_list_folders_files_local_host($path1, $optionsForGetListFoldersFiles);
+                        
 						foreach($rsOne['list'] as $keyOne => $valueOne) {
+							unset($rsOne['list'][$keyOne]);
+							
 							if($keyOne && $valueOne) {
 								if(isset($valueOne['t']) && $valueOne['t']) {
 									if('f' === $valueOne['t']) {
 										if($valueOne['mt']>0) {
-											if($valueOne['mt'] <= ( PepVN_Data::$defaultParams['requestTime'] - $timeoutDays)) {	//is timeout
+											if($valueOne['mt'] <= ( PepVN_Data::$defaultParams['requestTime'] - $timeoutSeconds)) {	//is timeout
 												$filebasename1 = basename($keyOne);
 												if($filebasename1) {
 													$filebasename1 = trim($filebasename1);
@@ -4219,8 +4197,6 @@ LIMIT 0,'.($input_parameters['limit']).'
 												
 											}
 										}
-										
-										
 									} else if('d' === $valueOne['t']) {
 										if(PepVN_Data::isAllowReadAndWrite($keyOne)) {
 											$rsCountSubDirsAndFilesInsideDir = PepVN_Data::countSubDirsAndFilesInsideDir($keyOne);
@@ -4234,9 +4210,11 @@ LIMIT 0,'.($input_parameters['limit']).'
 								}
 							}
 						}
+						
+						unset($rsOne);
+						
 					}
 				}
-		
 			}
 		}
 		
@@ -4316,7 +4294,7 @@ LIMIT 0,'.($input_parameters['limit']).'
 	
 	public function admin_notice() 
 	{
-		if(0 === (mt_rand() % 6)) { 
+		if(0 === (mt_rand() % 60)) { 
 			$this->get_random_admin_notice(); 
 		}
 		

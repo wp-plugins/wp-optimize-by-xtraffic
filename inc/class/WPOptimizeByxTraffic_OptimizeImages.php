@@ -1150,7 +1150,7 @@ class WPOptimizeByxTraffic_OptimizeImages extends WPOptimizeByxTraffic_Base
 			));
 		}
 		
-		$keyCache1 = PepVN_Data::createKey(array(
+		$keyCache1 = PepVN_Data::fKey(array(
 			__METHOD__
 			,$options
 			,'optimize_images_setting_watermarks_first_options'

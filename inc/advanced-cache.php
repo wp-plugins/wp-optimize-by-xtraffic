@@ -21,10 +21,18 @@ class WPOptimizeByxTraffic_AdvancedCache
 	public $mobileDetect = false;
 	
 	private $initWpdbCacheStatus = false;
+    
+    public $patternCookiesNotCache = '';
+    
+    public $patternRequestUriNotCache = '';
+    
 	
 	function __construct() 
 	{
 		$this->urlFullRequest = PepVN_Data::$defaultParams['urlFullRequest'];
+        
+        $this->patternCookiesNotCache = str_replace(';','|',PepVN_Data::preg_quote(preg_replace('#[\;\,]+#is',';',implode(';',PepVN_Data::$defaultParams['wp_cookies_not_cache']))));
+        $this->patternRequestUriNotCache = str_replace(';','|',PepVN_Data::preg_quote(preg_replace('#[\;\,]+#is',';',implode(';',PepVN_Data::$defaultParams['wp_request_uri_not_cache']))));
 	}
 	
 	private function _init_mobile_detect()
@@ -440,30 +448,35 @@ class WPOptimizeByxTraffic_AdvancedCache
 	
 	public function optimize_cache_get_userhash_current_request()
 	{
-		$userhash = '';
-		
-		if(isset($_COOKIE) && $_COOKIE) {
-			if(is_array($_COOKIE)) {
-				foreach($_COOKIE as $keyOne => $valueOne) {
-					$keyOne = (string)$keyOne;
-					$valueOne = (string)$valueOne;
-					
-					$keyOne = trim($keyOne);
-					$valueOne = trim($valueOne);
-					
-					if($keyOne && $valueOne) {
-						
-						if(preg_match('#^wordpress_logged_in_.+$#i',$keyOne)) {
-							$userhash = $valueOne;
-							$userhash = md5($userhash);
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		return $userhash;
+        $keyCache1 = 'g_ushs_cr_rq';
+		if(!isset($this->baseCacheData[$keyCache1])) {
+            $userhash = '';
+            
+            if(isset($_COOKIE) && $_COOKIE) {
+                if(is_array($_COOKIE)) {
+                    foreach($_COOKIE as $keyOne => $valueOne) {
+                        $keyOne = (string)$keyOne;
+                        $valueOne = (string)$valueOne;
+                        
+                        $keyOne = trim($keyOne);
+                        $valueOne = trim($valueOne);
+                        
+                        if($keyOne && $valueOne) {
+                            
+                            if(preg_match('#^wordpress_logged_in_.+$#i',$keyOne)) {
+                                $userhash = $valueOne;
+                                $userhash = md5($userhash);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            $this->baseCacheData[$keyCache1] = $userhash;
+        }
+        
+		return $this->baseCacheData[$keyCache1];
 		
 	}
 	
@@ -646,13 +659,21 @@ class WPOptimizeByxTraffic_AdvancedCache
 		if(isset($options['optimize_cache_enable']) && $options['optimize_cache_enable']) {
 			$isCacheStatus = true;
 		}
-		
+        
+        
+        if($isCacheStatus) {
+			if(preg_match('#('.$this->patternRequestUriNotCache.')#i', $urlFullRequest)) {
+				$isCacheStatus = false;
+			}
+		}
+        
 		if($isCacheStatus) {//no cache special path
 			if(preg_match('#['.preg_quote('`~!@#$%^*()|;\'",<>+“”‘’','#').']+#i',PepVN_Data::$defaultParams['parseedUrlFullRequest']['path'])) {
 				$isCacheStatus = false;
 			}
 		}
 		
+        /*
 		if($isCacheStatus) {
 			if ( preg_match('#'.PepVN_Data::preg_quote($fullDomainName).'/.+(\.php)#i', $urlFullRequest) ) {
 				$isCacheStatus = false;
@@ -672,6 +693,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 				$isCacheStatus = false;
 			}
 		}
+        */
 		
 		if($isCacheStatus) {
 			if('get' !== $requestMethod) {
@@ -763,18 +785,36 @@ class WPOptimizeByxTraffic_AdvancedCache
 		}
 		
 		if($isCacheStatus) {
-			$options['optimize_cache_exclude_url'] = trim($options['optimize_cache_exclude_url']);
-			$valueTemp = $options['optimize_cache_exclude_url'];
-			$valueTemp = PepVN_Data::cleanPregPatternsArray($valueTemp);
-			if($valueTemp) {
-				if(count($valueTemp)>0) {
-					if(preg_match('#('.implode('|',$valueTemp).')#i',$urlFullRequest)) {
-						$isCacheStatus = false;
-					}
-				}
-			}
+            if(isset($options['optimize_cache_exclude_url']) && $options['optimize_cache_exclude_url']) {
+                $options['optimize_cache_exclude_url'] = trim($options['optimize_cache_exclude_url']);
+                $valueTemp = $options['optimize_cache_exclude_url'];
+                if($valueTemp) {
+                    $valueTemp = PepVN_Data::cleanPregPatternsArray($valueTemp);
+                    if($valueTemp && !empty($valueTemp)) {
+                        if(preg_match('#('.implode('|',$valueTemp).')#i',$urlFullRequest)) {
+                            $isCacheStatus = false;
+                        }
+                    }
+                }
+            }
 		}
+        
+        
+        $cookiesImploded = false;
+        
+        if($isCacheStatus) {
+            if(isset($_COOKIE) && $_COOKIE && !empty($_COOKIE)) {
+                $cookiesImploded = implode(';',$_COOKIE);
+                $cookiesImploded = trim($cookiesImploded);
+                if($cookiesImploded) {
+                    if(preg_match('#('.$this->patternCookiesNotCache.')#', $cookiesImploded)) {
+                        $isCacheStatus = false;
+                    }
+                }
+            }
+        }
 		
+        /*
 		if($isCacheStatus) {
 			
 			if(isset($options['optimize_cache_exclude_cookie']) && $options['optimize_cache_exclude_cookie']) {
@@ -821,6 +861,24 @@ class WPOptimizeByxTraffic_AdvancedCache
 					}
 				}
 			}
+		}
+        */
+        
+        if($isCacheStatus) {
+            if($cookiesImploded) {
+                if(isset($options['optimize_cache_exclude_cookie']) && $options['optimize_cache_exclude_cookie']) {
+                    $options['optimize_cache_exclude_cookie'] = trim($options['optimize_cache_exclude_cookie']);
+                    $valueTemp = $options['optimize_cache_exclude_cookie'];
+                    if($valueTemp) {
+                        $valueTemp = PepVN_Data::cleanPregPatternsArray($valueTemp);
+                        if($valueTemp && !empty($valueTemp)) {
+                            if(preg_match('#('.implode('|',$valueTemp).')#i',$cookiesImploded)) {
+                                $isCacheStatus = false;
+                            }
+                        }
+                    }
+                }
+            }
 		}
 		
 		$this->baseCacheData[$keyCache] = $isCacheStatus;
@@ -1041,8 +1099,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 		if(!$isCacheableStatus) {
 			return false;
 		}
-		
-		
+        
 		$isBrowserCacheStatus = false;
 		if(isset($options['optimize_cache_browser_cache_enable']) && $options['optimize_cache_browser_cache_enable']) {
 			$isBrowserCacheStatus = true;
@@ -1095,7 +1152,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
 				$parametersTemp['cache_timeout'] = 0;
 				if($isBrowserCacheStatus) {
-					$parametersTemp['cache_timeout'] = $options['optimize_cache_cachetimeout'];
+					$parametersTemp['cache_timeout'] = ceil($options['optimize_cache_cachetimeout'] / 3);
 				}
 				
 				$this->optimize_cache_flush_http_headers($parametersTemp);
@@ -1114,7 +1171,7 @@ class WPOptimizeByxTraffic_AdvancedCache
 			if($isBrowserCacheStatus) {
 				$parametersTemp['etag'] = $etag;
 				$parametersTemp['last_modified_time'] = $rsGetFilemtime;
-				$parametersTemp['cache_timeout'] = $options['optimize_cache_cachetimeout'];
+				$parametersTemp['cache_timeout'] = ceil($options['optimize_cache_cachetimeout'] / 3);
 			}
 			
 			$this->optimize_cache_flush_http_headers($parametersTemp); 
@@ -1660,7 +1717,6 @@ $wpOptimizeByxTraffic_AdvancedCache = 0;
 $wpOptimizeByxTraffic_AdvancedCache = new WPOptimizeByxTraffic_AdvancedCache();
 
 $wpOptimizeByxTraffic_AdvancedCache->statistic_access_urls_sites(array());
-$wpOptimizeByxTraffic_AdvancedCache->optimize_cache_check_and_get_page_cache(); 
 
 //$wpOptimizeByxTraffic_AdvancedCache->checkAndInitWpdbCache();	//dont set here, it make site error
 

@@ -107,6 +107,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 5.0.1 =
+* Fix some issue.
+
 = 5.0.0 =
 * Improve & separate feature "Optimize Speed" into ***[WP Optimize Speed By xTraffic](https://wordpress.org/plugins/wp-optimize-speed-by-xtraffic/ "WP Optimize Speed By xTraffic")***
 
