@@ -1,677 +1,102 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 5.0.1
+Version: 5.1.0
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
 Description: WP Optimize By xTraffic provides automatically optimize your WordPress site
 */
 
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) : 
-
-define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT', 1 );
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION', '5.0.1' );
+// If this file is called directly, abort.
+if (!defined( 'WPINC' )) {
+	die('This file is called directly. You should not try this because it has been blocked!');
 }
 
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_TIMESTART', microtime(true));
-}
-
-global $wpOptimizeByxTraffic;
-
-if(isset($wpOptimizeByxTraffic) && $wpOptimizeByxTraffic) {
-	
-} else {
-	$wpOptimizeByxTraffic = false;
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_FILE' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_FILE', __FILE__ );
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PATH' ) ) { 
-	define( 'WPOPTIMIZEBYXTRAFFIC_PATH', plugin_dir_path( WPOPTIMIZEBYXTRAFFIC_FILE ) );
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG' ) ) {
-	include_once(WPOPTIMIZEBYXTRAFFIC_PATH . 'inc/init-constant.php');
-}
-
-if ( !class_exists('WPOptimizeByxTraffic_AdvancedCache') ) {
-	include(WPOPTIMIZEBYXTRAFFIC_PATH . 'inc/advanced-cache.php');
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL', plugins_url( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG ).'/' ); 
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_ADMIN_AJAX_URL', admin_url('admin-ajax.php')); 
-}
-
-$wpoptimizebyxtraffic_upload_dir = wp_upload_dir();
-
-$wpoptimizebyxtraffic_content_url = content_url() . '/';
-	
-$wpoptimizebyxtraffic_content_dir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR;
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_URL_WP' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_URL_WP', $wpoptimizebyxtraffic_upload_dir['baseurl'] . '/');
-	define( 'WPOPTIMIZEBYXTRAFFIC_UPLOADS_FOLDER_URL_PEPVN', $wpoptimizebyxtraffic_upload_dir['baseurl'] . '/pep-vn/');
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH' ) ) {
-	
-	define( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH', $wpoptimizebyxtraffic_content_dir);
-	define( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_URL', $wpoptimizebyxtraffic_content_url);
-	
-	if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN' ) ) {
-		define( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_PATH_CACHE_PEPVN', $wpoptimizebyxtraffic_content_dir. 'cache' . DIRECTORY_SEPARATOR . 'pep-vn' . DIRECTORY_SEPARATOR);
-	}
-	
-	define( 'WPOPTIMIZEBYXTRAFFIC_CONTENT_FOLDER_URL_CACHE_PEPVN', $wpoptimizebyxtraffic_content_url . 'cache/pep-vn/');
-}
-
-if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_AJAX_LOADING_TAG' ) ) {
-	define( 'WPOPTIMIZEBYXTRAFFIC_AJAX_LOADING_TAG', '<div class=\'wpoptimizebyxtraffic_ajax_loading\' style=\'display:inline-block;width:100%;height:auto;padding:16px;text-align: center;\'><img src=\''.WPOPTIMIZEBYXTRAFFIC_PLUGIN_URL.'images/ajax-loader.gif\' /></div>'); 
-}
-
-require_once(WPOPTIMIZEBYXTRAFFIC_PATH.'inc/class/WPOptimizeByxTraffic_OptimizeTraffic.php');
-
-if ( !class_exists('WPOptimizeByxTraffic') ) :
-
-class WPOptimizeByxTraffic extends WPOptimizeByxTraffic_OptimizeTraffic
-{
-	
-	function __construct() 
-	{
-		parent::__construct();	
-	}
-	
-	// Set up everything when plugin active
-	public function activation()
-	{
-		$this->wpOptimizeByxTraffic_options = $this->get_options();	
-		
-		$this->base_activate();
-	}
-	
-	//when plugin deactivate
-	public function deactivate() 
-	{
-		$this->base_deactivate();
-	}
-
-}//class WPOptimizeByxTraffic
-
-endif; //if ( !class_exists('WPOptimizeByxTraffic') )
-
-if ( class_exists('WPOptimizeByxTraffic') ) :
+//Check if plugin is loaded
+if ( !defined( 'WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS' ) ) {
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS', true);
 	
 	global $wpOptimizeByxTraffic;
-	$wpOptimizeByxTraffic = new WPOptimizeByxTraffic();
+	$wpOptimizeByxTraffic = false;
 	
-	if (isset($wpOptimizeByxTraffic) && $wpOptimizeByxTraffic) : 
-		
-		$wpoptimizebyxtraffic_GETActionClearAllCacheKey = hash('crc32b',WPOPTIMIZEBYXTRAFFIC_SITE_CONSTANT_SALT.'-admin-bar-menu-clear-all-caches-status');
-		
-		register_activation_hook( __FILE__, array(&$wpOptimizeByxTraffic, 'activation') );
-		register_deactivation_hook( __FILE__, array(&$wpOptimizeByxTraffic, 'deactivate') );
-		
-		
-		function wpoptimizebyxtraffic_preview_processed_image_action() 
-		{
-			
-			if ( !wp_verify_nonce( $_REQUEST['nonce'], WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG)) {
-				echo 'error';exit();
-			}
-			
-			global $wpOptimizeByxTraffic;
-			if($wpOptimizeByxTraffic->base_is_admin()) {
-				$wpOptimizeByxTraffic->optimize_images_preview_processed_image();
-			}
-			
-			exit(); die(); // this is required to return a proper result
-			
-		}
-		
-		add_action( 'wp_ajax_wpoptimizebyxtraffic_preview_processed_image_action', 'wpoptimizebyxtraffic_preview_processed_image_action' );
-		
-		function wpoptimizebyxtraffic_base_process_ajax_action() 
-		{
-			global $wpOptimizeByxTraffic;
-			
-			$wpOptimizeByxTraffic->base_process_ajax();
-			
-			exit(); die(); // this is required to return a proper result 
-		}
-		
-		function wpoptimizebyxtraffic_base_backstage_secure_action() 
-		{
-			global $wpOptimizeByxTraffic;
-			$wpOptimizeByxTraffic->base_process_backstage_secure();
-			exit(); die(); // this is required to return a proper result 
-		}
-		
-		$wpOptimizeByxTraffic_wp_register_style_status = false;
-		function wpOptimizeByxTraffic_wp_register_style() 
-		{
-			global $wpOptimizeByxTraffic_wp_register_style_status;
-			if(!$wpOptimizeByxTraffic_wp_register_style_status) {
-				$wpOptimizeByxTraffic_wp_register_style_status = true; 
-				
-				$urlFileTemp = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css';
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-font-awesome';
-				wp_register_style( $handleRegister,  $urlFileTemp, array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/pepvn_libs.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/pepvn_libs.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-				wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/admin_styles.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/admin_styles.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-admin_styles';
-				wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/wp-optimize-by-xtraffic-fe.min.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/css/wp-optimize-by-xtraffic-fe.css?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION.'&__t='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-				wp_register_style( $handleRegister, plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, 'all');
-			}
-		}
-
-		$wpOptimizeByxTraffic_wp_register_script_status = false; 
-		function wpOptimizeByxTraffic_wp_register_script() 
-		{
-			global $wpOptimizeByxTraffic_wp_register_script_status;
-			
-			if(!$wpOptimizeByxTraffic_wp_register_script_status) {
-				$wpOptimizeByxTraffic_wp_register_script_status = true;
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/pepvn_libs.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/pepvn_libs.js?__ts='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-				wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
-				
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/admin_scripts.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/admin_scripts.js?__ts='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-admin_scripts';
-				wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true);
-				
-				
-				$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/wp-optimize-by-xtraffic-fe.min.js?v='.WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION;
-				//$urlFileTemp = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/js/wp-optimize-by-xtraffic-fe.js?__ts='.time().mt_rand();//test
-				$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-				wp_register_script($handleRegister , plugins_url( $urlFileTemp ), array(), WPOPTIMIZEBYXTRAFFIC_PLUGIN_VERSION, true); 
-				
-			}
-		}
-
-		function wpOptimizeByxTraffic_load_custom_wp_admin_styles() 
-		{
-			wpOptimizeByxTraffic_wp_register_style();
-			
-			wp_enqueue_style( 'wp-pointer' );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-font-awesome';
-			wp_enqueue_style( $handleRegister );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-			wp_enqueue_style( $handleRegister );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-admin_styles';
-			wp_enqueue_style( $handleRegister );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-			wp_enqueue_style( $handleRegister );
-		}
-
-		function wpOptimizeByxTraffic_load_custom_wp_admin_scripts() 
-		{
-			wpOptimizeByxTraffic_wp_register_script();
-			
-			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'wp-pointer' );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-			wp_enqueue_script( $handleRegister ); 
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-			wp_enqueue_script( $handleRegister ); 
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-admin_scripts';
-			wp_enqueue_script( $handleRegister );
-		}
-
-		function wpOptimizeByxTraffic_load_custom_wp_styles() 
-		{
-			wpOptimizeByxTraffic_wp_register_style();
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-			wp_enqueue_style( $handleRegister ); 
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-			wp_enqueue_style( $handleRegister ); 
-		}
-
-		function wpOptimizeByxTraffic_load_custom_wp_scripts() 
-		{
-			wpOptimizeByxTraffic_wp_register_script();
-			
-			wp_enqueue_script( 'jquery' );
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-pepvn_libs';
-			wp_enqueue_script( $handleRegister ); 
-			
-			$handleRegister = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-wp-optimize-by-xtraffic-fe';
-			wp_enqueue_script( $handleRegister ); 
-			
-		}
-
-		add_action( 'wp_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_styles' );
-		add_action( 'wp_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_scripts' );
-
-		add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_styles' );
-		add_action( 'admin_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_admin_scripts' ); 
-		
-		add_action( 'login_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_styles' );
-		add_action( 'login_enqueue_scripts', 'wpOptimizeByxTraffic_load_custom_wp_scripts' ); 
-		
-		// Minify HTML codes when page is output.
-		function wpOptimizeByxTraffic_start_load_html_pages() 
-		{
-			/** 
-			* use wpOptimizeByxTraffic_start_load_html_pages($html) function to minify html codes.
-			*/
-			
-			if(function_exists('ob_start')) {
-				ob_start('wpOptimizeByxTraffic_process_html_pages'); 
-			}
-		}
-		
-		function wpOptimizeByxTraffic_process_html_pages($buffer)
-		{
-			/** 
-			* some minify codes here ...
-			*/
-			
-			global $wpOptimizeByxTraffic;
-			
-			global $wpOptimizeSpeedByxTraffic;
-			
-			$hasWPOptimizeSpeedByxTrafficStatus = false;
-			
-			if(isset($wpOptimizeSpeedByxTraffic) && $wpOptimizeSpeedByxTraffic) {
-				$hasWPOptimizeSpeedByxTrafficStatus = true;
-			}
-			
-			if(true === $hasWPOptimizeSpeedByxTrafficStatus) {
-				$buffer = $wpOptimizeSpeedByxTraffic->process_html_pages($buffer);
-			}
-			
-			$options = $wpOptimizeByxTraffic->get_options(array(
-				'cache_status' => 1
-			));
-			
-			if($options['optimize_images_optimize_image_file_enable']) { 
-				if($options['optimize_images_images_lazy_load_enable']) { 
-					if($options['optimize_images_images_lazy_load_frontpage_enable']) {
-						$buffer = $wpOptimizeByxTraffic->optimize_images_process_allimagestags_lazyload($buffer,1); 
-					}
-				}
-			}
-			
-			if(true === $hasWPOptimizeSpeedByxTrafficStatus) {
-				$buffer = $wpOptimizeSpeedByxTraffic->cdn_process_text($buffer,'html');
-			}
-			
-			$buffer = $wpOptimizeByxTraffic->base_add_plugin_info_html($buffer);
-			
-			if(true === $hasWPOptimizeSpeedByxTrafficStatus) {
-				
-				$wpOptimizeSpeedByxTraffic->optimize_cache_check_and_create_page_cache(array(
-					'content' => $buffer
-				));
-				
-				$wpOptimizeSpeedByxTraffic->optimize_cache_check_and_flush_http_browser_cache();
-			}
-			
-			return $buffer;
-			
-		}
-		
-		
-		function wpOptimizeByxTraffic_clear_cache()
-		{
-			global $wpOptimizeByxTraffic;
-			$wpOptimizeByxTraffic->base_clear_data(',all,');
-		}
-		
-		
-		function wpOptimizeByxTraffic_on_wp_delete_data()
-		{
-			global $wpOptimizeByxTraffic;
-			$wpOptimizeByxTraffic->base_clear_data(',all,cache_permanent,');
-		}
-		
-		
-		function wpOptimizeByxTraffic_admin_bar_menu()
-		{
-			global $wpOptimizeByxTraffic;
-			global $wpoptimizebyxtraffic_GETActionClearAllCacheKey;
-			if($wpOptimizeByxTraffic->base_is_admin() && $wpOptimizeByxTraffic->base_is_current_user_logged_in_can('activate_plugins')) {
-				global $wp_admin_bar;
-				
-				$parentAdminBarIdClass = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'-admin-bar-menu';
-				
-				$wp_admin_bar->add_menu( array(
-					'id' => $parentAdminBarIdClass,
-					'title' => '<span class="ab-icon"><img src="'.plugins_url( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG.'/images/icon.png').'" /></span><span class="ab-label">WP Optimize</span>',
-					'href' => FALSE,
-					'meta' => array(
-						'title' => 'WP Optimize',
-						'class' => $parentAdminBarIdClass
-					)
-				) );
-				
-				
-				$menuKey = $parentAdminBarIdClass.'-clear-all-caches'; 
-				$wp_admin_bar->add_menu( array(
-					'id' => $menuKey,
-					'parent' => $parentAdminBarIdClass,
-					'title' => __('Clear All Caches',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG),
-					'href' => $wpOptimizeByxTraffic->base_add_parameters_to_url('',array(
-						$wpoptimizebyxtraffic_GETActionClearAllCacheKey => PepVN_Data::$defaultParams['requestTime']
-					))
-				)); 
-				
-			}
-		}
-		
-		function wpOptimizeByxTraffic_post_thumbnail_custom( $html, $post_id, $post_thumbnail_id, $size, $attr ) 
-		{
-			global $wpOptimizeByxTraffic;
-			
-			$keyCache1 = PepVN_Data::fKey(array(
-				'wpOptimizeByxTraffic_post_thumbnail_custom'
-				, $html
-				, $post_id
-				, $post_thumbnail_id
-				, $size
-				, $attr
-			)); 
-			
-			$valueTemp = PepVN_Data::$cacheObject->get_cache($keyCache1);
-			
-			if(null !== $valueTemp) {
-				return $valueTemp;
-			}
-			
-			if(!$html) {
-				$html = '';
-			}
-			$html = (string)$html;
-			
-			if(!$post_thumbnail_id) {
-				$post_thumbnail_id = 0;
-			}
-			$post_thumbnail_id = (int)$post_thumbnail_id;
-			
-			if($post_thumbnail_id>0) {
-			} else {
-				if($post_id) {
-					$post_id = (int)$post_id;
-					if($post_id>0) {
-						$post_thumbnail_id = get_post_thumbnail_id($post_id);
-						$post_thumbnail_id = (int)$post_thumbnail_id;
-					}
-				}
-			}
-			
-			if($post_thumbnail_id>0) {
-				
-				$attachment_metadata = wp_get_attachment_metadata($post_thumbnail_id);
-				
-				if($attachment_metadata && is_array($attachment_metadata)) {
-					
-					$image_src = wp_get_attachment_image_src($post_thumbnail_id, $size);
-					if($image_src && is_array($image_src)) {
-					
-						$imgName = WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG;
-						
-						$imgInfo = pathinfo($image_src[0]);
-						if(isset($imgInfo['filename'])) {
-							$imgName = $imgInfo['filename'];
-						}
-						
-						$max_size_image_tag = false;
-						if(!empty($html)) {
-							$max_size_image_tag = $wpOptimizeByxTraffic->optimize_images_check_get_max_size_image_tag($html);
-						}
-						
-						$processImageOptions1 = array(
-							'optimized_image_file_name' => $imgName
-							,'original_image_src' => $image_src[0]
-							,'resize_max_width' => $image_src[1]
-							,'resize_max_height' => $image_src[2]
-							,'action' => 'do_process_image'
-						);
-						
-						if(isset($max_size_image_tag['width']) && ($max_size_image_tag['width']>0)) {
-							$processImageOptions1['resize_max_width'] = $max_size_image_tag['width'];
-						}
-						
-						
-						if(isset($max_size_image_tag['height']) && ($max_size_image_tag['height']>0)) {
-							$processImageOptions1['resize_max_height'] = $max_size_image_tag['height'];
-						}
-						
-						$device_screen_width = $wpOptimizeByxTraffic->optimize_images_check_get_screen_width();
-						
-						if($device_screen_width>0) {
-							if($processImageOptions1['resize_max_width'] > $device_screen_width) {
-								if($processImageOptions1['resize_max_height']>0) {
-									$processImageOptions1['resize_max_height'] = ($device_screen_width * $processImageOptions1['resize_max_height']) / $processImageOptions1['resize_max_width'];
-								}
-								$processImageOptions1['resize_max_width'] = $device_screen_width;
-							}
-						}
-						
-						$processImageOptions1['resize_max_width'] = (int)$processImageOptions1['resize_max_width'];
-						$processImageOptions1['resize_max_height'] = (int)$processImageOptions1['resize_max_height'];
-						
-						$rsProcessImage1 = $wpOptimizeByxTraffic->optimize_images_process_image($processImageOptions1);
-						
-						$processImageOptions1 = 0;
-						
-						if($rsProcessImage1['image_optimized_file_url']) {
-							$image_src[0] = $rsProcessImage1['image_optimized_file_url'];
-							
-						}
-						
-						if(strlen($html)>0) {
-							$html = preg_replace('#\s*?src=(\'|\")[^\'\"]*?\1#is',' src=$1'.$image_src[0].'$1',$html);
-						} else {
-							$imgClass = 'wp-post-image';
-							if(!is_array($size)) {
-								$imgClass .= ' attachment-'.(string)$size;
-							}
-							$html = ' <img width="'.$image_src[1].'" height="'.$image_src[2].'" src="'.$image_src[0].'" class="'.$imgClass.'" alt="'.$attachment_metadata['image_meta']['caption'].' - '.$attachment_metadata['image_meta']['title'].'"> ';
-						}
-						if(
-							isset($rsProcessImage1['image_optimized_width'])
-							&& isset($rsProcessImage1['image_optimized_height'])
-						) {
-							$html = $wpOptimizeByxTraffic->optimize_images_check_set_size_image_tag($html,array(
-								'width' => $rsProcessImage1['image_optimized_width']
-								,'height' => $rsProcessImage1['image_optimized_height']
-							),true);
-						}
-						
-					}
-				}
-				
-			}
-			
-			PepVN_Data::$cacheObject->set_cache($keyCache1,$html);
-			
-			return $html;
-		}
-		
-		//Action when wordpress init : 1
-		function wpOptimizeByxTraffic_init_first()
-		{
-            global $wpOptimizeByxTraffic; 
-			
-			global $wpoptimizebyxtraffic_GETActionClearAllCacheKey;
-			
-			if(isset($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey]) && ($_GET[$wpoptimizebyxtraffic_GETActionClearAllCacheKey])) {
-				if($wpOptimizeByxTraffic->base_is_current_user_logged_in_can('activate_plugins')) {
-					wpOptimizeByxTraffic_clear_cache();
-					echo '<div class="updated fade"><p><b>'.WPOPTIMIZEBYXTRAFFIC_PLUGIN_NAME.'</b> : '.__('All caches are cleared!',WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG).'</p></div>';
-				}
-			}
-            
-            global $wpOptimizeByxTraffic_AdvancedCache; 
-            $wpOptimizeByxTraffic_AdvancedCache->optimize_cache_check_and_get_page_cache(); 
-            
-			if(isset($_GET['action']) && $_GET['action']) {
-				if('wpoptimizebyxtraffic_show_image_captcha_action' === $_GET['action']) {
-					$wpOptimizeByxTraffic->optimize_security_captcha_show_image();
-				}
-			}
-			
-			
-			// Localization
-			load_plugin_textdomain( WPOPTIMIZEBYXTRAFFIC_PLUGIN_SLUG, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' ); 
-			
-			add_action('comment_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-            add_action('wp_insert_comment', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-            add_action('wp_set_comment_status', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('delete_comment', 'wpOptimizeByxTraffic_on_wp_delete_data', 0.0000000001);
-			add_action('edit_comment', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			
-			add_action('publish_post', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('edit_post', 'wpOptimizeByxTraffic_clear_cache', 0.0000000001);
-			add_action('delete_post', 'wpOptimizeByxTraffic_on_wp_delete_data', 0.0000000001);
-			add_action('publish_phone', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			add_action('private_to_published', 'wpOptimizeByxTraffic_clear_cache', 999999999.0000000001);
-			
-			add_action('admin_bar_menu', 'wpOptimizeByxTraffic_admin_bar_menu', 999999999);
-			
-			$options = $wpOptimizeByxTraffic->get_options(array(
-				'cache_status' => 1
-			));
-			
-			if(
-				$options['optimize_images_optimize_image_file_enable']
-			) {
-				add_filter( 'post_thumbnail_html', 'wpOptimizeByxTraffic_post_thumbnail_custom', 999999999.0000000001, 5 ); 
-			}
-		}
-		
-		//Action when wordpress init
-		function wpOptimizeByxTraffic_init_last()
-		{
-			
-		}
-		
-		function wpOptimizeByxTraffic_wp_loaded_first() 
-		{
-			global $wpOptimizeByxTraffic;
-			
-			if(isset($_GET['action']) && $_GET['action']) {
-				if('wpoptimizebyxtraffic_base_process_ajax_action' === $_GET['action']) {
-					if($wpOptimizeByxTraffic->base_is_admin()) {
-						wpoptimizebyxtraffic_base_process_ajax_action();
-					}
-				} else if('xtr_base_backstage_secure_action' === $_GET['action']) {
-					if($wpOptimizeByxTraffic->base_is_admin()) {
-						wpoptimizebyxtraffic_base_backstage_secure_action();
-					}
-				}
-			}
-			
-		}
-		
-		function wpOptimizeByxTraffic_wp_loaded_last() 
-		{
-			
-		}
-		
-		function wpOptimizeByxTraffic_wp_init_first() 
-		{
-			
-		}
-		
-		function wpOptimizeByxTraffic_wp_init_last() 
-		{
-			global $wpOptimizeByxTraffic;
-			
-			if ( !$wpOptimizeByxTraffic->base_is_admin() ) {
-				wpOptimizeByxTraffic_start_load_html_pages();
-			}
-		}
-		
-		function wpOptimizeByxTraffic_wp_shutdown_first() 
-		{
-            
-		}
-		
-		function wpOptimizeByxTraffic_wp_shutdown_last() 
-		{
-			global $wpOptimizeByxTraffic;
-			$wpOptimizeByxTraffic->base_do_before_wp_shutdown(); 
-			
-			/*
-			global $wp_query;
-			$term = get_term_by( 'slug', get_query_var( 'term' ), get_query_var( 'taxonomy' ) ); 
-			echo '<div><h2> Dump on : ',__FILE__,' at line : ',__LINE__,' </h2><pre>',var_dump($wp_query->get_queried_object_id(),get_queried_object(),get_query_var( 'taxonomy' ), get_query_var( 'term' ), $term),'</pre></div>'; 
-			*/
-			
-		}
-		
-		/*
-		* @init 1
-		* Runs after WordPress has finished loading but before any headers are sent. Useful for intercepting $_GET or $_POST triggers.
-		*/
-		add_action('init', 'wpOptimizeByxTraffic_init_first', 0);
-
-		add_action('init', 'wpOptimizeByxTraffic_init_last', 999999999.0000000001);
-		
-		
-		/*
-		* @wp_loaded 2
-		* After WordPress is fully loaded.
-		*/
-		add_action('wp_loaded','wpOptimizeByxTraffic_wp_loaded_first', 0.0000000001);
-		
-		add_action('wp_loaded','wpOptimizeByxTraffic_wp_loaded_last', 999999999.0000000001);
-		
-		/*
-		* @wp 3
-		* This action hook runs immediately after the global WP class object is set up. The $wp object is passed to the hooked function as a reference (no return is necessary).
-		* This hook is one effective place to perform any high-level filtering or validation, following queries, but before WordPress does any routing, processing, or handling.
-		*/
-		add_action( 'wp', 'wpOptimizeByxTraffic_wp_init_first', 0.0000000001 );
-		
-		add_action( 'wp', 'wpOptimizeByxTraffic_wp_init_last', 999999999.0000000001 );
-		
-		/*
-		* @shutdown 4
-		* 
-		*/
-		add_action( 'shutdown', 'wpOptimizeByxTraffic_wp_shutdown_first', 0.0000000001 );
-		
-		add_action( 'shutdown', 'wpOptimizeByxTraffic_wp_shutdown_last', 999999999.0000000001 );
-		
-	endif;	//if (isset($wpOptimizeByxTraffic) && $wpOptimizeByxTraffic) : 
+	define('WP_PEPVN_NS_SHORT', 'wppepvn');	// IMPORTANT : Never change this because it use for many key database. Only this plugin define this constant.
+    define('WP_PEPVN_NAMESPACE', 'WpPepVN');
 	
-endif;	//if ( !class_exists('WPOptimizeByxTraffic') ) :
-
-endif;	//if ( ! defined( 'WPOPTIMIZEBYXTRAFFIC_PLUGIN_INIT' ) ) : 
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.0' );
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME', 'WP Optimize By xTraffic');
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAMESPACE', 'WPOptimizeByxTraffic');
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG', 'wp-optimize-by-xtraffic');
+	define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NS_SHORT', 'wpopxtf');
+	
+    
+    //Check version PHP
+    if(defined('PHP_VERSION') && version_compare(PHP_VERSION, '5.3.0', '>=')) {
+        $tmp = microtime(true);
+		$tmp = (float)$tmp;
+		define('WP_PEPVN_MICROTIME_START', $tmp);
+		
+		ob_implicit_flush(false);	//TRUE to turn implicit flushing on, FALSE otherwise.
+		ob_start();
+		
+        define('WP_PEPVN_ENV', 'production' );	//production:dev
+		
+		if('dev' === WP_PEPVN_ENV) {
+			define('WP_PEPVN_DEBUG', true);
+		} else {
+			define('WP_PEPVN_DEBUG', false);
+		}
+		
+		define('WP_PEPVN_CONFIG_KEY', 'WP_OPTIMIZE_BY_XTRAFFIC_CONFIGS');
+        
+		define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_FILE', __FILE__ );
+        define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_DIR', plugin_dir_path( WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_FILE ) );
+        define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI', plugins_url( WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG ) . '/' );
+        define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_LIBS_DIR', WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_DIR . 'libs' . DIRECTORY_SEPARATOR);
+        define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR', WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_DIR . 'Application' . DIRECTORY_SEPARATOR);
+        
+        /* 
+        * PRIORITY
+        Used to specify the order in which the functions associated with a particular action are executed. 
+        Lower numbers correspond with earlier execution, and functions with the same priority are executed in the order in which they were added to the action.
+        */
+        
+        define('WP_PEPVN_PRIORITY_FIRST', 9);
+        define('WP_PEPVN_PRIORITY_LAST', 90000000);
+		
+        include_once(WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'ApplicationBootstrap.php');
+		
+        global $wpOptimizeByxTraffic;
+        
+        $wpOptimizeByxTraffic = new \WPOptimizeByxTraffic\Application\ApplicationBootstrap();
+        
+        $wpOptimizeByxTraffic->init();
+		
+		register_activation_hook( __FILE__, array(&$wpOptimizeByxTraffic, 'wp_register_activation_hook') );
+		
+		
+		function wp_ajax_wppepvn_preview_processed_image_action()
+		{
+			global $wpOptimizeByxTraffic;
+			$optimizeImages = $wpOptimizeByxTraffic->di->getShared('optimizeImages');
+			$optimizeImages->preview_processed_image_action();
+		}
+		add_action( 'wp_ajax_wppepvn_preview_processed_image_action', 'wp_ajax_wppepvn_preview_processed_image_action');
+		
+    } else {
+        /*
+		* If PHP version <= 5.3.0 then can't use this plugin
+		*/
+		
+        if(is_admin()) {
+			
+            function wpOptimizeByxTraffic_admin_error_notice() {
+                $class = 'error';
+                $message = 'You need to use <b>PHP version <u>5.3.0</u> or higher</b> to use plugin "<i><b>'.WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME.'</b></i>"';
+                echo '<div class="',$class,'"><p><b>'.WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME.'</b> : ',$message,'</p></div>'; 
+            }
+			
+            add_action( 'admin_notices', 'wpOptimizeByxTraffic_admin_error_notice' ); 
+        }
+    }    
+}

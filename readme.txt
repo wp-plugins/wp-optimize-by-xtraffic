@@ -1,15 +1,16 @@
 === WP Optimize By xTraffic ===
 Contributors: pepvn
 Donate link: http://blog-xtraffic.pep.vn/
-Tags:  optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
-Requires at least: 2.3
-Tested up to: 4.2.2
-Stable tag: trunk
+Tags: optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
+Requires at least: 3.0.1
+Tested up to: 4.2.4
+Stable tag: 5.1.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Plugin "WP Optimize By xTraffic" optimizes your WordPress websites more useful and powerful through the special features.
 
-
-== Description == 
+== Description ==
 
 Plugin **[WP Optimize By xTraffic](http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/ "WP Optimize By xTraffic")** automatically optimizes your WordPress site more useful and powerful through the special features.
 
@@ -24,8 +25,6 @@ Everything is done completely automatically, and you can change the options from
 * [Топ 10 WordPress плагинов за сентябрь 2014](http://wpnice.ru/top-10-wordpress-plaginov-za-sentyabr-2014/ "Топ 10 WordPress плагинов за сентябрь 2014")
 * [17 Splendiferous Free Watermark Plugins for WordPress](http://graphicbubbles.com/wordpress-2/free-watermark-plugins-for-wordpress/ "17 Splendiferous Free Watermark Plugins for WordPress")
 * [Top 15 plugins bạn nên dùng thử trong tháng 8](http://ebooksvn.com/wordpress/wordpress-plugins/top-15-plugins-ban-nen-dung-thu-trong-thang-8.html "Top 15 plugins bạn nên dùng thử trong tháng 8")
-* [Tối ưu website WordPress với Plugin WP Optimize By xTraffic](http://melyweb.net/toi-uu-website-wordpress-voi-plugin-wp-optimize-by-xtraffic.html "Tối ưu website WordPress với Plugin WP Optimize By xTraffic")
-
 
 Thank the authors who talked about us :) . We always try to do it better in the future!
 
@@ -99,13 +98,20 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Set options in tab "***WP Optimize***"
 
+== Frequently Asked Questions ==
+
 == Screenshots ==
+
 1. Optimize Links setting panel
 2. Optimize Images's Alt/Title setting panel
 3. Watermark Images By Text
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 5.1.0 =
+* Improve Optimize Links & Optimize Traffic
+* Use the MVC pattern for plugin
 
 = 5.0.1 =
 * Fix some issue.
