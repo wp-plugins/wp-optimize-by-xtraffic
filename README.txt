@@ -109,6 +109,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 
 == Changelog ==
 
+= 5.1.1 =
+* Fix some issue.
+
 = 5.1.0 =
 * Improve Optimize Links & Optimize Traffic
 * Use the MVC pattern for plugin

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 5.1.0
+Version: 5.1.1
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -23,7 +23,7 @@ if ( !defined( 'WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS' ) ) {
 	define('WP_PEPVN_NS_SHORT', 'wppepvn');	// IMPORTANT : Never change this because it use for many key database. Only this plugin define this constant.
     define('WP_PEPVN_NAMESPACE', 'WpPepVN');
 	
-    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.0' );
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.1' );
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME', 'WP Optimize By xTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAMESPACE', 'WPOptimizeByxTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG', 'wp-optimize-by-xtraffic');
