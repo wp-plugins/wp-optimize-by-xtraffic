@@ -519,11 +519,19 @@ class WpExtend extends TempData
 	
 	public function isWpAjax()
 	{
-		if(defined('DOING_AJAX') && DOING_AJAX) {
-			return true;
-		}
+		$k = 'isWpAjax';
 		
-		return false;
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			if(defined('DOING_AJAX') && DOING_AJAX) {
+				self::$_wpextend_tempData[$k] = true;
+			} else {
+				self::$_wpextend_tempData[$k] = false;
+			}
+			
+			return self::$_wpextend_tempData[$k];
+		}
 	}
 	
 	public function isRequestIsAutoSavePosts()

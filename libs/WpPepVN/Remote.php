@@ -132,6 +132,7 @@ class Remote
 		}
 		
 		$input_args = array_merge(array(
+			'method' => 'GET',
 			'timeout'     => 6,
 			'redirection' => $redirection,
 			//'httpversion' => '1.0',
@@ -195,5 +196,11 @@ class Remote
 		
 		
 	}
-
+	
+	
+	public function request($input_url, $input_args = false) 
+	{
+		return $this->get($input_url, $input_args);
+	}
+	
 }

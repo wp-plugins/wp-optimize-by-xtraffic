@@ -33,6 +33,9 @@ class WpActionManager
 		
 		add_action('activated_plugin', array($this, 'activated_plugin'), WP_PEPVN_PRIORITY_LAST, 2);
 		add_action('deactivated_plugin', array($this, 'deactivated_plugin'), WP_PEPVN_PRIORITY_LAST, 2);
+		
+		add_action('switch_theme', array($this, 'switch_theme'), WP_PEPVN_PRIORITY_LAST, 2);
+		
 	}
 	
 	private function _cleanCache($data_type = ',common,')
@@ -230,6 +233,21 @@ class WpActionManager
 	public function deactivated_plugin(
 		$plugin
 		, $network_deactivating
+	) {
+		$this->_cleanCache();
+	}
+	
+	/**
+	* Fires after the theme is switched.
+	*
+	* @since 1.5.0
+	*
+	* @param string   $new_name  Name of the new theme.
+	* @param WP_Theme $new_theme WP_Theme instance of the new theme.
+	*/
+	public function switch_theme(
+		$new_name
+		, $new_theme 
 	) {
 		$this->_cleanCache();
 	}

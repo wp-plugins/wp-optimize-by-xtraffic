@@ -25,6 +25,7 @@ class PepVN_Cache
 	private $_requestTime = 0;
 	
 	private $_memcache = false;
+	
 	private $_memcacheType = false;
 	
 	private $_mongo = false;
@@ -43,12 +44,14 @@ class PepVN_Cache
 	
 	private $_key_salt = '';
 	
+	private static $_tempData = array();
+	
 	public function __construct($options = array()) 
 	{
 		$options = array_merge(
 			array(
 				'cache_timeout' => 3600	//int : seconds
-				,'hash_key_method' => 'crc32b'
+				,'hash_key_method' => 'crc32b'	//crc32b is best
 				,'hash_key_salt' => ''
 				,'gzcompress_level' => 2
 				,'key_prefix' => ''
@@ -320,6 +323,19 @@ class PepVN_Cache
 		$this->_key_salt = '_'.substr(hash('crc32b', $this->_serialize($this->_options)),0,2).'_';
 	}
 	
+	private function _is_has_hash_algos($algorithm_name)
+	{
+		if(!isset(self::$_tempData['hash_algos'])) {
+			self::$_tempData['hash_algos'] = array();
+			if(function_exists('hash_algos')) {
+				self::$_tempData['hash_algos'] = hash_algos();
+				self::$_tempData['hash_algos'] = array_flip(self::$_tempData['hash_algos']);
+			}
+		}
+		
+		return isset(self::$_tempData['hash_algos'][$algorithm_name]);
+	}
+	
 	private function _serialize($data)
 	{
 		if(true === $this->_has_igbinary) {
@@ -338,23 +354,29 @@ class PepVN_Cache
 		}
 	}
 	
+	private function _hash_key($keyData)
+	{
+		
+		$hash_key_method = $this->_options['hash_key_method'];
+		
+		if($this->_is_has_hash_algos($hash_key_method)) {
+			$keyData = hash($hash_key_method, $keyData, false);
+		} else {
+			$keyData = hash('crc32b', $keyData, false);
+		}
+		
+		return $keyData;
+	}
+	
 	private function _get_key($keyData,$type)
 	{
-		$keyData = $this->_options['hash_key_salt'] . $this->_key_salt . $keyData;
 		
-		if('cache' === $type) {
-			if('crc32b' === $this->_options['hash_key_method']) {
-				$keyData = hash('crc32b', $keyData);
-			} else if('crc32' === $this->_options['hash_key_method']) {
-				$keyData = crc32($keyData);
-			} else if('md5' === $this->_options['hash_key_method']) {
-				$keyData = md5($keyData);
-			} else {
-				$keyData = hash('crc32b', $keyData);
-			}
-		} else {
-			$keyData = hash('crc32b', $keyData);
-		}
+		$keyData = $this->_hash_key(
+			$this->_options['key_prefix']
+			. $this->_options['hash_key_salt']
+			. $this->_key_salt
+			. $keyData
+		);
 		
 		$keyData = $this->_options['key_prefix'] . $this->_key_salt . $keyData;
 		
@@ -397,6 +419,10 @@ class PepVN_Cache
 			
 			$keyCache = $this->_get_key($keyCache,'cache');
 			
+			if(is_object($data)) {
+				$data = clone $data;
+			}
+			
 			$data = array_merge(
 				$this->_get_template_data()
 				, array(
@@ -409,12 +435,13 @@ class PepVN_Cache
 			);
 			
 			if(0 !== $this->_options['gzcompress_level']) {
-				
-				$data['d'] = $this->_serialize($data['d']);
-				$data['s'] = true;
-				
-				$data['d'] = gzcompress($data['d'], $this->_options['gzcompress_level']);
-				$data['c'] = true;
+				if(!is_bool($data['d'])) {
+					$data['d'] = $this->_serialize($data['d']);
+					$data['s'] = true;
+					
+					$data['d'] = gzcompress($data['d'], $this->_options['gzcompress_level']);
+					$data['c'] = true;
+				}
 			}
 			
 			foreach($this->_options['cache_methods'] as $method => $val1) {
@@ -437,7 +464,9 @@ class PepVN_Cache
 	
 	public function get_cache($keyCache)
 	{
+		
 		if(false !== $this->_options) {
+			
 			$keyCache = $this->_get_key($keyCache,'cache');
 			$data = $this->_get_data($keyCache);
 			if($data && isset($data['d'])) {
@@ -1369,7 +1398,10 @@ class PepVN_Cache
 	
 	private function _get_key_gmeta($gmetaType, $keyGmetaPlus = '')
 	{
-		return $this->_get_key(hash('crc32b', md5($gmetaType . __CLASS__ . __METHOD__ . $this->_key_salt . $keyGmetaPlus)),'gmeta');
+		return $this->_get_key(
+			$this->_hash_key($this->_serialize(array($gmetaType , __CLASS__ , __METHOD__ , $this->_key_salt , $keyGmetaPlus)))
+			,'gmeta'
+		);
 	}
 	
 	private function _get_gmeta($keyGmeta)

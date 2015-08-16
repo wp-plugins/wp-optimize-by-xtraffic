@@ -6,7 +6,14 @@
 defined('WP_PEPVN_CHMOD') || define('WP_PEPVN_CHMOD', 0755);
 
 if ( ! defined( 'WP_PEPVN_SITE_ID' ) ) {
-	if(isset($_SERVER['SERVER_NAME'])) {
+	
+	if(isset($_SERVER['HTTP_X_FORWARDED_SERVER'])) {
+		define( 'WP_PEPVN_SITE_DOMAIN',$_SERVER['HTTP_X_FORWARDED_SERVER']);
+		define( 'WP_PEPVN_SITE_ID', md5(WP_PEPVN_NS_SHORT . $_SERVER['HTTP_X_FORWARDED_SERVER']));
+	} else if(isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+		define( 'WP_PEPVN_SITE_DOMAIN',$_SERVER['HTTP_X_FORWARDED_HOST']);
+		define( 'WP_PEPVN_SITE_ID', md5(WP_PEPVN_NS_SHORT . $_SERVER['HTTP_X_FORWARDED_HOST']) );
+	} else if(isset($_SERVER['SERVER_NAME'])) {
 		define( 'WP_PEPVN_SITE_DOMAIN',$_SERVER['SERVER_NAME']);
 		define( 'WP_PEPVN_SITE_ID', md5(WP_PEPVN_NS_SHORT . $_SERVER['SERVER_NAME']) ); 
 	} else if(isset($_SERVER['HTTP_HOST'])) {
@@ -15,8 +22,15 @@ if ( ! defined( 'WP_PEPVN_SITE_ID' ) ) {
 	}
 }
 
+if ( ! defined( 'WP_PEPVN_BLOG_ID' ) ) { 
+	$tmp = get_current_blog_id();
+	$tmp = (int)$tmp;
+	$tmp = abs($tmp);
+	define( 'WP_PEPVN_BLOG_ID', $tmp);
+}
+
 /*
-* SALT use for encode data but not sustainably, so don't use for make ID in database (use WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SITE_CONSTANT_ID instead)
+* SALT use for encode data but not sustainably, so don't use for make ID in database (use WP_PEPVN_SITE_ID instead)
 */
 
 if ( ! defined( 'WP_PEPVN_SITE_SALT' ) ) { 
@@ -24,7 +38,7 @@ if ( ! defined( 'WP_PEPVN_SITE_SALT' ) ) {
     $tmp = array();
     
     $tmp[] = WP_PEPVN_NS_SHORT;
-    $tmp[] = defined('WP_PEPVN_SITE_ID') ? WP_PEPVN_SITE_ID : 0;
+    $tmp[] = WP_PEPVN_SITE_ID;
     $tmp[] = defined('AUTH_KEY') ? AUTH_KEY : 0;
     $tmp[] = defined('SECURE_AUTH_KEY') ? SECURE_AUTH_KEY : 0;
     $tmp[] = defined('LOGGED_IN_KEY') ? LOGGED_IN_KEY : 0;
@@ -33,12 +47,9 @@ if ( ! defined( 'WP_PEPVN_SITE_SALT' ) ) {
     $tmp[] = defined('SECURE_AUTH_SALT') ? SECURE_AUTH_SALT : 0;
     $tmp[] = defined('LOGGED_IN_SALT') ? LOGGED_IN_SALT : 0;
     $tmp[] = defined('NONCE_SALT') ? NONCE_SALT : 0;
-    $tmp[] = defined('DB_NAME') ? DB_NAME : 0;
-    $tmp[] = defined('DB_USER') ? DB_USER : 0;
-    $tmp[] = defined('DB_HOST') ? DB_HOST : 0;
-    $tmp[] = defined('ABSPATH') ? ABSPATH : 0;
+	$tmp[] = WP_PEPVN_BLOG_ID;
     
-    $tmp = md5(implode('',$tmp));
+    $tmp = md5(json_encode($tmp));
     
     define( 'WP_PEPVN_SITE_SALT', $tmp); unset($tmp);
 }

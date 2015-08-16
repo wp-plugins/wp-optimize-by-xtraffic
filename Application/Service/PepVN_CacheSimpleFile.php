@@ -15,12 +15,14 @@ class PepVN_CacheSimpleFile
 	
 	private $_key_salt = '';
 	
+	private static $_tempData = array();
+	
 	public function __construct($options = array()) 
 	{
 		$options = array_merge(
 			array(
 				'cache_timeout' => 3600	//int : seconds
-				,'hash_key_method' => 'crc32b'
+				,'hash_key_method' => 'crc32b'	//crc32b is best
 				,'hash_key_salt' => ''
 				,'gzcompress_level' => 2
 				,'key_prefix' => ''
@@ -96,6 +98,19 @@ class PepVN_CacheSimpleFile
 		$this->_key_salt = '_'.substr(hash('crc32b', $this->_serialize($this->_options)),0,2).'_';
 	}
 	
+	private function _is_has_hash_algos($algorithm_name)
+	{
+		if(!isset(self::$_tempData['hash_algos'])) {
+			self::$_tempData['hash_algos'] = array();
+			if(function_exists('hash_algos')) {
+				self::$_tempData['hash_algos'] = hash_algos();
+				self::$_tempData['hash_algos'] = array_flip(self::$_tempData['hash_algos']);
+			}
+		}
+		
+		return isset(self::$_tempData['hash_algos'][$algorithm_name]);
+	}
+	
 	private function _serialize($data)
 	{
 		if($this->_has_igbinary) {
@@ -114,11 +129,42 @@ class PepVN_CacheSimpleFile
 		}
 	}
 	
+	private function _hash_key($keyData)
+	{
+		
+		$hash_key_method = $this->_options['hash_key_method'];
+		
+		if($this->_is_has_hash_algos($hash_key_method)) {
+			$keyData = hash($hash_key_method, $keyData, false);
+		} else {
+			$keyData = hash('crc32b', $keyData, false);
+		}
+		
+		return $keyData;
+		
+	}
+	
+	private function _get_key($keyData)
+	{
+		$keyData = $this->_hash_key(
+			$this->_options['key_prefix']
+			. $this->_options['hash_key_salt']
+			. $this->_key_salt
+			. $keyData
+		);
+		
+		return $this->_options['key_prefix'] . $this->_key_salt . $keyData . '.cache';
+	}
+	
 	public function set_cache($keyCache, $data)
 	{
 		if(false !== $this->_options) {
 			
 			$keyCache = $this->_get_key($keyCache);
+			
+			if(is_object($data)) {
+				$data = clone $data;
+			}
 			
 			$data = array(
 				'd' => $data //((0 !== $this->_options['gzcompress_level']) ? gzcompress($this->_serialize($data), $this->_options['gzcompress_level']) : $data)	//data
@@ -128,13 +174,13 @@ class PepVN_CacheSimpleFile
 			);
 			
 			if(0 !== $this->_options['gzcompress_level']) {
-				
-				$data['d'] = $this->_serialize($data['d']);
-				$data['s'] = true;
-				
-				$data['d'] = gzcompress($data['d'], $this->_options['gzcompress_level']);
-				$data['c'] = true;
-				
+				if(!is_bool($data['d'])) {
+					$data['d'] = $this->_serialize($data['d']);
+					$data['s'] = true;
+					
+					$data['d'] = gzcompress($data['d'], $this->_options['gzcompress_level']);
+					$data['c'] = true;
+				}
 			}
 			
 			$data['e'] = $this->_requestTime + $this->_options['cache_timeout'];
@@ -154,6 +200,7 @@ class PepVN_CacheSimpleFile
 	
 	public function get_cache($keyCache)
 	{
+		
 		if(false !== $this->_options) {
 			
 			$keyCache = $this->_get_key($keyCache);
@@ -164,12 +211,16 @@ class PepVN_CacheSimpleFile
 			
 			if(isset($data['d'])) {
 				
-				if(true === $data['c']) {
-					$data['d'] = gzuncompress($data['d']);
-				}
-				
-				if(true === $data['s']) {
-					$data['d'] = $this->_unserialize($data['d']);
+				if(0 !== $this->_options['gzcompress_level']) {
+					
+					if(true === $data['c']) {
+						$data['d'] = gzuncompress($data['d']);
+					}
+					
+					if(true === $data['s']) {
+						$data['d'] = $this->_unserialize($data['d']);
+					}
+					
 				}
 				
 				return $data['d'];
@@ -310,9 +361,7 @@ class PepVN_CacheSimpleFile
 		}
 		
 		if(isset($cacheStatus['valid'])) {
-			if(isset($data['d'])) {
-				return $data;
-			}
+			return $data;
 		} elseif(isset($cacheStatus['delete'])) {
 			if($filepath && is_file($filepath) && is_writable($filepath)) {
 				unlink($filepath);
@@ -320,23 +369,6 @@ class PepVN_CacheSimpleFile
 		}
 		
 		return null;
-	}
-	
-	private function _get_key($keyData)
-	{
-		$keyData = $this->_options['key_prefix'] . $this->_key_salt . $keyData;
-		
-		if('crc32b' === $this->_options['hash_key_method']) {
-			$keyData = hash('crc32b', $keyData);
-		} else if('crc32' === $this->_options['hash_key_method']) {
-			$keyData = crc32($keyData);
-		} else if('md5' === $this->_options['hash_key_method']) {
-			$keyData = md5($keyData);
-		} else {
-			$keyData = hash('crc32b', $keyData);
-		}
-		
-		return $this->_options['key_prefix'] . $this->_key_salt . $keyData . '.cache';
 	}
 	
 	private function _get_filepath($keyData)

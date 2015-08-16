@@ -492,6 +492,7 @@ class OptimizeLinks
 					$group_keywords2 = PepVN_Data::strtolower($group_keywords2);
 					$group_keywords2 = $analyzeText->frequencyOfAppearanceKeywordsInText($group_keywords2, PepVN_Data::strtolower($text));
 				} else {
+					$group_keywords2 = implode(';',$group_keywords2);
 					$group_keywords2 = $analyzeText->frequencyOfAppearanceKeywordsInText($group_keywords2, $text);
 				}
 				

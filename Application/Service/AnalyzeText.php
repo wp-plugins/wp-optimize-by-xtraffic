@@ -141,7 +141,7 @@ class AnalyzeText
 		$input_parameters['keyword'] = $keyword;
 		
 		$keyCache1 = array(
-			__METHOD__
+			$classMethodKey
 			,$input_parameters
 		);
 		
@@ -153,11 +153,7 @@ class AnalyzeText
 			$keyCache1[] = 'db_has_fulltext_status';
 		}
 		
-		$keyCache1 = Utils::hashKey(array(
-			$classMethodKey
-			,$input_parameters
-			,$options['db_has_fulltext_status']
-		));
+		$keyCache1 = Utils::hashKey($keyCache1);
 		
 		$resultData = TempDataAndCacheFile::get_cache($keyCache1,true);
 		
@@ -300,7 +296,7 @@ LIMIT 0,3
 		
 		$resultData = array();
 		
-		$classMethodKey = Hash::crc32b(__CLASS__ . '_' . __METHOD__);
+		$classMethodKey = Hash::crc32b(__CLASS__ . __METHOD__);
 		
 		if(!isset($input_parameters['post_types'])) {
 			$input_parameters['post_types'] = array(
@@ -308,7 +304,6 @@ LIMIT 0,3
 				,'page'
 			);
 		}
-		
 		
 		$input_parameters['post_types'] = PepVN_Data::cleanArray($input_parameters['post_types']);
 		
@@ -705,14 +700,15 @@ ORDER BY wpxtraffic_score DESC
 	static function analysisKeyword_RemovePunctuations($input_text, $input_excepts = false)
 	{
 		$keyCache1 = Utils::hashKey(array(
-			__METHOD__
+			__CLASS__ . __METHOD__
 			,$input_text
 			,$input_excepts
 		));
 		
-		$valueTemp = TempDataAndCacheFile::get_cache($keyCache1);
-		if(null !== $valueTemp) {
-			return $valueTemp;
+		$tmp = TempDataAndCacheFile::get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
 		}
 		
 		$punctuations = array(
@@ -749,7 +745,7 @@ ORDER BY wpxtraffic_score DESC
 	{
 	
 		$keyCache1 = Utils::hashKey(array(
-			__METHOD__
+			__CLASS__ . __METHOD__
 			,$text
 		));
 		
@@ -817,7 +813,7 @@ ORDER BY wpxtraffic_score DESC
 				$input_parameters['contents'] = implode(' ',$input_parameters['contents']);
 				$input_parameters['contents'] = trim($input_parameters['contents']);
 				if($input_parameters['contents']) {
-					$inputExplodedContents = self::analysisKeyword_PrepareContents($input_parameters);
+					$inputExplodedContents = self::analysisKeyword_PrepareContents($input_parameters['contents']);
 					if($inputExplodedContents) {
 						$inputExplodedContents = explode(' ', $inputExplodedContents);
 						unset($input_parameters['contents']);  

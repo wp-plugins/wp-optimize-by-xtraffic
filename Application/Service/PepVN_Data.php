@@ -18,6 +18,8 @@ class PepVN_Data
 	public static $cacheObject = false;
     
 	public static $cacheDbObject = false;
+	
+	public static $cacheWpObject = false;
     
 	public static $cachePermanentObject = false;
     
@@ -163,7 +165,7 @@ class PepVN_Data
 			
 			self::$cacheObject = new \WPOptimizeByxTraffic\Application\Service\PepVN_CacheSimpleFile(array(
 				'cache_timeout' => 86400				//seconds
-				,'hash_key_method' => 'crc32b'		//best is crc32b
+				,'hash_key_method' => 'crc32b'	//crc32b is best
 				,'hash_key_salt' => hash('crc32b',md5($pepvnCacheHashKeySaltTemp))
 				,'gzcompress_level' => 2 	//should be 0 to achieve the best performance (CPU speed)
 				,'key_prefix' => 'dts_'
@@ -192,7 +194,7 @@ class PepVN_Data
 			
 			PepVN_Data::$cachePermanentObject = new \WPOptimizeByxTraffic\Application\Service\PepVN_CacheSimpleFile(array(
 				'cache_timeout' => $pepvnCacheTimeoutTemp				//seconds
-				,'hash_key_method' => 'crc32b'		//best is crc32b
+				,'hash_key_method' => 'crc32b' //crc32b is best
 				,'hash_key_salt' => hash('crc32b',md5($pepvnCacheHashKeySaltTemp))
 				,'gzcompress_level' => 2	//should be greater than 0 (>0, 2 is best value) to save HDD for long time.
 				,'key_prefix' => 'dtpm_'
@@ -1238,10 +1240,10 @@ class PepVN_Data
 			
 			if(!empty($patternsEscape1)) {
 				$resultData['content'] = $input_content;
-				$input_content = null;
+				unset($input_content);
 				$resultData['content'] = str_replace(array_keys($patternsEscape1),array_values($patternsEscape1),$resultData['content']); 
 				$resultData['patterns'] = $patternsEscape1;
-				$patternsEscape1 = null;
+				unset($patternsEscape1);
 			}
 			
 			TempDataAndCacheFile::set_cache($keyCache1, $resultData);

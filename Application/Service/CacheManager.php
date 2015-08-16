@@ -80,6 +80,19 @@ class CacheManager
 			));
 		}
 		
+		global $wp_object_cache;
+		if(isset($wp_object_cache) && $wp_object_cache) {
+			if(is_object($wp_object_cache)) {
+				$wp_object_cache->flush();
+			}
+		}
+		
+		if(PepVN_Data::$cacheWpObject) {
+			PepVN_Data::$cacheWpObject->clean(array(
+				'clean_mode' => PepVN_Cache::CLEANING_MODE_ALL
+			));
+		}
+		
 		$cache = $this->di->getShared('cache');
 		$cache->flush();
 		
@@ -186,13 +199,48 @@ class CacheManager
 			}
 		}
 		
+		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$remote = $this->di->getShared('remote');
+		
+		$arrayUrlNeedRequest = array(
+			array(
+				'url' => $wpExtend->get_home_url()
+				,'config' => array(
+					'method' => 'PURGE',
+					'headers' => array( 
+						'host' => PepVN_Data::$defaultParams['fullDomainName'], 
+						'X-Purge-Method' => 'default'
+					),
+					'timeout'     => 1,
+					'redirection'     => 1,
+				)
+			)
+			
+			, array(
+				'url' => ($wpExtend->is_ssl() ? 'https://' : 'http://').'127.0.0.1/'
+				,'config' => array(
+					'method' => 'PURGE',
+					'headers' => array( 
+						'host' => PepVN_Data::$defaultParams['fullDomainName'], 
+						'X-Purge-Method' => 'default'
+					),
+					'timeout'     => 1,
+					'redirection'     => 1,
+				)
+			)
+		);
+		
+		foreach($arrayUrlNeedRequest as $value1) {
+			$remote->request($value1['url'], $value1['config']);
+		}
+		
 		$hook = $this->di->getShared('hook');
 		
 		if($hook->has_action('clean_cache')) {
 			$hook->do_action('clean_cache');
 		}
 		
-		$wpExtend = $this->di->getShared('wpExtend');
 		
 		if($wpExtend->is_admin()) {
 			

@@ -2,6 +2,7 @@
 namespace WpPepVN;
 
 use WpPepVN\Text
+	, WpPepVN\Hash
 ;
 
 class Utils 
@@ -24,7 +25,78 @@ class Utils
 			if(function_exists('igbinary_serialize')) {
 				self::$defaultParams['_has_igbinary'] = true;
 			}
+			
+			/*
+			self::$defaultParams['_hash_algo_long_data_fastest'] = self::getAvailableFastestHashAlgoLongText();//long text
+			
+			self::$defaultParams['_enum_hash_algo_fastest_8c'] = array(	//return shortest data
+				'adler32' => true
+				,'fnv132' => true
+				,'crc32b' => true
+				,'crc32' => true
+			);
+			*/
+			
 		}
+	}
+	
+	public static function getAvailableFastestHashAlgoLongText()
+	{
+		$k = 'gavfhalt';
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			$tmp = 'md5';
+			
+			if(Hash::has_algos('md4')) {
+				$tmp = 'md4';
+			}
+			
+			/*
+			if(version_compare(PHP_VERSION, '5.4.0', '>=')) {
+				if(Hash::has_algos('adler32')) {
+					$tmp = 'adler32';
+				} else if(Hash::has_algos('fnv132')) {
+					$tmp = 'fnv132';
+				} else if(Hash::has_algos('fnv164')) {
+					$tmp = 'fnv164';
+				} else if(Hash::has_algos('md4')) {
+					$tmp = 'md4';
+				}
+			} else {
+				if(Hash::has_algos('md4')) {
+					$tmp = 'md4';
+				}
+			}
+			*/
+			
+			self::$_tempData[$k] = $tmp;
+		}
+		
+		return self::$_tempData[$k];
+		
+	}
+	
+	public static function getAvailableFastestHashAlgoHasShortest()
+	{
+		$k = 'gavfhahs';
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			$tmp = 'crc32';
+			
+			if(Hash::has_algos('adler32')) {
+				$tmp = 'adler32';
+			} else if(Hash::has_algos('fnv132')) {
+				$tmp = 'fnv132';
+			} else if(Hash::has_algos('crc32b')) {
+				$tmp = 'crc32b';
+			}
+			self::$_tempData[$k] = $tmp;
+		}
+		
+		return self::$_tempData[$k];
+		
 	}
 	
 	public static function hasIgbinary()
@@ -84,7 +156,27 @@ class Utils
 	*/
 	public static function hashKey($input_data)
 	{
-		return hash('crc32b', md5(self::serialize($input_data)));
+		return hash('crc32b', md5(self::serialize($input_data)), false);
+		
+		$algo = self::$defaultParams['_hash_algo_long_data_fastest'];
+		
+		if(isset(self::$defaultParams['_enum_hash_algo_fastest_8c'][$algo])) {
+			return hash(
+				$algo
+				, self::serialize($input_data)
+				, false
+			);
+		} else {
+			return hash(
+				'crc32b'
+				, hash(
+					$algo
+					, self::serialize($input_data)
+					, false
+				)
+				, false
+			);
+		}
 	}
 	
 	public static function randomHash()
@@ -128,6 +220,7 @@ class Utils
 	
 	public static function gzVar($input_data, $gzip_level = 2)	//gzip_level >= 0 && gzip_level <= 9
 	{
+		$isBool = is_bool($input_data);
 		
 		$input_data = array(
 			'c' => false //compress status
@@ -135,7 +228,7 @@ class Utils
 		);
 		
 		if($gzip_level > 0) {
-			if(isset($input_data['d'][256])) {	// if length > 256 bytes then compress
+			if(!$isBool) {
 				$input_data['c'] = true;
 				$input_data['d'] = gzcompress($input_data['d'], $gzip_level);
 			}

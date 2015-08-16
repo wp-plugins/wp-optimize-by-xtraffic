@@ -98,7 +98,7 @@ interface DependencyInjectionInterface extends \ArrayAccess
 	/**
 	 * Check if a service is registered using the array syntax
 	 */
-	public function offsetExists($name);
+	//public function offsetExists($name);
     
 	/**
 	 * Allows to register a shared service using the array syntax
@@ -111,7 +111,7 @@ interface DependencyInjectionInterface extends \ArrayAccess
 	 * @param mixed definition
 	 * @return boolean
 	 */
-	public function offsetSet($name, $definition);
+	//public function offsetSet($name, $definition);
     
 	/**
 	 * Allows to obtain a shared service using the array syntax
@@ -123,12 +123,12 @@ interface DependencyInjectionInterface extends \ArrayAccess
 	 * @param string name
 	 * @return mixed
 	 */
-	public function offsetGet($name);
+	//public function offsetGet($name);
     
 	/**
 	 * Removes a service from the services container using the array syntax
 	 */
-	public function offsetUnset($name);
+	//public function offsetUnset($name);
 
 	/**
 	 * Set a default dependency injection container to be obtained into static methods

@@ -1,16 +1,23 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 5.1.1
+Version: 5.1.2
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
-Description: WP Optimize By xTraffic provides automatically optimize your WordPress site
+Description: WP Optimize By xTraffic provides automatically optimize your WordPress site.
 */
 
 // If this file is called directly, abort.
 if (!defined( 'WPINC' )) {
 	die('This file is called directly. You should not try this because it has been blocked!');
+}
+
+if (
+	(defined('WP_INSTALLING') && WP_INSTALLING)
+	|| (defined('WP_SETUP_CONFIG') && WP_SETUP_CONFIG)
+) {
+    return;
 }
 
 //Check if plugin is loaded
@@ -23,7 +30,7 @@ if ( !defined( 'WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS' ) ) {
 	define('WP_PEPVN_NS_SHORT', 'wppepvn');	// IMPORTANT : Never change this because it use for many key database. Only this plugin define this constant.
     define('WP_PEPVN_NAMESPACE', 'WpPepVN');
 	
-    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.1' );
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.2' );
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME', 'WP Optimize By xTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAMESPACE', 'WPOptimizeByxTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG', 'wp-optimize-by-xtraffic');
