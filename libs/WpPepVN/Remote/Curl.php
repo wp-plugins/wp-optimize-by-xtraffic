@@ -57,8 +57,8 @@ class Curl
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $connect_timeout);
 			curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 			curl_setopt($ch, CURLOPT_COOKIESESSION, true);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-			curl_setopt($ch, CURLOPT_MAXREDIRS, 9); 
+			//curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			//curl_setopt($ch, CURLOPT_MAXREDIRS, 9); 
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 			curl_setopt($ch, CURLOPT_ENCODING, '');

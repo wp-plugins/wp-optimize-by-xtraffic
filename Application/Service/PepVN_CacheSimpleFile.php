@@ -190,8 +190,10 @@ class PepVN_CacheSimpleFile
 			$filepath = $this->_get_filepath($keyCache);
 			
 			if($filepath) {
-				file_put_contents($filepath, $this->_serialize($data));
-				return true;
+				if(is_dir($this->_options['cache_dir'])) {
+					file_put_contents($filepath, $this->_serialize($data));
+					return true;
+				}
 			}
 		}
 		

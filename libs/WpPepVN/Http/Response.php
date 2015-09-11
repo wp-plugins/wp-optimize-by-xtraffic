@@ -20,8 +20,8 @@ use WpPepVN\DependencyInjectionInterface
  *
  *<code>
  *	$response = new \WpPepVN\Http\Response();
- *	$response->setStatusCode(200, "OK");
- *	$response->setContent("<html><body>Hello</body></html>");
+ *	$response->setStatusCode(200, 'OK');
+ *	$response->setContent('<html><body>Hello</body></html>');
  *	$response->send();
  *</code>
  */
@@ -76,7 +76,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		if(!is_object($this->_dependencyInjector)) {
 			$this->_dependencyInjector = \WpPepVN\DependencyInjection::getDefault();
 			if(!is_object($this->_dependencyInjector)) {
-				throw new Exception("A dependency injection object is required to access the 'url' service");
+				throw new Exception('A dependency injection object is required to access the \'url\' service');
 			}
 			
 		}
@@ -87,7 +87,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 * Sets the HTTP response code
 	 *
 	 *<code>
-	 *	$response->setStatusCode(404, "Not Found");
+	 *	$response->setStatusCode(404, 'Not Found');
 	 *</code>
 	 */
 	public function setStatusCode($code, $message = null)
@@ -103,7 +103,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		 */
 		if(is_array($currentHeadersRaw)) {
 			foreach($currentHeadersRaw as $key => $value) {
-				if(is_string($key) && strstr($key, "HTTP/")) {
+				if(is_string($key) && strstr($key, 'HTTP/')) {
 					$headers->remove($key);
 				}
 			}
@@ -115,84 +115,84 @@ class Response implements ResponseInterface, InjectionAwareInterface
 			if(!is_array($this->_statusCodes)) {
 				$this->_statusCodes = array(
 					// INFORMATIONAL CODES
-					100 => "Continue",
-					101 => "Switching Protocols",
-					102 => "Processing",
+					100 => 'Continue',
+					101 => 'Switching Protocols',
+					102 => 'Processing',
 					// SUCCESS CODES
-					200 => "OK",
-					201 => "Created",
-					202 => "Accepted",
-					203 => "Non-Authoritative Information",
-					204 => "No Content",
-					205 => "Reset Content",
-					206 => "Partial Content",
-					207 => "Multi-status",
-					208 => "Already Reported",
+					200 => 'OK',
+					201 => 'Created',
+					202 => 'Accepted',
+					203 => 'Non-Authoritative Information',
+					204 => 'No Content',
+					205 => 'Reset Content',
+					206 => 'Partial Content',
+					207 => 'Multi-status',
+					208 => 'Already Reported',
 					// REDIRECTION CODES
-					300 => "Multiple Choices",
-					301 => "Moved Permanently",
-					302 => "Found",
-					303 => "See Other",
-					304 => "Not Modified",
-					305 => "Use Proxy",
-					306 => "Switch Proxy", // Deprecated
-					307 => "Temporary Redirect",
+					300 => 'Multiple Choices',
+					301 => 'Moved Permanently',
+					302 => 'Found',
+					303 => 'See Other',
+					304 => 'Not Modified',
+					305 => 'Use Proxy',
+					306 => 'Switch Proxy', // Deprecated
+					307 => 'Temporary Redirect',
 					// CLIENT ERROR
-					400 => "Bad Request",
-					401 => "Unauthorized",
-					402 => "Payment Required",
-					403 => "Forbidden",
-					404 => "Not Found",
-					405 => "Method Not Allowed",
-					406 => "Not Acceptable",
-					407 => "Proxy Authentication Required",
-					408 => "Request Time-out",
-					409 => "Conflict",
-					410 => "Gone",
-					411 => "Length Required",
-					412 => "Precondition Failed",
-					413 => "Request Entity Too Large",
-					414 => "Request-URI Too Large",
-					415 => "Unsupported Media Type",
-					416 => "Requested range not satisfiable",
-					417 => "Expectation Failed",
-					418 => "I'm a teapot",
-					422 => "Unprocessable Entity",
-					423 => "Locked",
-					424 => "Failed Dependency",
-					425 => "Unordered Collection",
-					426 => "Upgrade Required",
-					428 => "Precondition Required",
-					429 => "Too Many Requests",
-					431 => "Request Header Fields Too Large",
+					400 => 'Bad Request',
+					401 => 'Unauthorized',
+					402 => 'Payment Required',
+					403 => 'Forbidden',
+					404 => 'Not Found',
+					405 => 'Method Not Allowed',
+					406 => 'Not Acceptable',
+					407 => 'Proxy Authentication Required',
+					408 => 'Request Time-out',
+					409 => 'Conflict',
+					410 => 'Gone',
+					411 => 'Length Required',
+					412 => 'Precondition Failed',
+					413 => 'Request Entity Too Large',
+					414 => 'Request-URI Too Large',
+					415 => 'Unsupported Media Type',
+					416 => 'Requested range not satisfiable',
+					417 => 'Expectation Failed',
+					418 => 'I\'m a teapot',
+					422 => 'Unprocessable Entity',
+					423 => 'Locked',
+					424 => 'Failed Dependency',
+					425 => 'Unordered Collection',
+					426 => 'Upgrade Required',
+					428 => 'Precondition Required',
+					429 => 'Too Many Requests',
+					431 => 'Request Header Fields Too Large',
 					// SERVER ERROR
-					500 => "Internal Server Error",
-					501 => "Not Implemented",
-					502 => "Bad Gateway",
-					503 => "Service Unavailable",
-					504 => "Gateway Time-out",
-					505 => "HTTP Version not supported",
-					506 => "Variant Also Negotiates",
-					507 => "Insufficient Storage",
-					508 => "Loop Detected",
-					511 => "Network Authentication Required"
+					500 => 'Internal Server Error',
+					501 => 'Not Implemented',
+					502 => 'Bad Gateway',
+					503 => 'Service Unavailable',
+					504 => 'Gateway Time-out',
+					505 => 'HTTP Version not supported',
+					506 => 'Variant Also Negotiates',
+					507 => 'Insufficient Storage',
+					508 => 'Loop Detected',
+					511 => 'Network Authentication Required'
 				);
 			}
 
 			if (!isset ($this->_statusCodes[$code])) {
-				throw new Exception("Non-standard statuscode given without a message");
+				throw new Exception('Non-standard statuscode given without a message');
 			}
 
 			$defaultMessage = $this->_statusCodes[$code];
 			$message = $defaultMessage;
 		}
 
-		$headers->setRaw("HTTP/1.1 " . $code . " " . $message);
+		$headers->setRaw('HTTP/1.1 ' . $code . ' ' . $message);
 
 		/**
 		 * We also define a 'Status' header with the HTTP status
 		 */
-		$headers->set("Status", $code . " " . $message);
+		$headers->set('Status', $code . ' ' . $message);
 
 		return $this;
 	}
@@ -206,7 +206,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 */
 	public function getStatusCode() 
 	{
-		return $this->getHeaders()->get("Status");
+		return $this->getHeaders()->get('Status');
 	}
 
 	/**
@@ -230,7 +230,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 			$this->_headers = new Headers();
 		}
 		
-		return $headers;
+		return $this->_headers;
 	}
 
 	/**
@@ -256,7 +256,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 * Overwrites a header in the response
 	 *
 	 *<code>
-	 *	$response->setHeader("Content-Type", "text/plain");
+	 *	$response->setHeader('Content-Type', 'text/plain');
 	 *</code>
 	 *
 	 * @param string name
@@ -274,7 +274,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 * Send a raw header to the response
 	 *
 	 *<code>
-	 *	$response->setRawHeader("HTTP/1.1 404 Not Found");
+	 *	$response->setRawHeader('HTTP/1.1 404 Not Found');
 	 *</code>
 	 */
 	public function setRawHeader($header)
@@ -310,12 +310,12 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		 * All the expiration times are sent in UTC
 		 * Change the timezone to utc
 		 */
-		$date->setTimezone(new \DateTimeZone("UTC"));
+		$date->setTimezone(new \DateTimeZone('UTC'));
 
 		/**
 		 * The 'Expires' header set $this info
 		 */
-		$this->setHeader("Expires", $date->format("D, d M Y H:i:s") . " GMT");
+		$this->setHeader('Expires', $date->format('D, d M Y H:i:s') . ' GMT');
 		return $this;
 	}
 
@@ -324,7 +324,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 */
 	public function setNotModified()
 	{
-		$this->setStatusCode(304, "Not modified");
+		$this->setStatusCode(304, 'Not modified');
 		return $this;
 	}
 
@@ -344,9 +344,9 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	{
 		$headers = $this->getHeaders();
 		if ($charset === null) {
-			$headers->set("Content-Type", $contentType);
+			$headers->set('Content-Type', $contentType);
 		} else {
-			$headers->set("Content-Type", $contentType . "; charset=" . $charset);
+			$headers->set('Content-Type', $contentType . '; charset=' . $charset);
 		}
 		return $this;
 	}
@@ -361,7 +361,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	public function setEtag($etag)
 	{
 		$headers = $this->getHeaders();
-		$headers->set("Etag", $etag);
+		$headers->set('Etag', $etag);
 		return $this;
 	}
 
@@ -370,15 +370,15 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 *
 	 *<code>
 	 *  //Using a string redirect (internal/external)
-	 *	$response->redirect("posts/index");
-	 *	$response->redirect("http://en.wikipedia.org", true);
-	 *	$response->redirect("http://www.example.com/new-location", true, 301);
+	 *	$response->redirect('posts/index');
+	 *	$response->redirect('http://en.wikipedia.org', true);
+	 *	$response->redirect('http://www.example.com/new-location', true, 301);
 	 *
 	 *	//Making a redirection based on a named route
 	 *	$response->redirect(array(
-	 *		"for" => "index-lang",
-	 *		"lang" => "jp",
-	 *		"controller" => "index"
+	 *		'for' => 'index-lang',
+	 *		'lang' => 'jp',
+	 *		'controller' => 'index'
 	 *	));
 	 *</code>
 	 *
@@ -392,15 +392,15 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		
 
 		if (!$location) {
-			$location = "";
+			$location = '';
 		}
 
 		if ($externalRedirect) {
 			$header = $location;
 		} else {
 			
-			if(is_string($location) && strstr($location, "://")) {
-				$matched = preg_match("/^[^:\\/?#]++:/", $location);
+			if(is_string($location) && strstr($location, '://')) {
+				$matched = preg_match('/^[^:\\/?#]++:/', $location);
 				if ($matched) {
 					$header = $location;
 				} else {
@@ -414,12 +414,12 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		$dependencyInjector = $this->getDI();
 
 		if (!$header) {
-			$url = $dependencyInjector->getShared("url");
+			$url = $dependencyInjector->getShared('url');
 			$header = $url->get($location);
 		}
 
-		if ($dependencyInjector->has("view")) {
-			$view = $dependencyInjector->getShared("view");
+		if ($dependencyInjector->has('view')) {
+			$view = $dependencyInjector->getShared('view');
 			if ($view instanceof ViewInterface) {
 				$view->disable();
 			}
@@ -440,7 +440,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		/**
 		 * Change the current location using 'Location'
 		 */
-		$this->setHeader("Location", $header);
+		$this->setHeader('Location', $header);
 
 		return $this;
 	}
@@ -449,7 +449,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 * Sets HTTP response body
 	 *
 	 *<code>
-	 *	response->setContent("<h1>Hello!</h1>");
+	 *	response->setContent('<h1>Hello!</h1>');
 	 *</code>
 	 */
 	public function setContent($content) 
@@ -462,7 +462,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	 * Sets HTTP response body. The parameter is automatically converted to JSON
 	 *
 	 *<code>
-	 *	$response->setJsonContent(array("status" => "OK"));
+	 *	$response->setJsonContent(array('status' => 'OK'));
 	 *</code>
 	 *
 	 * @param mixed content
@@ -536,7 +536,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
 	{
 		
 		if ($this->_sent) {
-			throw new Exception("Response was already sent");
+			throw new Exception('Response was already sent');
 		}
 
 		/**
@@ -592,10 +592,10 @@ class Response implements ResponseInterface, InjectionAwareInterface
 		if ($attachment) {
 			$headers = $this->getHeaders();
 
-			$headers->setRaw("Content-Description: File Transfer");
-			$headers->setRaw("Content-Type: application/octet-stream");
-			$headers->setRaw("Content-Disposition: attachment; filename=" . $basePath);
-			$headers->setRaw("Content-Transfer-Encoding: binary");
+			$headers->setRaw('Content-Description: File Transfer');
+			$headers->setRaw('Content-Type: application/octet-stream');
+			$headers->setRaw('Content-Disposition: attachment; filename=' . $basePath);
+			$headers->setRaw('Content-Transfer-Encoding: binary');
 		}
 
 		$this->_file = $filePath;

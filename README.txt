@@ -4,7 +4,7 @@ Donate link: http://blog-xtraffic.pep.vn/
 Tags: optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
 Requires at least: 3.0.1
 Tested up to: 4.2.4
-Stable tag: 5.1.2
+Stable tag: 5.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,9 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 5.1.3 =
+* Fix some issue.
 
 = 5.1.2 =
 * Fix some issue.

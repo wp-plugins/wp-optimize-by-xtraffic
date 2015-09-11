@@ -4,7 +4,9 @@ namespace WPOptimizeByxTraffic\Application\Service;
 use WpPepVN\TempData
 	, WpPepVN\Text
 	, WpPepVN\Utils
+	, WpPepVN\Hash
 	, WpPepVN\System
+	, WpPepVN\Hook
 	, WPOptimizeByxTraffic\Application\Service\TempDataAndCacheFile
 	, WPOptimizeByxTraffic\Application\Service\PepVN_Data
 ;
@@ -26,6 +28,12 @@ class WpExtend extends TempData
     {
         
     }
+	
+    public static function cleanCache() 
+    {
+		self::$_wpextend_tempData = array();
+		self::$_tempData = array();
+	}
 	
 	private function _function_exists($name)
 	{
@@ -71,6 +79,16 @@ class WpExtend extends TempData
 			return true;
 		} else {
 			return false;
+		}
+	}
+	
+	
+	public function json_encode($data)
+	{
+		if(System::function_exists('wp_json_encode')) {
+			return wp_json_encode($data);
+		} else {
+			return json_encode($data);
 		}
 	}
 	
@@ -154,6 +172,85 @@ class WpExtend extends TempData
 		return false;
 	}
 	
+	
+	public function fetchAttachmentsId($text)
+	{
+		$resultData = array();
+		
+		//<figure id="attachment_26"
+		preg_match_all('#<figure[\s \t]+[^>]*id=(\'|\")attachment_([0-9]+)\1#is',$text,$matched1);
+		
+		if(isset($matched1[2][0]) && $matched1[2][0]) {
+			$matched1 = $matched1[2];
+			foreach($matched1 as $key1 => $value1) {
+				unset($matched1[$key1]);
+				$value1 = (int)$value1;
+				if($value1>0) {
+					$resultData[] = $value1;
+				}
+			}
+		}
+		
+		//[caption id="attachment_26"
+		preg_match_all('#[caption[\s \t]+[^\]]*id=(\'|\")attachment_([0-9]+)\1#is',$text,$matched1);
+		
+		if(isset($matched1[2][0]) && $matched1[2][0]) {
+			$matched1 = $matched1[2];
+			foreach($matched1 as $key1 => $value1) {
+				unset($matched1[$key1]);
+				$value1 = (int)$value1;
+				if($value1>0) {
+					$resultData[] = $value1;
+				}
+			}
+		}
+		
+		$resultData = array_unique($resultData);
+		
+		return $resultData;
+	}
+	
+	
+	public function parseAttachmentData($attachment)
+	{
+		
+		if(is_object($attachment)) {
+			$attachment = (array)$attachment;
+		}
+		
+		$attachment['ID'] = (int)$attachment['ID'];
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $attachment['ID']
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$tmp = get_post($attachment['ID'], ARRAY_A);
+		
+		if($tmp) {
+			$attachment = array_merge($attachment, $tmp);
+		}
+		unset($tmp);
+		
+		$attachment['attachment_url'] = $this->wp_get_attachment_url($attachment['ID']);
+		
+		$attachment['attachment_link'] = $this->get_attachment_link($attachment['ID']);
+		
+		$attachment['metadata'] = wp_get_attachment_metadata($attachment['ID'], true);
+		
+		$attachment['modified_time'] = get_post_modified_time('U',true,$attachment['ID'],false);
+		
+		PepVN_Data::$cacheObject->set_cache($keyCache1, $attachment);
+		
+		return $attachment;
+	}
+	
 	public function parsePostData($post)
 	{
 		if(is_object($post)) {
@@ -163,8 +260,7 @@ class WpExtend extends TempData
 		$post['ID'] = (int)$post['ID'];
 		
 		$keyCache1 = Utils::hashKey(array(
-			__CLASS__
-			,__METHOD__
+			__CLASS__ . __METHOD__
 			, $post['ID']
 		));
 		
@@ -174,20 +270,17 @@ class WpExtend extends TempData
 			return $tmp;
 		}
 		
+		//$post['post_content'] = $this->do_shortcode($post['post_content']);//should not use this
+		
 		if(!isset($post['post_excerpt']) || !$post['post_excerpt']) {
 			$post['post_excerpt'] = $post['post_content'];
 		}
 		
+		$post['post_excerpt'] = strip_shortcodes($post['post_excerpt']);
+		
 		$post['post_excerpt'] = Text::removeShortcode($post['post_excerpt'], ' ');
 		
-		$post['post_excerpt'] = strip_tags($post['post_excerpt']);
-		$post['post_excerpt'] = Text::removeLine($post['post_excerpt'], ' ');
-		$post['post_excerpt'] = Text::reduceLine($post['post_excerpt'], ' ');
-		$post['post_excerpt'] = explode(' ',$post['post_excerpt'], 250);
-		if(isset($post['post_excerpt'][251])) {
-			$post['post_excerpt'][251] = '...';
-		}
-		$post['post_excerpt'] = implode(' ',$post['post_excerpt']);
+		$post['post_excerpt'] = Text::reduceWords($post['post_excerpt'],360,'...');
 		
 		$post['postPermalink'] = $this->get_permalink($post['ID']);
 		
@@ -196,7 +289,8 @@ class WpExtend extends TempData
 		preg_match_all('#<img[^>]+src=(\'|\")([^\'\"]+)\1[^>]+\/?>#is',$post['post_content'],$matched1);
 		if(isset($matched1[2]) && $matched1[2]) {
 			foreach($matched1[2] as $key1 => $value1) {
-				$post['postImages'][] = array(
+				$tmp = Hash::crc32b($value1);
+				$post['postImages'][$tmp] = array(
 					'src' => $value1
 				);
 			}
@@ -211,15 +305,14 @@ class WpExtend extends TempData
 			$post_thumbnail_url = $this->wp_get_attachment_url($post_thumbnail_id);
 			if($post_thumbnail_url) {
 				$post['postThumbnailUrl'] = $post_thumbnail_url;
-				
-				$post['postImages'][] = array(
+				$tmp = Hash::crc32b($post_thumbnail_url);
+				$post['postImages'][$tmp] = array(
 					'src' => $post_thumbnail_url
 				);
 			}
 		}
 		$post['postThumbnailId'] = (int)$post['postThumbnailId'];
 		$post['postThumbnailUrl'] = trim($post['postThumbnailUrl']);
-		
 		
 		$post['postAttachments'] = array();
 		
@@ -232,30 +325,76 @@ class WpExtend extends TempData
 		if ( $attachments ) {
 			foreach ( $attachments as $key1 => $attachment ) {
 				unset($attachments[$key1]);
+				$attachment = $this->parseAttachmentData($attachment);
 				
-				$tmp = array(
-					'ID' => $attachment->ID
-					,'post_mime_type' => $attachment->post_mime_type
-					,'post_title' => $attachment->post_title
-				);
+				$post['postAttachments'][$attachment['ID']] = $attachment;
 				
-				$tmp['attachment_url'] = $this->wp_get_attachment_url($attachment->ID);
-				
-				$tmp['metadata'] = wp_get_attachment_metadata($attachment->ID, true);
-				
-				$post['postAttachments'][$attachment->ID] = $tmp;
-				
-				unset($attachment,$tmp);
+				unset($attachment);
 			}
 			
 		}
 		
+		$rsOne = $this->fetchAttachmentsId($post['post_content']);
+		
+		if(!empty($rsOne)) {
+			
+			foreach($rsOne as $key1 => $value1) {
+				unset($rsOne[$key1]);
+				if(!isset($post['postAttachments'][$value1])) {
+					$tmp = $this->parseAttachmentData(array(
+						'ID' => $value1
+					));
+					
+					if($tmp) {
+						$post['postAttachments'][$value1] = $tmp;
+					}
+					
+					unset($tmp);
+				}
+				
+			}
+			
+		}
+		unset($rsOne);
+		
+		foreach($post['postAttachments'] as $key1 => $value1) {
+			$tmp = Hash::crc32b($value1['attachment_url']);
+			
+			$post['postImages'][$tmp] = array(
+				'src' => $value1['attachment_url']
+			);
+			unset($key1,$value1);
+		}
+		
+		$post['postType'] = '';
+		$tmp = $this->get_post_type($post['ID']);
+		if($tmp) {
+			$post['postType'] = $tmp;
+		}
+		
+		$post['postFormat'] = '';
+		$tmp = $this->get_post_format($post['ID']);
+		if ($tmp) {
+			$post['postFormat'] = $tmp;
+		}
+		
+		$post['postTerms'] = $this->getTermsByPostId($post['ID']);
+		if(!$post['postTerms'] || !is_array($post['postTerms'])) {
+			$post['postTerms'] = array();
+		}
+		
 		$post['postContentRawText'] = $post['post_content'];
 		$post['postContentRawText'] = strip_tags($post['postContentRawText']);
+		$post['postContentRawText'] = strip_shortcodes($post['postContentRawText']);
+		$post['postContentRawText'] = Text::removeShortcode($post['postContentRawText']);
 		$post['postContentRawText'] = Text::reduceLine($post['postContentRawText']);
 		$post['postContentRawText'] = Text::reduceSpace($post['postContentRawText']);
-		
 		//unset($post['post_content']);
+		
+		if(Hook::has_filter('parse_post_data')) {
+			$post = Hook::apply_filters('parse_post_data',$post);
+		}
+		
 		PepVN_Data::$cacheObject->set_cache($keyCache1, $post);
 		
 		return $post;
@@ -292,8 +431,7 @@ class WpExtend extends TempData
 		$post_id = (int)$post_id;
 		
 		$keyCache1 = Utils::hashKey(array(
-			__CLASS__
-			,__METHOD__
+			__CLASS__ . __METHOD__
 			,$post_id 
 		));
 		
@@ -329,11 +467,18 @@ class WpExtend extends TempData
 											$linkTerm = $this->get_category_link($valueTwo->term_id);
 										}
 										
+										if($linkTerm) {
+											$linkTerm = esc_url($linkTerm);
+										}
+										
 										$rsTermData = array(
 											'name' => $valueTwo->name
 											,'term_id' => $valueTwo->term_id
 											,'link' => $linkTerm
+											,'linkTerm' => $linkTerm
 											,'slug' => ''
+											,'description' => $valueTwo->description
+											,'taxonomy' => $valueTwo->taxonomy
 											,'termType' => $keyOne
 										);
 										
@@ -371,20 +516,31 @@ class WpExtend extends TempData
 					if($valueOne) {
 						if(isset($valueOne->name) && $valueOne->name) {
 							if(!in_array($valueOne->name, $arrayTaxonomiesNameExclude)) {
-								$rsGetTheTerms = $this->get_the_terms($post_id,$valueOne->name);
+								
+								$rsGetTheTerms = $this->get_the_terms($post_id, $valueOne->name);
+								
 								if($rsGetTheTerms) {
+									
 									if(is_array($rsGetTheTerms) && (!empty($rsGetTheTerms))) {
+										
 										foreach($rsGetTheTerms as $keyTwo => $valueTwo) {
 											unset($rsGetTheTerms[$keyTwo]);
+											
 											if($valueTwo) {
+												
 												if(isset($valueTwo->name) && $valueTwo->name) {
+													
+													$linkTerm = $this->get_term_link( $valueTwo->term_id, $valueTwo->taxonomy);
 													
 													$rsTermData = array(
 														'name' => $valueTwo->name
 														,'term_id' => $valueTwo->term_id
-														,'link' => ''
+														,'link' => $linkTerm
+														,'linkTerm' => $linkTerm
 														,'slug' => ''
-														,'termType' => $valueOne->name
+														,'description' => $valueTwo->description
+														,'taxonomy' => $valueTwo->taxonomy
+														,'termType' => $valueTwo->taxonomy
 													);
 													
 													if(isset($valueTwo->slug)) {
@@ -496,6 +652,242 @@ class WpExtend extends TempData
 		return $resultData;
 	}
 	
+	public function parseTaxonomy($taxonomy)
+	{
+		if(is_object($taxonomy)) {
+			$taxonomy = (array)$taxonomy;
+		}
+		
+		$taxonomy['term_taxonomy_id'] = (int)$taxonomy['term_taxonomy_id'];
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $taxonomy['term_taxonomy_id']
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		if($taxonomy && isset($taxonomy['term_id'])) {
+			
+			$termData = get_term( $taxonomy['term_id'], $taxonomy['taxonomy'], ARRAY_A );
+			
+			if($termData && isset($termData['term_id'])) {
+				$termData['termLink'] = '';
+				
+				$term_link = get_term_link( $termData['term_id'], $taxonomy['taxonomy']);
+				
+				// If there was an error, continue to the next term.
+				if ( !is_wp_error( $term_link ) ) {
+					$termData['termLink'] = esc_url($term_link);
+				}
+				
+				$args = array(
+					'cache_results'		=> true,
+					'post_type'			=> 'any',
+					'orderby'			=> 'modified',
+					'order'				=> 'DESC',
+					'post_status'		=> 'publish',
+					'has_password'		=> false,
+					'posts_per_page'	=> 1,
+					'offset'			=> 0,
+					'tax_query' => array(
+						array(
+							'taxonomy' => $taxonomy['taxonomy'],
+							'field'    => 'term_id',
+							'terms'    => array( $taxonomy['term_id'] ),
+						),
+					),
+				);
+				
+				$termData['latestPost'] = false;
+				
+				$posts = get_posts( $args );
+				unset($args);
+				
+				if($posts) {
+					if(is_array($posts) && !empty($posts)) {
+						$termData['latestPost'] = (array)$posts[0];
+					}
+				}
+				unset($posts);
+				
+				$taxonomy = array_merge($taxonomy,$termData);
+				unset($termData);
+				
+			}
+		}
+		
+		PepVN_Data::$cacheObject->set_cache($keyCache1, $taxonomy);
+		
+		return $taxonomy;
+		
+	}
+	
+	public function getAndParseTermByTermTaxonomyId($term_taxonomy_id)
+	{
+		global $wpdb;
+		
+		$term_taxonomy_id = (int)$term_taxonomy_id;
+		
+		$tableTermTaxonomyName = $wpdb->term_taxonomy;
+		
+		$taxonomy = $wpdb->get_row(
+            $wpdb->prepare(
+                'SELECT * FROM `'.$tableTermTaxonomyName.'` WHERE `'.$tableTermTaxonomyName.'`.`term_taxonomy_id` = %d LIMIT 1',
+                $term_taxonomy_id
+            )
+        );
+		
+		if($taxonomy && isset($taxonomy->term_taxonomy_id)) {
+			$taxonomy = $this->parseTaxonomy($taxonomy);
+			return $taxonomy;
+		}
+		
+		return false;
+	}
+	
+	public function parseUserData($userData)
+	{
+		if(is_object($userData)) {
+			$userData = (array)$userData;
+		}
+		
+		$userData['ID'] = (int)$userData['ID'];
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $userData['ID']
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		if(is_object($userData['data'])) {
+			$userData['data'] = (array)$userData['data'];
+		}
+		
+		$userData['userMeta'] = get_user_meta($userData['ID']);
+		
+		$args = array(
+			'cache_results'		=> true,
+			'post_type'			=> 'any',
+			'orderby'			=> 'modified',
+			'order'				=> 'DESC',
+			'post_status'		=> 'publish',
+			'has_password'		=> false,
+			'posts_per_page'	=> 1,
+			'offset'			=> 0,
+			'author'			=> $userData['ID'],
+		);
+		
+		$userData['latestPost'] = false;
+
+		$posts = get_posts( $args );
+		unset($args);
+
+		if($posts) {
+			if(is_array($posts) && !empty($posts)) {
+				$userData['latestPost'] = (array)$posts[0];
+			}
+		}
+		unset($posts);
+		
+		$userData['authorPostsUrl'] = '';
+		$tmp = $this->get_author_posts_url($userData['ID']);
+		if($tmp) {
+			$userData['authorPostsUrl'] = esc_url($tmp);
+		}
+		
+		
+		return $userData;
+	}
+	
+	public function getUserBy($field, $value)
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $field
+			, $value
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$user = get_user_by( $field, $value );
+		
+		PepVN_Data::$cacheObject->set_cache($keyCache1, $user);
+		
+		return $user;
+		
+	}
+	
+	public function getUsers($args = array())
+	{
+		$current_blog_id = $this->get_current_blog_id();
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $current_blog_id
+			, $args
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$args = array_merge(array(
+			'blog_id'      => $current_blog_id,
+			'role'         => '',
+			'meta_key'     => '',
+			'meta_value'   => '',
+			'meta_compare' => '',
+			'meta_query'   => array(),
+			'date_query'   => array(),        
+			'include'      => array(),
+			'exclude'      => array(),
+			'orderby'      => 'ID',
+			'order'        => 'ASC',
+			'offset'       => '',
+			'search'       => '',
+			'number'       => '2',//Limit the total number of users returned.
+			'count_total'  => false,
+			'fields'       => 'all',
+			'who'          => ''
+		), $args);
+		
+		$users = new \WP_User_Query( $args );
+		
+		if($users) {
+			if($args['count_total']) {
+				$users = $users->get_total();
+				$users = (int)$users;
+			} else {
+				$users = $users->get_results();
+			}
+		} else {
+			$users = false;
+		}
+		
+		
+		PepVN_Data::$cacheObject->set_cache($keyCache1, $users);
+		
+		return $users;
+		
+	}
+	
 	public function getWpOptimizeByxTrafficPluginPromotionInfo()
 	{
 		$resultData = array();
@@ -534,6 +926,138 @@ class WpExtend extends TempData
 		}
 	}
 	
+	public function getAllPostTypes($output = 'objects')
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			,$output 
+		));
+		
+		$resultData = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null === $resultData) {
+			
+			$resultData = array();
+			
+			$args = array(
+				'public'   => true,
+				'_builtin' => true
+			);
+
+			//$output = 'names'; // names or objects, note names is the default
+			$operator = 'and'; // 'and' or 'or'
+
+			$post_types = $this->get_post_types( $args, $output, $operator );
+			
+			if($post_types && is_array($post_types) && !empty($post_types)) {
+				$resultData = array_merge($resultData, $post_types);
+			}
+			unset($post_types);
+			
+			$args = array(
+				'public'   => true,
+				'_builtin' => false
+			);
+
+			//$output = 'names'; // names or objects, note names is the default
+			$operator = 'and'; // 'and' or 'or'
+
+			$post_types = $this->get_post_types( $args, $output, $operator );
+			
+			if($post_types && is_array($post_types) && !empty($post_types)) {
+				$resultData = array_merge($resultData, $post_types);
+			}
+			unset($post_types);
+			
+			PepVN_Data::$cacheObject->set_cache($keyCache1, $resultData);
+			
+		}
+		
+		return $resultData;
+	}
+	
+	public function getAllTaxonomies($output = 'objects')
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			,$output 
+		));
+		
+		$resultData = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null === $resultData) {
+			
+			$resultData = array();
+			
+			$args = array(
+				'public'   => true,
+				'_builtin' => true
+			); 
+			//$output = 'names'; // or objects
+			$operator = 'and'; // 'and' or 'or'
+			$taxonomies = get_taxonomies( $args, $output, $operator ); 
+			
+			if($taxonomies && is_array($taxonomies) && !empty($taxonomies)) {
+				$resultData = array_merge($resultData, $taxonomies);
+			}
+			unset($taxonomies);
+			
+			$args = array(
+				'public'   => true,
+				'_builtin' => false
+			); 
+			//$output = 'names'; // or objects
+			$operator = 'and'; // 'and' or 'or'
+			$taxonomies = get_taxonomies( $args, $output, $operator ); 
+			
+			if($taxonomies && is_array($taxonomies) && !empty($taxonomies)) {
+				$resultData = array_merge($resultData, $taxonomies);
+			}
+			unset($taxonomies);
+			
+			PepVN_Data::$cacheObject->set_cache($keyCache1, $resultData);
+			
+		}
+		
+		return $resultData;
+	}
+	
+	public function getAllThemeSupportPostFormats()
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			,$output 
+		));
+		
+		$resultData = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null === $resultData) {
+			
+			$resultData = array();
+			
+			if ( $this->current_theme_supports( 'post-formats' ) ) {
+				
+				$post_formats = $this->get_theme_support( 'post-formats' );
+
+				if ( isset($post_formats[0]) && is_array( $post_formats[0] ) ) {
+					$resultData = $post_formats[0];
+				}
+				
+				unset($post_formats);
+			}
+			
+			$resultData = array_unique($resultData);
+			
+			PepVN_Data::$cacheObject->set_cache($keyCache1, $resultData);
+			
+		}
+		
+		return $resultData;
+	}
+	
 	public function isRequestIsAutoSavePosts()
 	{
 		$resultData = false;
@@ -544,4 +1068,338 @@ class WpExtend extends TempData
 		
 		return $resultData;
 	}
+	
+	public function getTypeOfPage($args = null, $args2 = null)
+	{
+		
+		$k = Utils::hashKey(array(
+			'gtpocrpg'
+			,$args
+			,$args2
+		));
+		
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			
+			self::$_wpextend_tempData[$k] = null;
+			
+			if ( $this->is_singular($args) ) {//Is the query for an existing single post of any post type (post, attachment, page, ... )?
+				
+				self::$_wpextend_tempData[$k]['singular'] = 'singular';
+				
+				if ( $this->is_attachment($args) ) {
+					self::$_wpextend_tempData[$k]['attachment'] = 'attachment';
+				} else if ( $this->is_page($args) ) {//This Conditional Tag checks if Pages are being displayed. This is a boolean function, meaning it returns either TRUE or FALSE. This tag must be used BEFORE The Loop and does not work inside The Loop
+					self::$_wpextend_tempData[$k]['page'] = 'page';
+				} else if ( $this->is_single($args) ) {
+					self::$_wpextend_tempData[$k]['post'] = 'post';
+				}
+				
+			}
+			
+			if ( $this->is_date($args) ) {//if the page is a date based archive page. Similar to is_category()
+				self::$_wpextend_tempData[$k]['date'] = 'date';
+				self::$_wpextend_tempData[$k]['datebased'] = 'datebased';
+			} 
+			
+			if ( $this->is_author($args) ) {
+				self::$_wpextend_tempData[$k]['author'] = 'author';
+			} 
+			
+			if ( $this->is_category($args) ) {
+				self::$_wpextend_tempData[$k]['category'] = 'category';
+			}
+			
+			if ( $this->is_tag($args) ) {
+				self::$_wpextend_tempData[$k]['tag'] = 'tag';
+			}
+			
+			if ( $this->is_feed($args) ) {
+				self::$_wpextend_tempData[$k]['feed'] = 'feed';
+			}
+
+			if ( $this->is_tax($args,$args2) ) {//This Conditional Tag checks if a custom taxonomy archive page is being displayed. This is a boolean function, meaning it returns either TRUE or FALSE. Note that is_tax() returns false on category archives and tag archives. You should use is_category() and is_tag() respectively when checking for category and tag archives.
+				self::$_wpextend_tempData[$k]['tax'] = 'tax';
+			}
+			
+			if ( $this->is_post_type_archive($args) ) {
+				self::$_wpextend_tempData[$k]['archive'] = 'archive';
+			}
+			
+			if(null === $args) {
+				
+				if ( $this->is_day() ) {//if the page is a date based archive page.
+					self::$_wpextend_tempData[$k]['day'] = 'day';
+					self::$_wpextend_tempData[$k]['datebased'] = 'datebased';
+				}
+				
+				if ( $this->is_month() ) {//if the page is a month based archive page.
+					self::$_wpextend_tempData[$k]['month'] = 'month';
+					self::$_wpextend_tempData[$k]['datebased'] = 'datebased';
+				}
+
+				if ( $this->is_year() ) {//if the page is a year based archive page.
+					self::$_wpextend_tempData[$k]['year'] = 'year';
+					self::$_wpextend_tempData[$k]['datebased'] = 'datebased';
+				}
+
+				if ( $this->is_archive() ) {//This Conditional Tag checks if any type of Archive page is being displayed. An Archive is a Category, Tag, Author or a Date based pages. This is a boolean function, meaning it returns either TRUE or FALSE.
+					self::$_wpextend_tempData[$k]['archive'] = 'archive';
+				}
+				
+				if ( $this->is_front_page() ) {//This is for what is displayed at your site's main URL.
+					self::$_wpextend_tempData[$k]['front_page'] = 'front_page';
+				}
+				
+				if ( $this->is_home() ) {//This is for what is displayed at your site's main URL.
+					self::$_wpextend_tempData[$k]['home'] = 'home';
+				}
+				
+				if ( $this->is_search() ) {//This Conditional Tag checks if search result page archive is being displayed. This is a boolean function, meaning it returns either TRUE or FALSE.
+					self::$_wpextend_tempData[$k]['search'] = 'search';
+				}
+				
+				if ( $this->is_404() ) {
+					self::$_wpextend_tempData[$k]['error_404'] = 'error_404';
+				}
+			}
+			
+			if(null === self::$_wpextend_tempData[$k]) {
+				self::$_wpextend_tempData[$k]['others'] = 'others';
+			}
+			
+			return self::$_wpextend_tempData[$k];
+		}
+	}
+	
+	
+	public function getCurrentPermalink()
+	{
+		
+		$k = Hash::crc32b('getCurrentPermalink');
+		
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			
+			global $wp_query;
+			
+			self::$_wpextend_tempData[$k] = false;
+			
+			$typeOfCurrentPage = $this->getTypeOfPage();
+			
+			$tmp = 0;
+			
+			if(
+				isset($typeOfCurrentPage['post'])
+				|| isset($typeOfCurrentPage['page'])
+			) {
+				$tmp = $wp_query->get_queried_object();
+				$tmp = $this->parsePostData($tmp);
+				self::$_wpextend_tempData[$k] = $tmp['postPermalink'];
+			} else if(
+				isset($typeOfCurrentPage['category'])
+			) {
+				$tmp = $wp_query->get_queried_object();
+				$tmp = $this->parseTaxonomy($tmp);
+				self::$_wpextend_tempData[$k] = $tmp['termLink'];
+			} else if(
+				isset($typeOfCurrentPage['tag'])
+			) {
+				$tmp = $wp_query->get_queried_object();
+				$tmp = $this->parseTaxonomy($tmp);
+				self::$_wpextend_tempData[$k] = $tmp['termLink'];
+			} else if(
+				isset($typeOfCurrentPage['author'])
+			) {
+				$tmp = $wp_query->get_queried_object();
+				$tmp = $this->parseUserData($tmp);
+				self::$_wpextend_tempData[$k] = $tmp['authorPostsUrl'];
+			}
+			
+			if(!self::$_wpextend_tempData[$k]) {
+				self::$_wpextend_tempData[$k] = PepVN_Data::$defaultParams['parseedUrlFullRequest']['url_no_parameters'];
+			}
+			
+			unset($tmp);
+			
+			return self::$_wpextend_tempData[$k];
+		}
+	}
+	
+	private function _getimagesize($filePath)
+	{
+		$k = Hash::crc32b(
+			__CLASS__ . __METHOD__ . $filePath
+		);
+		
+		$tmp = TempDataAndCacheFile::get_cache($k);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+	
+		$tmp = getimagesize($filePath);
+		
+		TempDataAndCacheFile::set_cache($k,$tmp);
+		
+		return $tmp;
+		
+	}
+	
+	public function getImageInfo($path)
+	{
+		$resultData = false;
+		
+		$imageFilePath = false;
+		
+		if(Utils::isImageUrl($path)) {
+			if(Utils::isUrlSameDomain($path,PepVN_Data::$defaultParams['fullDomainName'],true)) {
+				$imageFilePath = str_replace(WP_PEPVN_SITE_UPLOADS_URL,WP_PEPVN_SITE_UPLOADS_DIR,$path);
+			}
+		} else if(Utils::isImageFilePath($path)) {
+			$imageFilePath = $path;
+		}
+		
+		if($imageFilePath) {
+			if(is_file($imageFilePath)) {
+				if(is_readable($imageFilePath)) {
+					$resultData = $this->_getimagesize($imageFilePath);
+					$resultData['width'] = (int)$resultData[0];
+					$resultData['height'] = (int)$resultData[1];
+				}
+			}
+		}
+		
+		return $resultData;
+		
+	}
+	
+	public function get_woocommerce_urls()
+	{
+		$keyCache1 = Hash::crc32b(
+			__CLASS__ . __METHOD__
+		);
+		
+		$tmp = TempDataAndCacheFile::get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$resultData = array();
+		
+		if ( System::class_exists( '\WooCommerce' ) ) {
+		
+			if(System::function_exists('woocommerce_get_page_id')) {
+				
+				global $woocommerce;
+				
+				if(isset($woocommerce) && $woocommerce) {
+					
+					if(isset($woocommerce->cart) && $woocommerce->cart) {
+						
+						if(
+							method_exists($woocommerce->cart,'get_cart_url')
+							&& method_exists($woocommerce->cart,'get_checkout_url')
+						) {
+							
+							$resultData['cart_url'] = $woocommerce->cart->get_cart_url();
+							$resultData['checkout_url'] = $woocommerce->cart->get_checkout_url();
+							
+							$pageId1 = $this->woocommerce_get_page_id( 'shop' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['shop_page_url'] = $this->get_permalink( $pageId1 );
+								}
+							}
+							
+							
+							$pageId1 = $this->get_option( 'woocommerce_myaccount_page_id' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['myaccount_page_url'] = $this->get_permalink( $pageId1 );
+									$resultData['logout_url'] = $this->wp_logout_url( $resultData['myaccount_page_url'] );
+								}
+							}
+							
+							$pageId1 = $this->woocommerce_get_page_id( 'pay' );
+							if($pageId1) {
+								$pageId1 = (int)$pageId1;
+								if($pageId1>0) {
+									$resultData['payment_page_url'] = $this->get_permalink( $pageId1 ); 
+								}
+							}
+							
+						}
+					}
+					
+					
+				}
+				
+			}
+			
+		}
+		
+		TempDataAndCacheFile::set_cache($keyCache1,$resultData);
+		
+		return $resultData;
+		
+	}
+	
+	
+	public function currentDate($type = 'mysql', $gmt = 0)
+	{
+		
+		$k = Hash::crc32b('currentDate'.$type.$gmt);
+		
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			
+			$tmp = current_time( $type, $gmt);
+			$tmp = explode(' ',$tmp);
+			
+			self::$_wpextend_tempData[$k] = $tmp[0];
+			
+			return self::$_wpextend_tempData[$k];
+		}
+	}
+	
+	public function isLoginPage() 
+	{
+		return in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'));
+	}
+	
+	public function getPaged() 
+	{
+		$k = Hash::crc32b('getPaged');
+		
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			
+			if ( get_query_var('paged') ) { 
+				$paged = get_query_var('paged'); 
+			} elseif ( get_query_var('page') ) { 
+				$paged = get_query_var('page'); 
+			} else { 
+				$paged = 1; 
+			}
+			
+			$paged = (int)$paged;
+			
+			if($paged < 1) {
+				$paged = 1;
+			}
+			
+			self::$_wpextend_tempData[$k] = $paged;
+			
+			return self::$_wpextend_tempData[$k];
+		}
+	}
+	
 }

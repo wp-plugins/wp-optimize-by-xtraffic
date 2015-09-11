@@ -90,14 +90,20 @@ class HeaderFooter
 	public function add_action_wp_head() 
 	{
 		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$typeOfCurrentPage = $wpExtend->getTypeOfPage();
+		
 		$options = HeaderFooter::getOption();
 		
 		echo '<script language="javascript" type="text/javascript">
 var wppepvn_admin_ajax_url = "',$wpExtend->admin_url('admin-ajax.php'),'";
 var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI,'";
 </script>';
-
-		if($wpExtend->is_home()) {
+		
+		if(
+			isset($typeOfCurrentPage['front_page'])
+			|| isset($typeOfCurrentPage['home'])
+		) {
 			echo $options['code_add_head_home'];
 		}
 		
@@ -107,23 +113,32 @@ var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_
 	public function add_action_wp_footer() 
 	{
 		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$typeOfCurrentPage = $wpExtend->getTypeOfPage();
+		
 		$options = HeaderFooter::getOption();
 		
-		if($wpExtend->is_home()) {
+		if(
+			isset($typeOfCurrentPage['front_page'])
+			|| isset($typeOfCurrentPage['home'])
+		) {
 			echo $options['code_add_footer_home'];
 		}
 		
 		echo $options['code_add_footer_all'];
+		
 	}
 	
 	
 	public function add_action_admin_head() 
 	{
 		$wpExtend = $this->di->getShared('wpExtend');
+		
 		echo '<script language="javascript" type="text/javascript">
 var wppepvn_admin_ajax_url = "',$wpExtend->admin_url('admin-ajax.php'),'";
 var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI,'";
 </script>';
+		
 	}
 	
 	public function migrateOptions() 

@@ -25,7 +25,9 @@ class StaticVar
 		
 		$this->_configs['folder'] = WP_CONTENT_PEPVN_DIR . 'static-vars' . DIRECTORY_SEPARATOR;
 		
-		if(isset($configs['folder'])) {
+		if(isset($configs['cacheObject']) && $configs['cacheObject']) {
+			$this->_cacheObject = $configs['cacheObject'];
+		} else if(isset($configs['folder'])) {
 			if($configs['folder']) {
 				if(!is_dir($configs['folder'])) {
 					System::mkdir($configs['folder']);
@@ -40,14 +42,16 @@ class StaticVar
 			}
 		}
 		
-		$this->_initCacheObject();
+		if(!$this->_cacheObject) {
+			$this->_initCacheObject();
+		}
 	}
     
 	private function _initCacheObject() 
 	{
 		
 		$pepvnDirCachePathTemp = $this->_configs['folder'];
-
+		
 		if(!is_dir($pepvnDirCachePathTemp)) {
 			System::mkdir($pepvnDirCachePathTemp);
 		}
@@ -61,10 +65,10 @@ class StaticVar
 			}
 			
 			$this->_cacheObject = new PepVN_CacheSimpleFile(array(
-				'cache_timeout' => 86400				//seconds
+				'cache_timeout' => (86400 * 30)			//seconds
 				,'hash_key_method' => 'crc32b'		//best is crc32b
 				,'hash_key_salt' => hash('crc32b',md5($pepvnCacheHashKeySaltTemp))
-				,'gzcompress_level' => 2 	//should be 0 to achieve the best performance (CPU speed)
+				,'gzcompress_level' => 1 	//should be 0 to achieve the best performance (CPU speed)
 				,'key_prefix' => 'dtstvr_'
 				,'cache_dir' => $pepvnDirCachePathTemp
 			));

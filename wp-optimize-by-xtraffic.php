@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP Optimize By xTraffic
-Version: 5.1.2
+Version: 5.1.3
 Plugin URI: http://blog-xtraffic.pep.vn/wordpress-optimize-by-xtraffic/
 Author: xTraffic
 Author URI: http://blog-xtraffic.pep.vn/
@@ -10,7 +10,10 @@ Description: WP Optimize By xTraffic provides automatically optimize your WordPr
 
 // If this file is called directly, abort.
 if (!defined( 'WPINC' )) {
+	header('Status: 403 Forbidden',true,403);
+	header('HTTP/1.1 403 Forbidden',true,403);
 	die('This file is called directly. You should not try this because it has been blocked!');
+	exit();
 }
 
 if (
@@ -30,7 +33,7 @@ if ( !defined( 'WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS' ) ) {
 	define('WP_PEPVN_NS_SHORT', 'wppepvn');	// IMPORTANT : Never change this because it use for many key database. Only this plugin define this constant.
     define('WP_PEPVN_NAMESPACE', 'WpPepVN');
 	
-    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.2' );
+    define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_VERSION', '5.1.3' );
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME', 'WP Optimize By xTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAMESPACE', 'WPOptimizeByxTraffic');
     define('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG', 'wp-optimize-by-xtraffic');
@@ -92,14 +95,14 @@ if ( !defined( 'WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_INIT_STATUS' ) ) {
 		
     } else {
         /*
-		* If PHP version <= 5.3.0 then can't use this plugin
+		* If PHP version <= 5.3.2 then can't use this plugin
 		*/
 		
         if(is_admin()) {
 			
             function wpOptimizeByxTraffic_admin_error_notice() {
                 $class = 'error';
-                $message = 'You need to use <b>PHP version <u>5.3.0</u> or higher</b> to use plugin "<i><b>'.WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME.'</b></i>"';
+                $message = 'You need to use <b>PHP version <u>5.3.2</u> or higher</b> to use plugin "<i><b>'.WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME.'</b></i>"';
                 echo '<div class="',$class,'"><p><b>'.WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME.'</b> : ',$message,'</p></div>'; 
             }
 			

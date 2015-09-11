@@ -28,6 +28,6 @@ class ControllerBase extends MvcController
     {
 		
 		$cacheManager = $this->di->getShared('cacheManager');
-		$cacheManager->clean_cache();
+		$cacheManager->registerCleanCache();
 	}
 }

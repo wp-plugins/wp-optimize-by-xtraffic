@@ -27,7 +27,7 @@ class Cookies implements CookiesInterface, InjectionAwareInterface
 	/**
 	 * Sets the dependency injector
 	 */
-	public function setDI($dependencyInjector)
+	public function setDI(DependencyInjectionInterface $dependencyInjector)
 	{
 		$this->_dependencyInjector = $dependencyInjector;
 	}
@@ -70,7 +70,7 @@ class Cookies implements CookiesInterface, InjectionAwareInterface
 	 * @param boolean httpOnly
 	 * @return WpPepVN\Http\Response\Cookies
 	 */
-	public function set($name, $value = null, $expire = 0, $path = "/", $secure = null, $domain = null, $httpOnly = null)
+	public function set($name, $value = null, $expire = 0, $path = '/', $secure = null, $domain = null, $httpOnly = null)
 	{
 		$encryption = $this->_useEncryption;
 
@@ -78,7 +78,7 @@ class Cookies implements CookiesInterface, InjectionAwareInterface
 		 * Check if the cookie needs to be updated or
 		 */
 		
-		if(isset($this->_cookies[$name])) {
+		if(!isset($this->_cookies[$name])) {
 
 			$cookie = new Cookie($name, $value, $expire, $path, $secure, $domain, $httpOnly);
 
@@ -116,10 +116,10 @@ class Cookies implements CookiesInterface, InjectionAwareInterface
 
 			$dependencyInjector = $this->_dependencyInjector;
 			if(!is_object($dependencyInjector)) {
-				throw new Exception("A dependency injection object is required to access the 'response' service");
+				throw new Exception('A dependency injection object is required to access the \'response\' service');
 			}
 
-			$response = $dependencyInjector->getShared("response");
+			$response = $dependencyInjector->getShared('response');
 
 			/**
 			 * Pass the cookies bag to the response so it can send the headers at the of the request

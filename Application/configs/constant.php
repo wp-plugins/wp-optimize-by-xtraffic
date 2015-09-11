@@ -49,7 +49,7 @@ if ( ! defined( 'WP_PEPVN_SITE_SALT' ) ) {
     $tmp[] = defined('NONCE_SALT') ? NONCE_SALT : 0;
 	$tmp[] = WP_PEPVN_BLOG_ID;
     
-    $tmp = md5(json_encode($tmp));
+    $tmp = md5(serialize($tmp));
     
     define( 'WP_PEPVN_SITE_SALT', $tmp); unset($tmp);
 }
@@ -59,8 +59,12 @@ defined('WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_STORAGES_CACHE_DIR') || define('WP_OPTIM
 
 //@WP_UPLOADS_PEPVN_DIR : Store images processed by this plugin
 $tmp = wp_upload_dir();
-defined('WP_UPLOADS_PEPVN_DIR') || define('WP_UPLOADS_PEPVN_DIR', $tmp['basedir'] . DIRECTORY_SEPARATOR . 'pep-vn' . DIRECTORY_SEPARATOR);
-defined('WP_UPLOADS_PEPVN_URL') || define('WP_UPLOADS_PEPVN_URL', $tmp['baseurl'] . '/pep-vn/');
+
+defined('WP_PEPVN_SITE_UPLOADS_DIR') || define('WP_PEPVN_SITE_UPLOADS_DIR', $tmp['basedir'] . DIRECTORY_SEPARATOR);
+defined('WP_PEPVN_SITE_UPLOADS_URL') || define('WP_PEPVN_SITE_UPLOADS_URL', $tmp['baseurl'] . '/');
+
+defined('WP_UPLOADS_PEPVN_DIR') || define('WP_UPLOADS_PEPVN_DIR', WP_PEPVN_SITE_UPLOADS_DIR . 'pep-vn' . DIRECTORY_SEPARATOR);
+defined('WP_UPLOADS_PEPVN_URL') || define('WP_UPLOADS_PEPVN_URL', WP_PEPVN_SITE_UPLOADS_URL . 'pep-vn/');
 
 //@WP_UPLOADS_PEPVN_DIR : Store cache request uri, static files.
 defined('WP_CONTENT_PEPVN_DIR') || define('WP_CONTENT_PEPVN_DIR', WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'pep-vn' . DIRECTORY_SEPARATOR);

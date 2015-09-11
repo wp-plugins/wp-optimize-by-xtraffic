@@ -498,12 +498,10 @@ class Request implements RequestInterface, InjectionAwareInterface
 	{
 		$resultData = 'GET';
 		
-		if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD']) {
+		if(isset($_POST) && $_POST && !empty($_POST)) {
+			$resultData = 'POST';
+		} else if(isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD']) {
 			$resultData = $_SERVER['REQUEST_METHOD'];
-		} else {
-			if(isset($_POST) && $_POST && !empty($_POST)) {
-				$resultData = 'POST';
-			}
 		}
 		
 		$resultData = trim($resultData);

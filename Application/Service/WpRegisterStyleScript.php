@@ -38,7 +38,7 @@ class WpRegisterStyleScript
 			
 			$urlFileTemp = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI.'public/css/wppepvn_libs.'.(WP_PEPVN_DEBUG ? '' : 'min.').'css';
             $handleRegister = $slug.'-wppepvn-libs';
-			wp_register_style( $handleRegister,  $urlFileTemp, array($slug.'-bootstrap-wppepvn'), $version, 'all');
+			wp_register_style( $handleRegister,  $urlFileTemp, array(), $version, 'all');
 			
             
 			$urlFileTemp = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI.'public/css/admin.'.(WP_PEPVN_DEBUG ? '' : 'min.').'css';
@@ -114,10 +114,12 @@ class WpRegisterStyleScript
 			$this->wp_register_style();
 			$this->wp_register_script();
 			
+			wp_enqueue_media();
+			
 			wp_enqueue_script( 'jquery' );
 			
-			//$handleRegister = $slug.'-font-awesome';
-			//wp_enqueue_style( $handleRegister );
+			$handleRegister = $slug.'-bootstrap-wppepvn';
+			wp_enqueue_style( $handleRegister );
 			
 			$handleRegister = $slug.'-frontend';
 			wp_enqueue_style( $handleRegister );

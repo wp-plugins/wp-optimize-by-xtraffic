@@ -13,16 +13,53 @@ class AjaxHandle
 	
 	protected static $_tempData = array();
 	
+	protected static $_dataSendForJS = array();
+	
 	public $di;
 	
     public function __construct(DependencyInjectionInterface $di) 
     {
 		$this->di = $di;
 		
+		$priorityLast = WP_PEPVN_PRIORITY_LAST;
+		$priorityFirst = WP_PEPVN_PRIORITY_FIRST;
+		
+		//add_action('wp_footer',  array($this, 'action_wp_footer'), ($priorityFirst - 1));
+		add_action('wp_print_footer_scripts',  array($this, 'action_wp_print_footer_scripts'), $priorityFirst);
+		
+	}
+	
+	public function action_wp_print_footer_scripts() 
+	{
+		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$typeOfCurrentPage = $wpExtend->getTypeOfPage();
+		
+		if(self::$_dataSendForJS && !empty(self::$_dataSendForJS)) {
+			
+			echo '<script language="javascript" type="text/javascript" xtraffic-exclude >
+if((typeof(window.wppepvn_dtns) === "undefined") || !window.wppepvn_dtns) {window.wppepvn_dtns = [];}
+window.wppepvn_dtns.push("'.base64_encode(json_encode(self::$_dataSendForJS)).'");
+</script>';
+
+		}
+		
+		self::$_dataSendForJS = array();
+		
+	}
+	
+	public function addDataSendForJS($dataSend) 
+    {
+		self::$_dataSendForJS = Utils::mergeArrays(array(
+			self::$_dataSendForJS
+			,$dataSend
+		));
 	}
     
 	public function run() 
     {
+		ob_clean();
+		header('OK', true, 200);
 		
 		$wpExtend = $this->di->getShared('wpExtend');
 		$hook = $this->di->getShared('hook');
@@ -59,7 +96,7 @@ class AjaxHandle
 		
 		if($hook->has_filter('ajax')) {
 			$rsOne = $hook->apply_filters('ajax', $dataSent);
-			if(is_array($rsOne)) {
+			if($rsOne && is_array($rsOne) && !empty($rsOne)) {
 				$resultData = Utils::mergeArrays(array(
 					$resultData
 					,$rsOne
@@ -67,7 +104,6 @@ class AjaxHandle
 			}
 			unset($rsOne);
 		}
-		
 		
 		if(isset($dataSent['cronjob']['status']) && $dataSent['cronjob']['status']) {
 			$cronjob = new ServiceCronjob($this->di);

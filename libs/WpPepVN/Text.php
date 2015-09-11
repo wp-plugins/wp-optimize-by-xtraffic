@@ -331,6 +331,55 @@ abstract class Text
 		return $string;
 	}
 	
+	public static function toOneLine($string)
+	{
+		$string = self::removeLine($string, ' ');
+		$string = self::reduceSpace($string, ' ');
+		$string = trim($string);
+		
+		return $string;
+	}
+	
+	
+	public static function reduceChars($string, $maximumChars = 250, $moreString = '...') 
+	{
+		$string = strip_tags($string);
+		
+		$string = self::toOneLine($string);
+		
+		$string = str_split($string);
+		$string = array_slice($string, 0, ($maximumChars+1));
+		if(isset($string[$maximumChars])) {
+			unset($string[$maximumChars]);
+			$string[($maximumChars-1)] = $moreString;
+		}
+		
+		$string = implode('',$string);
+		
+		$string = trim($string);
+		
+		return $string;
+	}
+	
+	public static function reduceWords($string, $maximumWords = 250, $moreString = '...') 
+	{
+		$string = strip_tags($string);
+		
+		$string = self::toOneLine($string);
+		
+		$string = explode(' ',$string, ($maximumWords+1));
+		if(isset($string[$maximumWords])) {
+			unset($string[$maximumWords]);
+			$string[($maximumWords-1)] = $moreString;
+		}
+		$string = implode(' ',$string);
+		
+		$string = trim($string);
+		
+		return $string;
+	}
+	
+	
 	public static function removeVietnameseMark($text)
 	{
 		foreach(self::$defaultParams['vietnamese_chars'] as $key1 => $value1) {
@@ -349,6 +398,27 @@ abstract class Text
 		return $input_text;
 	}
 	
+	public static function removeQuotes($s,$r='')
+	{
+		$s = (string)$s;
+		return preg_replace('#[\'\"]+#is',$r,$s);
+	}
+	
+	
+	public static function safeText(
+		$s			//Text
+		, $e = ''	//exceptSpecialChar
+	)
+	{
+		$s = self::decodeText($s);
+		$s = strip_tags($s);
+		$s = self::removeQuotes($s);
+		$s = self::replaceSpecialChar($s, ' ', $e);
+		$s = self::reduceLine($s);
+		$s = self::reduceSpace($s);
+		
+		return $s;
+	}
 }
 
 

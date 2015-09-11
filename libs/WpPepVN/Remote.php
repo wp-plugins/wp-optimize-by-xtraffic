@@ -114,6 +114,29 @@ class Remote
 		}
 		$redirection = (int)$redirection;
 		
+		$input_args = array_merge(array(
+			'method' => 'GET',
+			'timeout'     => $input_args['request_timeout'],
+			'redirection' => $redirection,
+			//'httpversion' => '1.0',
+			'user-agent'  => $this->_http_UserAgent,
+			'blocking'    => true,
+			'headers'     => array(),//$this->_http_Headers,
+			'cookies'     => array(),
+			//'body'        => null,
+			'compress'    => true,
+			'decompress'  => true,
+			'sslverify'   => false,
+			//'stream'      => false,
+			'filename'    => null
+		), $input_args);
+		
+		$input_args['method'] = strtoupper($input_args['method']);
+		
+		if('GET' !== $input_args['method']) {
+			$cache_timeout = 0;
+		}
+		
 		if($cache_timeout > 0) {
 			if($this->_cacheFile) {
 				
@@ -130,23 +153,6 @@ class Remote
 				}
 			}
 		}
-		
-		$input_args = array_merge(array(
-			'method' => 'GET',
-			'timeout'     => 6,
-			'redirection' => $redirection,
-			//'httpversion' => '1.0',
-			'user-agent'  => $this->_http_UserAgent,
-			'blocking'    => true,
-			'headers'     => array(),//$this->_http_Headers,
-			'cookies'     => array(),
-			//'body'        => null,
-			'compress'    => true,
-			'decompress'  => true,
-			'sslverify'   => false,
-			//'stream'      => false,
-			'filename'    => null
-		), $input_args);
 		
 		//$objWPHttp = new \WP_Http_Streams();
 		$objWPHttp = new \WP_Http();
@@ -177,12 +183,14 @@ class Remote
 				$resultData = $resultData['body'];
 			} else {
 				$resultData = false;
+				/*
 				if($this->_curl) {
 					$resultData = $this->_curl->get($input_url, $input_args);
 					if(!$resultData) {
 						$resultData = false;
 					}
 				}
+				*/
 			}
 		}
 		

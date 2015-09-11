@@ -599,13 +599,13 @@ class OptimizeLinks
 							
 							if($targetLink2) {
 								
-								$patterns2 = '#([\s ,;\.\t]+)('.Utils::preg_quote($key1).')([\s ,;\.\t]+)#';
+								$patterns2 = '#([\s ,;\.\t\'\"]+)('.Utils::preg_quote($key1).')([\s ,;\.\t\'\"]+)#';
 								
 								if(!$autolinks_case_sensitive) {
 									$patterns2 .= 'i';
 								}
 								
-								$replace2 = '\1<a href="'.$targetLink2.'" '.('on' === $options['autolinks_new_window'] ? ' target="_bank" ' : '').' title="';
+								$replace2 = '\1<a href="'.$targetLink2.'" '.('on' === $options['autolinks_new_window'] ? ' target="_bank" ' : '').' itemprop="url" title="';
 								
 								if($targetLinkTitle2) {
 									$targetLinkTitle2 = PepVN_Data::cleanKeyword($targetLinkTitle2);
@@ -618,7 +618,7 @@ class OptimizeLinks
 								}
 								$replace2 .= '<strong>\2</strong></a>\3';
 								
-								$text = preg_replace ( $patterns2, $replace2,  $text, 1, $count2);
+								$text = preg_replace($patterns2, $replace2,  $text, 1, $count2);
 								
 								$count2 = (int)$count2;
 

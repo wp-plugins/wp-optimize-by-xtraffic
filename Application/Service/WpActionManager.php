@@ -25,11 +25,11 @@ class WpActionManager
 		add_action('edit_comment', array($this, 'edit_comment'), WP_PEPVN_PRIORITY_LAST, 1);
 		add_action('transition_comment_status', array($this, 'transition_comment_status'), WP_PEPVN_PRIORITY_LAST, 3);
 		
-		
 		add_action('transition_post_status', array($this, 'transition_post_status'), WP_PEPVN_PRIORITY_LAST, 3);
 		add_action('edit_post', array($this, 'edit_post'), WP_PEPVN_PRIORITY_FIRST, 2);
 		add_action('save_post', array($this, 'save_post'), WP_PEPVN_PRIORITY_FIRST, 3);
 		add_action('publish_future_post', array($this, 'publish_future_post'), WP_PEPVN_PRIORITY_FIRST, 1);
+		add_action('after_delete_post', array($this, 'after_delete_post'), WP_PEPVN_PRIORITY_FIRST, 1);
 		
 		add_action('activated_plugin', array($this, 'activated_plugin'), WP_PEPVN_PRIORITY_LAST, 2);
 		add_action('deactivated_plugin', array($this, 'deactivated_plugin'), WP_PEPVN_PRIORITY_LAST, 2);
@@ -42,7 +42,7 @@ class WpActionManager
 	{
 		$cacheManager = $this->di->getShared('cacheManager');
 		
-		$cacheManager->clean_cache($data_type);
+		$cacheManager->registerCleanCache($data_type);
 	}
 	
 	/*
@@ -143,6 +143,14 @@ class WpActionManager
 		, $old_status
 		, $post
 	) {
+		$hook = $this->di->getShared('hook');
+		if($hook->has_action('transition_post_status')) {
+			$hook->do_action('transition_post_status', array(
+				'new_status' => $new_status
+				, 'old_status' => $old_status
+				, 'post' => $post
+			));
+		}
 		
 	}
 	
@@ -176,12 +184,26 @@ class WpActionManager
 		, $update
 	) {
 		$wpExtend = $this->di->getShared('wpExtend');
+		$hook = $this->di->getShared('hook');
 		
 		// If this is just a revision/autosave, don't clean cache
 		if(false === $wpExtend->isRequestIsAutoSavePosts()) {
 			if ( false === wp_is_post_revision( $post_ID ) ) {
 				if ( false === wp_is_post_autosave( $post_ID ) ) {
-					$this->_cleanCache();
+					if(
+						('publish' === get_post_status($post_ID))
+					) {
+						if($hook->has_action('save_post_publish')) {
+							$hook->do_action('save_post_publish', array(
+								'post_ID' => $post_ID
+								, 'post' => $post
+								, 'update' => $update
+							));
+						}
+						
+						$this->_cleanCache();
+						
+					}
 				}
 			}
 		}
@@ -196,6 +218,28 @@ class WpActionManager
 	public function publish_future_post(
 		$post_id
 	) {
+		$this->_cleanCache();
+	}
+
+	/**
+	* Fires after a post is deleted, at the conclusion of wp_delete_post().
+	*
+	* @since 3.2.0
+	*
+	* @see wp_delete_post()
+	*
+	* @param int $postid Post ID.
+	*/
+	
+	public function after_delete_post(
+		$postid
+	) {
+		$postid = (int)$postid;
+		$hook = $this->di->getShared('hook');
+		if($hook->has_action('after_delete_post')) {
+			$hook->do_action('after_delete_post', $postid);
+		}
+		
 		$this->_cleanCache();
 	}
 	

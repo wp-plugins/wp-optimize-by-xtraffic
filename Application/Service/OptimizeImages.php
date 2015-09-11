@@ -134,8 +134,6 @@ class OptimizeImages
 	public function initBackend() 
     {
 		
-		
-		
 	}
 	
 	public function wp_add_filter_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attr ) 
@@ -520,15 +518,17 @@ class OptimizeImages
 		$resultData = false;
 		
 		if($filePath && is_file($filePath)) {
-			$rsOne = getimagesize($filePath);
-			if(isset($rsOne[0]) && $rsOne[0]) {	//0 : width 
-				$rsOne[0] = (int)$rsOne[0];
-				if($rsOne[0] > 10) {	//width > 10 px
-					if(isset($rsOne[1]) && $rsOne[1]) {
-						$rsOne[1] = (int)$rsOne[1];
-						if($rsOne[1] > 10) {	//height > 10 px
-							if(!PepVN_Images::isAnimation($filePath)) { //not Animation gif
-								$resultData = true;
+			if(filesize($filePath)>0) {
+				$rsOne = $this->_getimagesize($filePath);
+				if(isset($rsOne[0]) && $rsOne[0]) {	//0 : width 
+					$rsOne[0] = (int)$rsOne[0];
+					if($rsOne[0] > 10) {	//width > 10 px
+						if(isset($rsOne[1]) && $rsOne[1]) {
+							$rsOne[1] = (int)$rsOne[1];
+							if($rsOne[1] > 10) {	//height > 10 px
+								if(!PepVN_Images::isAnimation($filePath)) { //not Animation gif
+									$resultData = true;
+								}
 							}
 						}
 					}
@@ -626,10 +626,23 @@ class OptimizeImages
 		
 	}
 	
-	
 	private function _getImageFileInfo($filePath)
 	{
-		return PepVN_Images::getImageInfo($filePath, false);
+		$k = Hash::crc32b(
+			__CLASS__ . __METHOD__ . $filePath
+		);
+		
+		$tmp = TempDataAndCacheFile::get_cache($k);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$tmp = PepVN_Images::getImageInfo($filePath, false);
+		
+		TempDataAndCacheFile::set_cache($k,$tmp);
+		
+		return $tmp;
 	}
 	
 	private function _openImage($filePath)
@@ -643,7 +656,24 @@ class OptimizeImages
 		return false;
 	}
 	
-	
+	private function _getimagesize($filePath)
+	{
+		$k = Hash::crc32b(
+			__CLASS__ . __METHOD__ . $filePath
+		);
+		
+		$tmp = TempDataAndCacheFile::get_cache($k);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$tmp = getimagesize($filePath);
+		
+		TempDataAndCacheFile::set_cache($k,$tmp);
+		
+		return $tmp;
+	}
 	
 	public function process_image($input_parameters)
 	{
@@ -932,7 +962,7 @@ class OptimizeImages
 		
 		if($imgOptimizedFilePathExists1) {
 			
-			$rsGetimagesize = getimagesize($imgOptimizedFilePathExists1);
+			$rsGetimagesize = $this->_getimagesize($imgOptimizedFilePathExists1);
 			
 			if($rsGetimagesize && isset($rsGetimagesize[0]) && ($rsGetimagesize[0])) {
 				$resultData['image_optimized_file_path'] = $imgOptimizedFilePathExists1;
@@ -940,6 +970,10 @@ class OptimizeImages
 				
 				$resultData['image_optimized_width'] = (int)$rsGetimagesize[0];
 				$resultData['image_optimized_height'] = (int)$rsGetimagesize[1];
+				
+				if(isset($rsGetimagesize['mime'])) {
+					$resultData['image_optimized_mime'] = $rsGetimagesize['mime'];
+				}
 				
 				return $resultData;
 			}
@@ -1473,13 +1507,18 @@ class OptimizeImages
 										if($valueTemp1 && is_file($valueTemp1)) {
 											$valueTemp2 = filesize($valueTemp1);
 											if($valueTemp2 && ($valueTemp2>0)) {
-												$rs_getimagesize = getimagesize($valueTemp1);
+												$rs_getimagesize = $this->_getimagesize($valueTemp1);
 												if($rs_getimagesize && isset($rs_getimagesize[0]) && ($rs_getimagesize[0])) {
 												
 													$resultData['image_optimized_file_path'] = $valueTemp1;
 													$resultData['image_optimized_file_url'] = str_replace($this->_folderStorePath,$this->_folderStoreUrl,$resultData['image_optimized_file_path']);
 													$resultData['image_optimized_width'] = (int)$rs_getimagesize[0];
 													$resultData['image_optimized_height'] = (int)$rs_getimagesize[1];
+													
+													if(isset($rs_getimagesize['mime'])) {
+														$resultData['image_optimized_mime'] = $rs_getimagesize['mime'];
+													}
+													
 												}
 											}
 											
@@ -2495,7 +2534,7 @@ class OptimizeImages
 								if(is_file($imgOptimizedFilePathExists1)) {
 									if(filesize($imgOptimizedFilePathExists1)>0) {
 										
-										$rs_getimagesize1 = getimagesize($imgOptimizedFilePathExists1);
+										$rs_getimagesize1 = $this->_getimagesize($imgOptimizedFilePathExists1);
 										
 										if(isset($rs_getimagesize1[0]) && $rs_getimagesize1[0]) {
 											

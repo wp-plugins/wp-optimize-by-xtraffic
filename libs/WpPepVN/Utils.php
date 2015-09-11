@@ -466,6 +466,35 @@ class Utils
 		return $resultData;
 	}
 	
+	public static function ipVersion($ip)
+	{
+		if(self::isIPv4($ip)) {
+			return 'v4';
+		} else if(self::isIPv6($ip)) {
+			return 'v6';
+		} else {
+			return false;
+		}
+	}
+	
+	public static function isIPv4($ip)
+	{
+		if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	
+	public static function isIPv6($ip)
+	{
+		if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+			return true;
+		}
+		
+		return false;
+	}
 	
 	public static function isUrlSameDomain($url, $domain, $strict_status = true)
 	{
@@ -482,6 +511,25 @@ class Utils
 		}
 		
 		return $resultData;
+	}
+	
+	public static function xml2Array(
+		$data	//text, xml string
+	) {
+		
+		$data = simplexml_load_string($data, 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_NOBLANKS | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_ERR_NONE);
+		
+		if($data) {
+			$data = json_encode($data);
+			if($data) {
+				$data = json_decode($data, true);
+				if($data) {
+					return $data;
+				}
+			}
+		}
+		
+		return false;
 	}
 }
 

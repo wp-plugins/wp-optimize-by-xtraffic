@@ -39,7 +39,7 @@ class Cronjob
 		if($doCronjobsStatus) {
 			if(isset($staticVarData['last_time_process_cronjob']) && $staticVarData['last_time_process_cronjob']) {
 				$doCronjobsStatus = false;
-				if(($staticVarData['last_time_process_cronjob'] + (3 * 60)) < PepVN_Data::$defaultParams['requestTime']) {	//is timeout 
+				if(($staticVarData['last_time_process_cronjob'] + (1 * 30)) < PepVN_Data::$defaultParams['requestTime']) {	//is timeout 
 					$doCronjobsStatus = true;
 				}
 			}
@@ -52,12 +52,16 @@ class Cronjob
 				$doCronjobsStatus = false;
 				
 				if(isset($staticVarData['last_time_process_cronjob']) && $staticVarData['last_time_process_cronjob']) {
-					if(($staticVarData['last_time_process_cronjob'] + (3 * 3600)) < PepVN_Data::$defaultParams['requestTime']) {	//is timeout
+					if(($staticVarData['last_time_process_cronjob'] + (1 * 3600)) < PepVN_Data::$defaultParams['requestTime']) {	//is timeout
 						$doCronjobsStatus = true;
 					}
 				}
 				
 			}
+		}
+		
+		if(WP_PEPVN_DEBUG) {
+			$doCronjobsStatus = true;
 		}
 		
 		if($doCronjobsStatus) {
@@ -81,7 +85,7 @@ class Cronjob
 				$staticVarData['last_time_clean_cache_all'] = 0;
 			}
 			
-			if($staticVarData['last_time_clean_cache_all'] <= ( PepVN_Data::$defaultParams['requestTime'] - 86400)) {	//is timeout
+			if($staticVarData['last_time_clean_cache_all'] <= ( PepVN_Data::$defaultParams['requestTime'] - (86400 * 3))) {	//is timeout
 				$staticVarData['last_time_clean_cache_all'] = PepVN_Data::$defaultParams['requestTime'];
 				
 				$this->_staticVarObject->save($staticVarData,'m');
@@ -105,6 +109,13 @@ class Cronjob
 			
 			$this->_staticVarObject->save($staticVarData,'m');
 			
+			$backgroundQueueJobsManager = $this->di->getShared('backgroundQueueJobsManager');
+			
+			$backgroundQueueJobsManager->request();
+			
+			if(function_exists('spawn_cron')) {
+				spawn_cron();
+			}
 		}
 		
 		return $resultData;

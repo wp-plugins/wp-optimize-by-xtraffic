@@ -14,7 +14,7 @@ use WpPepVN\Session\AdapterInterface as SessionInterface;
  */
 class Cookie implements InjectionAwareInterface
 {
-	const COOKIE_PREFIX = '_WPPC_';
+	const COOKIE_PREFIX = 'wppvc_';
 	
 	protected $_readed = false;
 
@@ -32,7 +32,7 @@ class Cookie implements InjectionAwareInterface
 
 	protected $_expire;
 
-	protected $_path = "/";
+	protected $_path = '/';
 
 	protected $_domain;
 
@@ -51,7 +51,7 @@ class Cookie implements InjectionAwareInterface
 	 * @param string domain
 	 * @param boolean httpOnly
 	 */
-	public function __construct($name, $value = null, $expire = 0, $path = "/", $secure = null, $domain = null, $httpOnly = null)
+	public function __construct($name, $value = null, $expire = 0, $path = '/', $secure = null, $domain = null, $httpOnly = null)
 	{
 		$this->_name = $name;
 
@@ -81,7 +81,7 @@ class Cookie implements InjectionAwareInterface
 	/**
 	 * Sets the dependency injector
 	 */
-	public function setDI($dependencyInjector)
+	public function setDI(DependencyInjectionInterface $dependencyInjector)
 	{
 		$this->_dependencyInjector = $dependencyInjector;
 	}
@@ -132,10 +132,10 @@ class Cookie implements InjectionAwareInterface
 
 					$dependencyInjector = $this->_dependencyInjector;
 					if (!is_object($dependencyInjector)){
-						throw new Exception("A dependency injection object is required to access the 'filter' service");
+						throw new Exception('A dependency injection object is required to access the \'filter\' service');
 					}
 
-					$crypt = $dependencyInjector->getShared("crypt");
+					$crypt = $dependencyInjector->getShared('crypt');
 
 					/**
 					 * Decrypt the value also decoding it with base64
@@ -158,11 +158,11 @@ class Cookie implements InjectionAwareInterface
 						if ($dependencyInjector === null) {
 							$dependencyInjector = $this->_dependencyInjector;
 							if (!is_object($dependencyInjector)){
-								throw new Exception("A dependency injection object is required to access the 'filter' service");
+								throw new Exception('A dependency injection object is required to access the \'filter\' service');
 							}
 						}
 
-						$filter = $dependencyInjector->getShared("filter");
+						$filter = $dependencyInjector->getShared('filter');
 						$this->_filter = $filter;
 					}
 
@@ -197,36 +197,36 @@ class Cookie implements InjectionAwareInterface
 		$dependencyInjector = $this->_dependencyInjector;
 
 		if (!is_object($dependencyInjector)){
-			throw new Exception("A dependency injection object is required to access the 'session' service");
+			throw new Exception('A dependency injection object is required to access the \'session\' service');
 		}
 
 		$definition = array();
 
 		if ($expire !== 0) {
-			$definition["expire"] = $expire;
+			$definition['expire'] = $expire;
 		}
 
 		if (!empty ($path)) {
-			$definition["path"] = $path;
+			$definition['path'] = $path;
 		}
 
 		if (!empty ($domain)) {
-			$definition["domain"] = $domain;
+			$definition['domain'] = $domain;
 		}
 
 		if (!empty ($secure)) {
-			$definition["secure"] = $secure;
+			$definition['secure'] = $secure;
 		}
 
 		if (!empty ($httpOnly)) {
-			$definition["httpOnly"] = $httpOnly;
+			$definition['httpOnly'] = $httpOnly;
 		}
 
 		/**
 		 * The definition is stored in session
 		 */
 		if (!empty($definition)) {
-			$session = $dependencyInjector->getShared("session");
+			$session = $dependencyInjector->getShared('session');
 			$session->set(self::COOKIE_PREFIX . $name, $definition);
 		}
 
@@ -235,10 +235,10 @@ class Cookie implements InjectionAwareInterface
 			if (!empty ($value)) {
 
 				if (!is_object($dependencyInjector)){
-					throw new Exception("A dependency injection object is required to access the 'filter' service");
+					throw new Exception('A dependency injection object is required to access the \'filter\' service');
 				}
 
-				$crypt = $dependencyInjector->getShared("crypt");
+				$crypt = $dependencyInjector->getShared('crypt');
 
 				/**
 				 * Encrypt the value also coding it with base64
@@ -273,28 +273,28 @@ class Cookie implements InjectionAwareInterface
 			$dependencyInjector = $this->_dependencyInjector;
 			if (is_object($dependencyInjector)){
 
-				$session = $dependencyInjector->getShared("session");
+				$session = $dependencyInjector->getShared('session');
 
 				$definition = $session->get(self::COOKIE_PREFIX . $this->_name);
 				if (is_array($definition)) {
 
-					if(isset($definition["expire"])) {
+					if(isset($definition['expire'])) {
 						$this->_expire = $expire;
 					}
 
-					if(isset($definition["domain"])) {
+					if(isset($definition['domain'])) {
 						$this->_domain = $domain;
 					}
 
-					if(isset($definition["path"])) {
+					if(isset($definition['path'])) {
 						$this->_path = $path;
 					}
 
-					if(isset($definition["path"])) {
+					if(isset($definition['path'])) {
 						$this->_secure = $secure;
 					}
 
-					if(isset($definition["path"])) {
+					if(isset($definition['path'])) {
 						$this->_httpOnly = $httpOnly;
 					}
 				}
@@ -319,7 +319,7 @@ class Cookie implements InjectionAwareInterface
 
 		$dependencyInjector = $this->_dependencyInjector;
 		if (is_object($dependencyInjector)) {
-			$session = $dependencyInjector->getShared("session");
+			$session = $dependencyInjector->getShared('session');
 			$session->remove(self::COOKIE_PREFIX . $name);
 		}
 

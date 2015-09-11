@@ -70,10 +70,11 @@ class PepVN_Data
 			//self::$defaultParams['http']['headers'] = $valueTemp1;
 			
             self::$defaultParams['wp_cookies_not_cache'] = array(
-                'comment_author'
-                ,'wp-postpass'
-                ,'wptouch_switch_toggle'
-                ,'wordpress_logged_in'
+				'comment_author'
+				,'wp-postpass'
+				,'wptouch_switch_toggle'
+				,'wordpress_logged_in'
+				,'woocommerce_cart_'
             );
             
             self::$defaultParams['wp_request_uri_not_cache'] = array(
@@ -83,6 +84,13 @@ class PepVN_Data
                 ,'wp-content'
                 ,'wp-includes'
                 ,'.php'
+				
+				//woocommerce : http://docs.woothemes.com/document/configuring-caching-plugins/
+				,'/cart/'
+				,'/my-account/'
+				,'/checkout/'
+				,'/addons/'
+				,'add-to-cart='
             );
 			
 			self::$defaultParams['urlProtocol'] = 'http:';
@@ -757,12 +765,12 @@ class PepVN_Data
 	
 	public static function appendTextToTagHeadOfHtml($input_text,$input_html) 
 	{
-		return preg_replace('#(\s*?</head>\s*?<body[^>]*?>)#is', $input_text.' \1',$input_html); 
+		return preg_replace('#([\s \t]*</head>[\s \t]*)#is', $input_text.'</head>',$input_html,1); 
 	}
 	
 	public static function appendTextToTagBodyOfHtml($input_text,$input_html) 
 	{
-		return preg_replace('#(\s*?</body>\s*?</html>\s*?)#is', $input_text.' \1',$input_html);
+		return preg_replace('#([\s \t]*</body>[\s \t]*</html>[\s \t]*)#is', $input_text.' \1',$input_html,1);
 	}
 	
 	public static function reduceSpace($input_data) 
@@ -781,17 +789,26 @@ class PepVN_Data
 	
 	public static function cleanPregPatternsArray($input_data) 
 	{
-		$input_data = (array)$input_data;
-		$input_data = implode(';',$input_data);
-		$input_data = preg_replace('#[\,\;]+#',';',$input_data);
-		$input_data = explode(';',$input_data);
-		$input_data = self::cleanArray($input_data);
+		
+		$input_data = self::cleanListArray($input_data);
+		
 		foreach($input_data as $keyOne => $valueOne) {
 			$input_data[$keyOne] = preg_quote($valueOne, '#');
 		}
 		
 		return $input_data;
 		
+	}
+	
+	public static function cleanListArray($input_data) 
+	{
+		$input_data = (array)$input_data;
+		$input_data = implode(';',$input_data);
+		$input_data = preg_replace('#[\,\;]+#',';',$input_data);
+		$input_data = explode(';',$input_data);
+		$input_data = self::cleanArray($input_data);
+		
+		return $input_data;
 	}
 	
 	public static function removeProtocolUrl($input_url) 
@@ -1739,7 +1756,103 @@ class PepVN_Data
 		return self::$cacheData[$keyCache];
 	}
 	
+	public static function getContentOfHeadTagHtml($text)
+	{
+		preg_match_all('#<head>(.+)</head>#is',$text,$matched1);
+		
+		if(isset($matched1[1][0]) && $matched1[1][0]) {
+			return trim($matched1[1][0]);
+		}
+		
+		return false;
+	}
 	
+	public static function setTagHtml($input_params)
+	{
+		//$originalFullText = $input_params['text'];
+		
+		$patternsSearchAndReplace = array();
+		$textAppendToTagHeadOfHtml = '';
+		
+		$targetText = '';
+		
+		if(isset($input_params['find_in_head_status'])) {
+			
+			preg_match_all('#<head>(.+)</head>#is',$input_params['text'],$matched1);
+			
+			if(isset($matched1[1][0]) && $matched1[1][0]) {
+				$targetText = trim($matched1[1][0]);
+			}
+			
+			unset($matched1);
+			
+		} else {
+			$targetText = $input_params['text'];
+		}
+		
+		if($targetText) {
+			
+			preg_match_all('#(<'.preg_quote($input_params['tag_name'],'#').'[\s \t]+[^>]+/?>)#is',$targetText,$matched1);
+			
+			if(
+				isset($matched1[1][0])
+			) {
+				
+				$matched1 = $matched1[1];
+				
+				foreach($matched1 as $key1 => $value1) {
+					
+					unset($matched1[$key1]);
+					
+					foreach($input_params['set_tags'] as $key2 => $value2) {
+						
+						if(preg_match('#'.preg_quote($value2['search_key'],'#').'=(\'|\")[^\'\"]*'.preg_quote($value2['search_value'],'#').'[^\'\"]*\1#is',$value1)) {
+							if(isset($value2['remove_status'])) {
+								$patternsSearchAndReplace[$value1] = '';
+							} else {
+								if(preg_match('#('.preg_quote($value2['set_key'],'#').'=(\'|\")([^\'\"]*)\2)#is',$value1,$matched2)) {
+									
+									if(isset($matched2[3]) && $matched2[3] && (false !== stripos($matched2[3],$value2['set_value']))) {
+										unset($input_params['set_tags'][$key2]);
+									} else {
+										if(isset($value2['replace_status'])) {
+											$patternsSearchAndReplace[$value1] = preg_replace('#('.preg_quote($value2['set_key'],'#').')=(\'|\")([^\'\"]*)\2#is','\1=\2'.$value2['set_value'].'\2',$value1);
+										} else {
+											$patternsSearchAndReplace[$value1] = preg_replace('#('.preg_quote($value2['set_key'],'#').'=(\'|\")([^\'\"]*))#is','\1 '.$value2['set_value'],$value1);
+										}
+										unset($input_params['set_tags'][$key2]);
+									}
+								}
+								unset($matched2);
+							}
+						}
+					}
+				}
+			}
+			
+			unset($matched1);
+		}
+		
+		foreach($input_params['set_tags'] as $key1 => $value1) {
+			unset($input_params['set_tags'][$key1]);
+			if(isset($value1['full_set'])) {
+				$textAppendToTagHeadOfHtml .= $value1['full_set'];
+			}
+		}
+		unset($input_params['set_tags']);
+		
+		if(!empty($patternsSearchAndReplace)) {
+			$input_params['text'] = str_replace(array_keys($patternsSearchAndReplace),array_values($patternsSearchAndReplace),$input_params['text']);
+		}
+		unset($patternsSearchAndReplace);
+		
+		if($textAppendToTagHeadOfHtml) {
+			$input_params['text'] = self::appendTextToTagHeadOfHtml($textAppendToTagHeadOfHtml, $input_params['text']);
+		}
+		unset($textAppendToTagHeadOfHtml);
+		
+		return $input_params['text'];
+	}
 	
 	public static function isAjaxRequest()
 	{

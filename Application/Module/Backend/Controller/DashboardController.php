@@ -118,7 +118,7 @@ class DashboardController extends ControllerBase
 				
 				
 				$install_plugin_install_status = $pluginManager->install_plugin_install_status(array(
-					'slug' => $val1['wp_plugin_slug']
+					'slug' => $val1['slug']
 					,'fields' => array()
 				));
 				

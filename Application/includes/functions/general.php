@@ -1,7 +1,20 @@
 <?php 
 
 
-
+/**
+ * Fake the interpreter function alias if not defined
+ */
+if ( !function_exists('_') ) {
+	if ( function_exists('__') ) {
+		function _( $text, $domain='' ) {
+			return __($text,$domain);
+		}
+	} else {
+		function _( $text, $domain='' ) {
+			return $text;
+		}
+	}
+}
 
 if(!function_exists('http_response_code')) {
 	/*

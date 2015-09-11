@@ -25,6 +25,11 @@ class WpOptions extends ModelBase
 		self::$_prefix = WP_PEPVN_NS_SHORT.'_';
 	}
 	
+	public static function cleanCache() 
+	{
+		self::$_tempData = array();
+	}
+	
 	public static function wp_cache_delete() 
 	{
 		wp_cache_delete('alloptions', 'options');

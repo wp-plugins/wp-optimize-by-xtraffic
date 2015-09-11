@@ -6,5 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'LanguageDetector' => array($vendorDir . '/crodas/languagedetector/lib'),
     'Hashids' => array($vendorDir . '/hashids/hashids/lib'),
 );

@@ -1,8 +1,9 @@
 {
 	"require" : {
-		"php" : ">=5.3"
+		"php" : ">=5.3.0"
 		, "hashids/hashids" : "1.0.5"
-		, "matthiasmullie/minify" : "dev-master"
+		, "crodas/languagedetector" : "v0.1.1"
+		, "google/apiclient" : "1.1.4"
 	}
 	, "minimum-stability": "dev"
 }

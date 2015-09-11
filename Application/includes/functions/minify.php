@@ -1,6 +1,7 @@
 <?php 
 
 use WPOptimizeByxTraffic\Application\Service\PepVN_Data
+	, WPOptimizeByxTraffic\Application\Service\TempDataAndCacheFile
 	, WPOptimizeByxTraffic\Application\Service\JSMin
 	, WPOptimizeByxTraffic\Application\Service\CSSmin
 	, WPOptimizeByxTraffic\Application\Service\CSSFixer
@@ -20,7 +21,8 @@ function pepvn_MinifyJavascript($input_data)
 		,$input_data
 	));
 	
-	$tmp = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+	//$tmp = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+	$tmp = TempDataAndCacheFile::get_cache($keyCache1);
 
 	if(null !== $tmp) {
 		return $tmp;
@@ -52,7 +54,7 @@ function pepvn_MinifyJavascript($input_data)
 	
 	$input_data = trim($input_data);
 	
-	PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $input_data);
+	TempDataAndCacheFile::set_cache($keyCache1, $input_data);
 	
 	return $input_data;
 	
@@ -70,7 +72,7 @@ function pepvn_MinifyCss($input_data)
 		,$input_data
 	));
 	
-	$tmp = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+	$tmp = TempDataAndCacheFile::get_cache($keyCache1);
 
 	if(null !== $tmp) {
 		return $tmp;
@@ -81,7 +83,7 @@ function pepvn_MinifyCss($input_data)
 	$input_data = trim($input_data);
 	unset($cssMin);
 	
-	PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $input_data);
+	TempDataAndCacheFile::set_cache($keyCache1, $input_data);
 	
 	return $input_data;
 }
@@ -98,7 +100,7 @@ function pepvn_MinifyHtml($input_data)
 		,$input_data
 	));
 	
-	$tmp = PepVN_Data::$cachePermanentObject->get_cache($keyCache1);
+	$tmp = TempDataAndCacheFile::get_cache($keyCache1);
 
 	if(null !== $tmp) {
 		return $tmp;
@@ -106,9 +108,15 @@ function pepvn_MinifyHtml($input_data)
 	
 	$findAndReplace1 = array();
 	
+	$rsOne = PepVN_Data::escapeSpecialElementsInHtmlPage($input_data);
+	$input_data = $rsOne['content'];
+	if(!empty($rsOne['patterns'])) {
+		$findAndReplace1 = array_merge($findAndReplace1, $rsOne['patterns']);
+	}
+	unset($rsOne);
+	
 	$rsOne = PepVN_Data::escapeHtmlTagsAndContents($input_data,'pre;code;textarea;input');
 	$input_data = $rsOne['content'];
-	unset($rsOne['content']);
 	
 	if(!empty($rsOne['patterns'])) {
 		$findAndReplace1 = array_merge($findAndReplace1, $rsOne['patterns']);
@@ -147,19 +155,21 @@ function pepvn_MinifyHtml($input_data)
 	
 	$patterns1 = array(
 		'#>[\s \t]+<#is' => '><'
-		,'#[\s \t]+#is' => ' '
+		, '#[\s \t]+#is' => ' '
+		, '#<!--(.|\s)*?-->#is' => ''
 	);
 	
 	$input_data = preg_replace(array_keys($patterns1),array_values($patterns1), $input_data);
+	unset($patterns1);
 	
 	if(!empty($findAndReplace1)) {
 		$input_data = str_replace(array_values($findAndReplace1),array_keys($findAndReplace1),$input_data);
-		unset($findAndReplace1);
 	}
+	unset($findAndReplace1);
 	
 	$input_data = trim($input_data);
 	
-	PepVN_Data::$cachePermanentObject->set_cache($keyCache1, $input_data);
+	TempDataAndCacheFile::set_cache($keyCache1, $input_data);
 	
 	return $input_data;
 	

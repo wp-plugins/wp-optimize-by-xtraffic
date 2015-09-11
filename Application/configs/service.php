@@ -21,6 +21,12 @@ use WpPepVN\Cache\Frontend\Data as CacheFrontendData
 	,WPOptimizeByxTraffic\Application\Service\AjaxHandle as ServiceAjaxHandle
 	,WPOptimizeByxTraffic\Application\Service\StaticVar as ServiceStaticVar
 	,WPOptimizeByxTraffic\Application\Service\Dashboard as ServiceDashboard
+	,WPOptimizeByxTraffic\Application\Service\Queue as ServiceQueue
+	,WPOptimizeByxTraffic\Application\Service\BackgroundQueueJobsManager as ServiceBackgroundQueueJobsManager
+	,WPOptimizeByxTraffic\Application\Service\TemplateReplaceVars as ServiceTemplateReplaceVars
+	,WPOptimizeByxTraffic\Application\Service\Language as ServiceLanguage
+	
+	
 ;
 
 /*
@@ -31,7 +37,7 @@ $di->set('staticVar',$serviceStaticVar,true);
 
 $wpExtend = new \WPOptimizeByxTraffic\Application\Service\WpExtend();
 $di->set('wpExtend', $wpExtend, true);
-$wpExtend->is_admin();
+
 if($wpExtend->is_admin()) {
 	$di->set('adminNotice', function() use ($di) {
 		
@@ -47,10 +53,22 @@ $di->set('notice', function() {
     return new \WPOptimizeByxTraffic\Application\Service\Notice();
 }, true);
 
-$di->set('cacheManager', function() use ($di) {
-    return new \WPOptimizeByxTraffic\Application\Service\CacheManager($di);
-}, true);
+$cacheManager = new \WPOptimizeByxTraffic\Application\Service\CacheManager($di);
+$di->set('cacheManager', $cacheManager, true);
 
+$di->set('crypt', function() use ($di) {
+	$crypt = new \WpPepVN\Crypt($di);
+	
+	$keyCrypt = hash('crc32b', md5(sha1(WP_PEPVN_SITE_SALT).'_crypt'));
+	
+	$keyCrypt .= hash('crc32b', md5($keyCrypt));
+	
+	$crypt->setKey();
+	$crypt->setCipher('rijndael-256');
+	$crypt->setMode('cbc');
+	$crypt->setPadding(0);
+	return $crypt;
+}, true);
 
 /**
  * Setting up the view component
@@ -184,9 +202,8 @@ $di->set('optimizeImages', function() use ($di) {
     return new ServiceOptimizeImages($di);
 }, true);
 
-$di->set('ajaxHandle', function() use ($di) {
-    return new ServiceAjaxHandle($di);
-}, true);
+$ajaxHandle = new ServiceAjaxHandle($di);
+$di->set('ajaxHandle', $ajaxHandle, true);
 
 $di->set('analyzeText', function() use ($di) {
     return new ServiceAnalyzeText($di);
@@ -211,6 +228,20 @@ $di->set('session', function() use ($di) {
 
 $di->set('pluginManager', function() use ($di) {
     return new ServicePluginManager($di);
+}, true);
+
+$di->set('queue', function() use ($di) {
+    return new ServiceQueue($di, 'WPOptimizeByxTraffic\Application\Service\Queue', array());
+}, true);
+
+$language = new ServiceLanguage($di);
+$di->set('language', $language, true);
+
+$backgroundQueueJobsManager = new ServiceBackgroundQueueJobsManager($di);
+$di->set('backgroundQueueJobsManager', $backgroundQueueJobsManager, true);
+
+$di->set('templateReplaceVars', function() use ($di) {
+    return new ServiceTemplateReplaceVars($di);
 }, true);
 
 $di->set('config', function() use (&$config) {

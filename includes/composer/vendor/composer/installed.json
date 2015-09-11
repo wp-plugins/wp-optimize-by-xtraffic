@@ -59,114 +59,85 @@
         ]
     },
     {
-        "name": "matthiasmullie/path-converter",
-        "version": "1.0.5",
-        "version_normalized": "1.0.5.0",
+        "name": "crodas/languagedetector",
+        "version": "v0.1.1",
+        "version_normalized": "0.1.1.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/matthiasmullie/path-converter.git",
-            "reference": "b1e31c51e8c207ad6114f5b4ac4e652bc936c380"
+            "url": "https://github.com/crodas/LanguageDetector.git",
+            "reference": "07aa8bb806cb71fe4e4352c12232a5c74bf416ed"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/matthiasmullie/path-converter/zipball/b1e31c51e8c207ad6114f5b4ac4e652bc936c380",
-            "reference": "b1e31c51e8c207ad6114f5b4ac4e652bc936c380",
+            "url": "https://api.github.com/repos/crodas/LanguageDetector/zipball/07aa8bb806cb71fe4e4352c12232a5c74bf416ed",
+            "reference": "07aa8bb806cb71fe4e4352c12232a5c74bf416ed",
             "shasum": ""
         },
-        "require": {
-            "ext-pcre": "*",
-            "php": ">=5.3.0"
-        },
         "require-dev": {
-            "phpunit/phpunit": "4.3.*",
-            "satooshi/php-coveralls": "dev-master"
+            "crodas/autoloader": "~0.1"
         },
-        "time": "2015-06-01 15:20:30",
+        "time": "2013-11-06 01:26:03",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
-            "psr-4": {
-                "MatthiasMullie\\PathConverter\\": "src/"
+            "psr-0": {
+                "LanguageDetector": "lib/"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
-            "MIT"
+            "BSD-4-Clause"
         ],
         "authors": [
             {
-                "name": "Matthias Mullie",
-                "email": "pathconverter@mullie.eu",
-                "homepage": "http://www.mullie.eu",
-                "role": "Developer"
+                "name": "César D. Rodas",
+                "email": "crodas@php.net"
             }
         ],
-        "description": "Relative path converter",
-        "homepage": "http://github.com/matthiasmullie/path-converter",
-        "keywords": [
-            "converter",
-            "path",
-            "paths",
-            "relative"
-        ]
+        "description": "simple library to classify texts"
     },
     {
-        "name": "matthiasmullie/minify",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "name": "google/apiclient",
+        "version": "1.1.4",
+        "version_normalized": "1.1.4.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/matthiasmullie/minify.git",
-            "reference": "5497bea3d1e25d14091a9dcb45a3aa326e4090f7"
+            "url": "https://github.com/google/google-api-php-client.git",
+            "reference": "2adb5ba90612858d4add0342eee6b8b9aaca398d"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/matthiasmullie/minify/zipball/5497bea3d1e25d14091a9dcb45a3aa326e4090f7",
-            "reference": "5497bea3d1e25d14091a9dcb45a3aa326e4090f7",
+            "url": "https://api.github.com/repos/google/google-api-php-client/zipball/2adb5ba90612858d4add0342eee6b8b9aaca398d",
+            "reference": "2adb5ba90612858d4add0342eee6b8b9aaca398d",
             "shasum": ""
         },
         "require": {
-            "ext-pcre": "*",
-            "matthiasmullie/path-converter": "~1.0",
-            "php": ">=5.3.0"
+            "php": ">=5.2.1"
         },
         "require-dev": {
-            "phpunit/phpunit": "4.3.*",
-            "satooshi/php-coveralls": "dev-master",
-            "scrapbook/psr-cache": "~0.2"
+            "phpunit/phpunit": "3.7.*"
         },
-        "time": "2015-06-29 15:51:16",
-        "bin": [
-            "bin/minifycss",
-            "bin/minifyjs"
-        ],
+        "time": "2015-05-21 19:35:32",
         "type": "library",
-        "installation-source": "source",
-        "autoload": {
-            "psr-4": {
-                "MatthiasMullie\\Minify\\": "src/"
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.1.x-dev"
             }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
+            ]
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
-            "MIT"
+            "Apache-2.0"
         ],
-        "authors": [
-            {
-                "name": "Matthias Mullie",
-                "email": "minify@mullie.eu",
-                "homepage": "http://www.mullie.eu",
-                "role": "Developer"
-            }
-        ],
-        "description": "CSS & JS minifier",
-        "homepage": "http://www.minifier.org",
+        "description": "Client library for Google APIs",
+        "homepage": "http://developers.google.com/api-client-library/php",
         "keywords": [
-            "JS",
-            "css",
-            "javascript",
-            "minifier",
-            "minify"
+            "google"
         ]
     }
 ]

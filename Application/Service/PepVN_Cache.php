@@ -242,23 +242,33 @@ class PepVN_Cache
 						&& $options['cache_methods']['mongo']['servers']
 						&& !empty($options['cache_methods']['mongo']['servers'])
 					) {
-						if(
-							isset($options['cache_methods']['mongo']['servers']['host'])
-							&& ($options['cache_methods']['mongo']['servers']['host'])
-							
-							&& isset($options['cache_methods']['mongo']['servers']['db'])
-							&& ($options['cache_methods']['mongo']['servers']['db'])
-							
-							&& isset($options['cache_methods']['mongo']['servers']['collection'])
-							&& ($options['cache_methods']['mongo']['servers']['collection'])
-						) {
-							$mongoClient = new \MongoClient($options['cache_methods']['mongo']['servers']['host']);
-							if($mongoClient) {
-								$this->_mongo = $mongoClient->selectDb($options['cache_methods']['mongo']['servers']['db'])->selectCollection($options['cache_methods']['mongo']['servers']['collection']);
-							}
-							
+						
+						$mongoClientType = false;
+						
+						if(class_exists('\MongoClient')) {
+							$mongoClientType = 'MongoClient';
 						}
 						
+						if(false !== $mongoClientType) {
+							
+							if(
+								isset($options['cache_methods']['mongo']['servers']['host'])
+								&& ($options['cache_methods']['mongo']['servers']['host'])
+								
+								&& isset($options['cache_methods']['mongo']['servers']['db'])
+								&& ($options['cache_methods']['mongo']['servers']['db'])
+								
+								&& isset($options['cache_methods']['mongo']['servers']['collection'])
+								&& ($options['cache_methods']['mongo']['servers']['collection'])
+							) {
+								$mongoClient = new \MongoClient($options['cache_methods']['mongo']['servers']['host']);
+								if($mongoClient) {
+									$this->_mongo = $mongoClient->selectDb($options['cache_methods']['mongo']['servers']['db'])->selectCollection($options['cache_methods']['mongo']['servers']['collection']);
+								}
+								
+							}
+						}
+							
 						unset($options['cache_methods']['mongo']['servers']);
 					}
 					
@@ -762,11 +772,10 @@ class PepVN_Cache
 					}
 				}
 				
-				if(self::CLEANING_MODE_ALL === $input_parameters['clean_mode']) {
-					foreach($this->_options['cache_methods'] as $method => $val1) {
-						$this->_clean_all_by_method($method);
-					}
-				} else if(self::CLEANING_MODE_EXPIRED === $input_parameters['clean_mode']) {
+				if(
+					(self::CLEANING_MODE_EXPIRED === $input_parameters['clean_mode'])
+					|| (self::CLEANING_MODE_ALL === $input_parameters['clean_mode'])
+				) {
 					
 					$keyCachesMethodsIsExpired = array();
 					
@@ -790,7 +799,18 @@ class PepVN_Cache
 									
 									if($val1 && isset($val1['e']) && !empty($val1['e'])) {
 										foreach($val1['e'] as $key2 => $val2) {
-											if($this->_is_expired($val2)) {
+											if(
+												(self::CLEANING_MODE_EXPIRED === $input_parameters['clean_mode'])
+											) {
+												if($this->_is_expired($val2)) {
+													if(isset($shortKeysMethodsCache[$key2])) {
+														$keyCachesMethodsIsExpired[$key1][$shortKeysMethodsCache[$key2]] = 1;
+													}
+													unset($val1['e'][$key2]);
+												}
+											} else if(
+												(self::CLEANING_MODE_ALL === $input_parameters['clean_mode'])
+											) {
 												if(isset($shortKeysMethodsCache[$key2])) {
 													$keyCachesMethodsIsExpired[$key1][$shortKeysMethodsCache[$key2]] = 1;
 												}
@@ -843,6 +863,12 @@ class PepVN_Cache
 							}
 							
 							unset($key1,$val1);
+						}
+					}
+					
+					if(self::CLEANING_MODE_ALL === $input_parameters['clean_mode']) {
+						foreach($this->_options['cache_methods'] as $method => $val1) {
+							$this->_clean_all_by_method($method);
 						}
 					}
 					

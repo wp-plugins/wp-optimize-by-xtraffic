@@ -949,6 +949,10 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 		
 		$input_options['limit'] = (int)$input_options['limit'];
 		
+		if(!isset($input_options['exclude_posts_ids'])) {
+			$input_options['exclude_posts_ids'] = array(0);
+		}
+		
 		$input_options['exclude_posts_ids'] = (array)$input_options['exclude_posts_ids'];
 		if(
 			isset(PepVN_Data::$cacheData[$classMethodKey]['posts_ids_added']) 
@@ -967,6 +971,10 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 			$input_options['key_cache'] = array();
 		}
 		$input_options['key_cache'] = (array)$input_options['key_cache'];
+		
+		if(!isset($input_options['post_id_less_than'])) {
+			$input_options['post_id_less_than'] = 0;
+		}
 		
 		$keyCacheProcessText = Utils::hashKey(array(
 			$classMethodKey
@@ -1019,7 +1027,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 			,'min_word' => 1
 			,'max_word' => 6
 			,'min_occur' => 2
-			,'min_char_each_word' => 4
+			,'min_char_each_word' => 3
 		));
 		
 		$groupKeywordsFromText = array();
@@ -1029,7 +1037,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 					foreach($valueOne as $keyTwo => $valueTwo) {
 						if($keyTwo) {
 							$valueTwo = (int)$valueTwo;
-							$groupKeywordsFromText[$keyTwo] = ceil($valueTwo * (PepVN_Data::countWords($keyTwo) * 1.5));
+							$groupKeywordsFromText[$keyTwo] = ceil($valueTwo * (PepVN_Data::countWords($keyTwo) * 2));
 						}
 					}
 				}
@@ -1075,6 +1083,13 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 				if(isset($valueOne['text']) && $valueOne['text']) {
 					$valueOne['text'] = AnalyzeText::cleanRawTextForProcessSearch($valueOne['text']);
 					if($valueOne['text']) {
+						
+						if(!isset($groupKeywordsFromText4[$valueOne['text']])) {
+							$groupKeywordsFromText4[$valueOne['text']] = $valueOne['weight'];
+						}
+						
+						reset($groupKeywordsFromText4);
+						
 						foreach($groupKeywordsFromText4 as $keyTwo => $valueTwo) {
 							
 							$valueTemp2 = substr_count($valueOne['text'], PepVN_Data::strtolower($keyTwo));
@@ -1090,7 +1105,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 								foreach($keyTwoTmp1 as $keyThree => $valueThree) {
 									if(preg_match('#^[^a-z0-9'.preg_quote('`~!@#$%^&*()-_=+{}[]\\\|;:\'",.<>/?+','#').']+#',$valueThree)) {
 										
-										$weight1 = $weight1 * 1.6 * ($numberImportantOccurrenceConsecutive * 1.11);
+										$weight1 = $weight1 * 1.6 * ($numberImportantOccurrenceConsecutive * 6);
 										
 										$numberImportantOccurrenceConsecutive++;
 									} else {
@@ -1100,6 +1115,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 								unset($keyTwoTmp1);
 								
 								$groupKeywordsFromText4[$keyTwo] += (int)$valueTemp2 * $weight1;
+								
 							}
 							
 						}
@@ -1202,10 +1218,12 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 		$rsGetTerms2 = array_keys($rsGetTerms2);
 		$rsGetTerms2 = $this->_clean_terms($rsGetTerms2);
 		
-		$postExcerpt1 = $post->post_content;
-		$postExcerpt1 = PepVN_Data::mb_substr($postExcerpt1, 0 , 360);
+		$parsePostData = $wpExtend->parsePostData($post);
+		$postExcerpt1 = $parsePostData['post_excerpt'];
 		
-		$allPostTextCombined = $post->post_title.' ' . PHP_EOL . ' ' . $post->post_excerpt . ' ' . PHP_EOL . implode(' ',$rsGetTerms2) . ' ' . PHP_EOL . ' ' . $post->post_content;
+		//$allPostTextCombined = $post->post_title.' ' . PHP_EOL . ' ' . $post->post_excerpt . ' ' . PHP_EOL . implode(' ',$rsGetTerms2) . ' ' . PHP_EOL . ' ' . $post->post_content;
+		$allPostTextCombined = $post->post_title.' ' . PHP_EOL . ' ' . $post->post_excerpt . ' ' . PHP_EOL . implode(' ',$rsGetTerms2) . ' ' . PHP_EOL . ' ' . $postExcerpt1;
+		//$allPostTextCombined = $post->post_title.' ' . PHP_EOL . implode(' ',$rsGetTerms2);
 		$allPostTextCombined = $this->_remove_escaped_string($allPostTextCombined);
 		
 		$patternsModulesReplaceText = array();
@@ -1226,7 +1244,6 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 						} else if($valueOne['module_mumber_of_items']>10) {
 							$valueOne['module_mumber_of_items'] = 10;
 						}
-						
 						
 						$groupModules_PositionsAddedToQueue[] = $valueOne['module_position'];
 						$groupModules_ByModuleType[$valueOne['module_type']][$valueOne['module_position']] = $valueOne;
@@ -1286,20 +1303,24 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 						'group_text_weight' => array(
 							array(
 								'text' => $post->post_title
-								,'weight' => 20
+								,'weight' => 16
 							)
+							
 							,array(
 								'text' => $post->post_excerpt
-								,'weight' => 2
+								,'weight' => 6
 							)
+							
 							,array(
 								'text' => implode(' ',$rsGetTerms2)
-								,'weight' => 30
+								,'weight' => 8
 							)
+							
 							,array(
 								'text' => $postExcerpt1
 								,'weight' => 2
 							)
+							
 						)
 						,'exclude_posts_ids' => array($post->ID)
 						,'post_id_less_than' => $post->ID
@@ -1362,20 +1383,20 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 						$valueOne['module_position'] = (int)$valueOne['module_position'];
 						
 						$postsIdsFound1 = array();
-					
+						
 						$rsSearchPost1 = $this->search_post_by_text($allPostTextCombined, array(
 							'group_text_weight' => array(
 								array(
 									'text' => $post->post_title
-									,'weight' => 20
+									,'weight' => 16
 								)
 								,array(
 									'text' => $post->post_excerpt
-									,'weight' => 2
+									,'weight' => 6
 								)
 								,array(
 									'text' => implode(' ',$rsGetTerms2)
-									,'weight' => 30
+									,'weight' => 8
 								)
 								,array(
 									'text' => $postExcerpt1
@@ -1383,7 +1404,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 								)
 							)
 							,'exclude_posts_ids' => array($post->ID)
-							,'post_id_less_than' => $post->ID
+							//,'post_id_less_than' => $post->ID
 							,'limit' => $valueOne['module_mumber_of_items']
 							,'key_cache' => $valueOne['module_type'].'_'.$valueOne['module_position']
 						));
@@ -1451,23 +1472,26 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 										'group_text_weight' => array(
 											array(
 												'text' => $post->post_title
-												,'weight' => 20
+												,'weight' => 16
 											)
+											
 											,array(
 												'text' => $post->post_excerpt
-												,'weight' => 2
+												,'weight' => 6
 											)
+											
 											,array(
 												'text' => implode(' ',$rsGetTerms2)
-												,'weight' => 30
+												,'weight' => 8
 											)
+											
 											,array(
 												'text' => $originalTextNeedProcess1
 												,'weight' => 2
 											)
 										)
 										,'exclude_posts_ids' => array($post->ID)
-										,'post_id_less_than' => $post->ID
+										//,'post_id_less_than' => $post->ID
 										,'limit' => $valueOne['module_mumber_of_items']
 										,'key_cache' => $valueOne['module_type'].'_'.$valueOne['module_position']
 									));
@@ -1527,6 +1551,7 @@ LIMIT 0,'.$input_parameters['option']['module_mumber_of_items'];
 			}
 			unset($tmp);
 		}
+		
 		unset($patternsModulesReplaceText);
 		
 		if(!empty($patternsEscaped1)) {

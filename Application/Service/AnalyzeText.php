@@ -20,9 +20,9 @@ class AnalyzeText
 	protected $_dbFullText = false;
 	
 	protected static $_weightOfFields = array(
-		'post_title' => 25
-		,'post_name' => 1
-		,'post_excerpt' => 5
+		'post_title' => 16
+		,'post_name' => 2
+		,'post_excerpt' => 6
 		//,'post_content' => 1
 	);
 	
@@ -187,7 +187,7 @@ class AnalyzeText
 			
 			if('y' === $options['db_has_fulltext_status']) {
 				
-				$weightOfFields['post_content'] = 30;
+				$weightOfFields['post_content'] = 1;
 				
 				$totalWeightOfFields = 0;
 				
@@ -429,16 +429,17 @@ LIMIT 0,3
 			
 			if('y' === $options['db_has_fulltext_status']) {
 				
-				$weightOfFields['post_content'] = 30;
+				$weightOfFields['post_content'] = 2;
 				
 				$arrayScoreMatchString = array();
 				
 				foreach($input_parameters['keywords'] as $keyword => $keywordWeight) {
+					
 					foreach($weightOfFields as $field => $weight) {
 						$arrayScoreMatchString[] = ' ( ( ( MATCH(`'.$tablePostName.'`.`'.$field.'`) AGAINST("'.$keyword.'" IN NATURAL LANGUAGE MODE) ) * '.$weightOfFields[$field].' ) * '.(float)$keywordWeight.')';
 					}
 					
-					$totalKeywordWeight += $keywordWeight / 1.5;
+					$totalKeywordWeight += $keywordWeight;
 				}
 				
 				$queryString1 = '
@@ -479,7 +480,7 @@ ORDER BY wpxtraffic_score DESC
 					foreach($weightOfFields as $field => $weight) {
 						$arrayScoreMatchString[] = ' ( ( IFNULL((ROUND((LENGTH(LOWER(`'.$tablePostName.'`.`'.$field.'`))-LENGTH(REPLACE(LOWER(`'.$tablePostName.'`.`'.$field.'`), "'.$keyword.'", "")))/'.$keywordLength.')),0) * '.$weight.') * '.(float)$keywordWeight.') ';
 					}
-					$totalKeywordWeight += $keywordWeight;
+					$totalKeywordWeight += $keywordWeight / 1.2;
 				}
 				
 				$queryString1 = '
@@ -560,6 +561,7 @@ ORDER BY wpxtraffic_score DESC
 									if($foundKeywordStatus) {
 									
 										$postLink = $wpExtend->get_permalink( $postId, false );
+										
 										if($postLink) {
 											
 											$postLink = trailingslashit($postLink);
@@ -929,6 +931,17 @@ ORDER BY wpxtraffic_score DESC
 	public static function cleanRawTextForProcessSearch($input_text)
 	{
 		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			,$input_text
+		));
+		
+		$tmp = TempDataAndCacheFile::get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
 		$input_text = (array)$input_text;
 		$input_text = implode(' ',$input_text);
 		
@@ -942,6 +955,8 @@ ORDER BY wpxtraffic_score DESC
 		$input_text = Text::replaceSpecialChar($input_text);
 		
 		$input_text = PepVN_Data::reduceSpace($input_text);
+		
+		TempDataAndCacheFile::set_cache($keyCache1, $input_text);
 		
 		return $input_text;
 	}

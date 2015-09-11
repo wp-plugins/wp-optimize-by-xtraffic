@@ -87,7 +87,12 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 			
 			add_action('wp', array($this,'wp_action_wp'), WP_PEPVN_PRIORITY_LAST);
 			
+			add_action('send_headers', array($this,'wp_action_send_headers'), WP_PEPVN_PRIORITY_LAST);
+			
+			add_action('wp_footer', array($this,'wp_action_wp_footer'), WP_PEPVN_PRIORITY_LAST);
+			
 			add_action('shutdown', array($this,'wp_action_shutdown'), WP_PEPVN_PRIORITY_LAST);
+			
 			
 		}
 		
@@ -96,6 +101,8 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		if($wpExtend->is_admin()) {
 			add_action('admin_notices', array($this, 'wp_action_admin_notices') );
 		}
+		
+		
 		
 	}
 	
@@ -120,6 +127,57 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 			);
 		}
 		
+		if(
+			!function_exists('mcrypt_encrypt')
+			|| !function_exists('mcrypt_get_iv_size')
+			|| !function_exists('mcrypt_decrypt')
+		) {
+			$message = sprintf('Plugin "<b>%s</b>" requires "<b><u>%s</u></b>" on the system to be used. Would you please contact your service provider or system administrator to install and activate this feature. <a href="%s" target="_blank">Details about "<b><u><i>%s</i></u></b>" here.</a>',
+				WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME
+				,'Mcrypt library (PHP)'
+				,'http://php.net/manual/en/book.mcrypt.php'
+				,'Mcrypt library (PHP)'
+			);
+			
+			$this->_noticesStore[] = array(
+				'text' => $message
+				, 'type' => 'error'
+			);
+		}
+		
+		if(
+			!function_exists('json_encode')
+			|| !function_exists('json_decode')
+		) {
+			$message = sprintf('Plugin "<b>%s</b>" requires "<b><u>%s</u></b>" on the system to be used. Would you please contact your service provider or system administrator to install and activate this feature. <a href="%s" target="_blank">Details about "<b><u><i>%s</i></u></b>" here.</a>',
+				WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME
+				,'PHP JSON extension'
+				,'http://php.net/manual/en/book.json.php'
+				,'PHP JSON extension'
+			);
+			
+			$this->_noticesStore[] = array(
+				'text' => $message
+				, 'type' => 'error'
+			);
+		}
+		
+		if(
+			!function_exists('simplexml_load_string')
+			|| !class_exists('\SimpleXMLElement')
+		) {
+			$message = sprintf('Plugin "<b>%s</b>" requires "<b><u>%s</u></b>" on the system to be used. Would you please contact your service provider or system administrator to install and activate this feature. <a href="%s" target="_blank">Details about "<b><u><i>%s</i></u></b>" here.</a>',
+				WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_NAME
+				,'PHP SimpleXML extension'
+				,'http://php.net/manual/en/book.simplexml.php'
+				,'PHP SimpleXML extension'
+			);
+			
+			$this->_noticesStore[] = array(
+				'text' => $message
+				, 'type' => 'error'
+			);
+		}
 	}
 	
 	public function initStatus()
@@ -166,6 +224,7 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		
 		$wpActionManager = new WpActionManager($this->di);
 		
+
     }
     
 	/*
@@ -174,21 +233,15 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 	*/
 	public function wp_action_wp_loaded() 
     {
-		
+		add_action( 'wp_ajax_nopriv_wppepvn_ajax_action', array($this,'ajax_action'), WP_PEPVN_PRIORITY_LAST);
+	}
+	
+	/*
+		This action hook is used to add additional headers to the outgoing HTTP response.
+	*/
+	public function wp_action_send_headers() 
+    {
 		$wpExtend = $this->di->getShared('wpExtend');
-		
-		if($wpExtend->is_admin()) {
-			if($wpExtend->isCurrentUserCanManagePlugin()) {
-				
-			}
-		}
-		
-		if(isset($_GET['action'])) {
-			if('wppepvn_ajax_action' === $_GET['action']) {
-				$ajaxHandle = $this->di->getShared('ajaxHandle');
-				$ajaxHandle->run();
-			}
-		}
 		
 	}
 	
@@ -204,26 +257,56 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 	}
 	
 	/*
+		The wp_footer action is triggered near the </body> tag of the user's template by the wp_footer() function.
+		Although this is theme-dependent, it is one of the most essential theme hooks, so it is fairly widely supported.
+	*/
+	public function wp_action_wp_footer() 
+    {
+		
+		$response = $this->di->getShared('response');
+		
+		if(!$response->isSent()) {
+			$response->send();
+		}
+		
+	}
+	
+	/*
 	*	@wp_action_shutdown
 	*	This action hook is fired once WordPress, all plugins, and the theme are fully loaded and instantiated.
 	*/
+	
 	public function wp_action_shutdown() 
+    {
+		$this->wp_plugin_activation_hook();
+		
+		$hook = $this->di->getShared('hook');
+		
+		if($hook->has_action('wp_shutdown')) {
+			$hook->do_action('wp_shutdown');
+		}
+	}
+	
+	public function ajax_action() 
     {
 		
 		$wpExtend = $this->di->getShared('wpExtend');
 		
-		if($wpExtend->is_admin()) {
-			if($wpExtend->isCurrentUserCanManagePlugin()) {
-				
-				if(isset($_GET[WP_PEPVN_CACHE_TRIGGER_CLEAR_KEY]) && $_GET[WP_PEPVN_CACHE_TRIGGER_CLEAR_KEY]) {
-					$cacheManager = $this->di->getShared('cacheManager');
-					$cacheManager->clean_cache(',all,');
+		if($wpExtend->isWpAjax()) {
+			
+			if(isset($_GET['action'])) {
+				if('wppepvn_ajax_action' === $_GET['action']) {
+					$ajaxHandle = $this->di->getShared('ajaxHandle');
+					$ajaxHandle->run();
 				}
 			}
+			
+			$backgroundQueueJobsManager = $this->di->getShared('backgroundQueueJobsManager');
+			$backgroundQueueJobsManager->receive();
+			
+			wp_die();
+			exit();
 		}
-		
-		$this->wp_plugin_activation_hook();
-		
 	}
 	
 	public function wp_plugin_activation_hook() 
@@ -257,6 +340,7 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 				
 				$cacheManager = $this->di->getShared('cacheManager');
 				$cacheManager->clean_cache(',all,');
+				
 			}
 		}
 		

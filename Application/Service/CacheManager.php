@@ -4,6 +4,7 @@ namespace WPOptimizeByxTraffic\Application\Service;
 use WPOptimizeByxTraffic\Application\Service\PepVN_Data
 	, WPOptimizeByxTraffic\Application\Service\PepVN_Cache
 	, WPOptimizeByxTraffic\Application\Service\PepVN_CacheSimpleFile
+	, WPOptimizeByxTraffic\Application\Model\WpOptions
 	, WpPepVN\DependencyInjectionInterface
 	, WpPepVN\DependencyInjection
 	, WpPepVN\System
@@ -19,12 +20,68 @@ class CacheManager
     {
 		$this->di = $di;
 		
-		//$wpExtend = $this->di->getShared('wpExtend');
+		$hook = $this->di->getShared('hook');
 		
+		$hook->add_action('wp_shutdown', array($this, 'action_wp_shutdown'));
+		
+	}
+	
+	public function action_wp_shutdown()
+	{
+		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$didCleanCacheAll = false;
+		
+		if($wpExtend->is_admin()) {
+			if($wpExtend->isCurrentUserCanManagePlugin()) {
+				
+				if(isset($_GET[WP_PEPVN_CACHE_TRIGGER_CLEAR_KEY]) && $_GET[WP_PEPVN_CACHE_TRIGGER_CLEAR_KEY]) {
+					$this->clean_cache(',all,');
+					$didCleanCacheAll = true;
+				}
+			}
+		}
+		
+		
+		$sessionKey = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG.'-CacheManager';
+		
+		$session = $this->di->getShared('session');
+		
+		if($session->has($sessionKey)) {
+			
+			if(!$didCleanCacheAll) {
+				$this->clean_cache($session->get($sessionKey));
+			}
+			
+			$session->set($sessionKey, '');
+			$session->remove($sessionKey);
+		}
+		
+	}
+	
+	public function registerCleanCache($data_type = ',common,')
+	{
+		$sessionData = '';
+		
+		$sessionKey = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG.'-CacheManager';
+		
+		$session = $this->di->getShared('session');
+		
+		if($session->has($sessionKey)) {
+			$sessionData .= $session->get($sessionKey);
+		}
+		
+		$sessionData .= $data_type;
+		
+		$session->set($sessionKey, $sessionData);
 	}
 	
 	public function clean_cache($data_type = ',common,')
 	{
+		
+		$hook = $this->di->getShared('hook');
+		
+		$wpExtend = $this->di->getShared('wpExtend');
 		
 		$data_type = (array)$data_type;
 		$data_type = implode(',',$data_type);
@@ -51,7 +108,7 @@ class CacheManager
 			$staticVarData['last_time_clean_cache_all'] = 0;
 		}
 		
-		if($staticVarData['last_time_clean_cache_all'] <= ( PepVN_Data::$defaultParams['requestTime'] - 86400)) {	//is timeout
+		if($staticVarData['last_time_clean_cache_all'] <= ( PepVN_Data::$defaultParams['requestTime'] - (86400 * 2))) {	//is timeout
 			$data_type['all'] = 1;
 		}
 		
@@ -64,8 +121,16 @@ class CacheManager
 		
 		unset($staticVarData,$staticVarObject);
 		
+		if($hook->has_action('before_clean_cache')) {
+			$hook->do_action('before_clean_cache');
+		}
+		
 		$timestampNow = PepVN_Data::$defaultParams['requestTime'];
 		$timestampNow = (int)$timestampNow;
+		
+		WpOptions::cleanCache();
+		
+		$wpExtend->cleanCache();
 		
 		//clean all cache data short time (<= 1 day)
 		if(PepVN_Data::$cacheDbObject) {
@@ -79,6 +144,8 @@ class CacheManager
 				'clean_mode' => PepVN_CacheSimpleFile::CLEANING_MODE_ALL
 			));
 		}
+		
+		wp_cache_flush();
 		
 		global $wp_object_cache;
 		if(isset($wp_object_cache) && $wp_object_cache) {
@@ -235,12 +302,13 @@ class CacheManager
 			$remote->request($value1['url'], $value1['config']);
 		}
 		
-		$hook = $this->di->getShared('hook');
-		
 		if($hook->has_action('clean_cache')) {
 			$hook->do_action('clean_cache');
 		}
 		
+		if($hook->has_action('after_clean_cache')) {
+			$hook->do_action('after_clean_cache');
+		}
 		
 		if($wpExtend->is_admin()) {
 			
