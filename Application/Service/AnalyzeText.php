@@ -118,7 +118,7 @@ class AnalyzeText
 	public function search_posts($input_parameters) 
 	{
 		
-		$classMethodKey = Hash::crc32b(__CLASS__ . '_' . __METHOD__);
+		$classMethodKey = Hash::crc32b(__CLASS__ . __METHOD__);
 		
 		$options = self::getOption();
 		
@@ -158,6 +158,7 @@ class AnalyzeText
 		$resultData = TempDataAndCacheFile::get_cache($keyCache1,true);
 		
 		if(null === $resultData) {
+			
 			global $wpdb;
 			
 			$wpExtend = $this->di->getShared('wpExtend');
@@ -618,7 +619,7 @@ ORDER BY wpxtraffic_score DESC
 	private function _frequencyOfAppearanceKeywordsInText_PrepareKeywords($keywords) 
 	{
 		
-		$classMethodKey = Hash::crc32b(__CLASS__ . '_' . __METHOD__);
+		$classMethodKey = Hash::crc32b(__CLASS__ . __METHOD__);
 		
 		$keyCache1 = Utils::hashKey(array(
 			$classMethodKey
@@ -647,7 +648,7 @@ ORDER BY wpxtraffic_score DESC
 	
 	public function frequencyOfAppearanceKeywordsInText($keywords,$text) 
 	{
-		$classMethodKey = Hash::crc32b(__CLASS__ . '_' . __METHOD__);
+		$classMethodKey = Hash::crc32b(__CLASS__ . __METHOD__);
 		
 		$keyCache1 = Utils::hashKey(array(
 			$classMethodKey
@@ -681,7 +682,7 @@ ORDER BY wpxtraffic_score DESC
 				}
 				
 				if($resultData[$key1]) {
-					$resultData[$key1] = $resultData[$key1] * strlen($key1) * 2.8;
+					$resultData[$key1] = $resultData[$key1] * strlen($key1) * 1.8;
 				}
 				
 			}

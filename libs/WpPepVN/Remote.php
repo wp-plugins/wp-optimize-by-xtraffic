@@ -4,6 +4,7 @@ namespace WpPepVN;
 use WpPepVN\DependencyInjection
 	,WpPepVN\Utils
 	,WpPepVN\Remote\Curl
+	,WpPepVN\System
 ;
 
 /**
@@ -146,7 +147,7 @@ class Remote
 					,$input_args
 				));
 				
-				$resultData = $this->_cacheFile->get($keyCache1);
+				$resultData = $this->_cacheFile->get($keyCache1,$cache_timeout);
 				
 				if(null !== $resultData) {
 					return $resultData;
@@ -196,7 +197,7 @@ class Remote
 		
 		if($cache_timeout > 0) {
 			if($this->_cacheFile) {
-				$this->_cacheFile->save($keyCache1, $resultData);
+				$this->_cacheFile->save($keyCache1, $resultData, $cache_timeout);
 			}
 		}
 		
@@ -209,6 +210,91 @@ class Remote
 	public function request($input_url, $input_args = false) 
 	{
 		return $this->get($input_url, $input_args);
+	}
+	
+	
+	public function getSafeImage($url, $folder_path)
+	{
+		$resultData = false;
+		
+		System::mkdir($folder_path);
+		
+		if(is_dir($folder_path) && is_writable($folder_path)) {
+			
+			$folder_path = Utils::trailingslashdir($folder_path);
+			
+			if(Utils::isUrl($url)) {
+				$parse_url = Utils::parse_url($url);
+				if(isset($parse_url['path']) && $parse_url['path']) {
+					$pathinfo = pathinfo($parse_url['path']);
+					if(isset($pathinfo['filename'])) {
+						$filePathTmp = $folder_path . $pathinfo['filename'].'.txt';
+						$filePathTmp = Utils::safeFileName($filePathTmp);
+						
+						$rsGet = $this->get($url,array(
+							'cache_timeout' => WP_PEPVN_CACHE_TIMEOUT_NORMAL
+						));
+						
+						if($rsGet) {
+							file_put_contents($filePathTmp,$rsGet);
+							unset($rsGet);
+							if(is_file($filePathTmp) && is_readable($filePathTmp)) {
+								$getimagesize = getimagesize($filePathTmp);
+								if($getimagesize) {
+									if(
+										isset($getimagesize[0])
+										&& ($getimagesize[0]>0)
+										
+										&& isset($getimagesize[1])
+										&& ($getimagesize[1]>0)
+										
+										&& isset($getimagesize['mime'])
+										&& ($getimagesize['mime'])
+									) {
+										$ext = false;
+										
+										if(preg_match('#image/jpe?g#i',$getimagesize['mime'])) {
+											$ext = 'jpg';
+										} else if(preg_match('#image/png#i',$getimagesize['mime'])) {
+											$ext = 'png';
+										} else if(preg_match('#image/gif#i',$getimagesize['mime'])) {
+											$ext = 'gif';
+										}
+										
+										if($ext) {
+											$pathinfo2 = pathinfo($filePathTmp);
+											if(isset($pathinfo2['filename'])) {
+												$newPath = $pathinfo2['dirname'] . DIRECTORY_SEPARATOR . $pathinfo2['filename'] . '.' . $ext;
+												rename($filePathTmp, $newPath);
+												if(is_file($newPath) && is_readable($newPath)) {
+													$pathinfo3 = pathinfo($newPath);
+													if(isset($pathinfo3['filename'])) {
+														$resultData = $getimagesize;
+														$resultData['width'] = $getimagesize[0];
+														$resultData['height'] = $getimagesize[1];
+														$resultData = array_merge($resultData,$pathinfo3);
+														$resultData['file_path'] = $newPath;
+													}
+												}
+											}
+										}
+										
+									}
+								}
+							}
+							
+							if($filePathTmp) {
+								System::unlink($filePathTmp);
+							}
+							
+						}
+						
+					}
+				}
+			}
+		}
+		
+		return $resultData;
 	}
 	
 }

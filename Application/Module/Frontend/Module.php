@@ -67,8 +67,6 @@ class Module extends \WpPepVN\Mvc\Module
 		$optimizeImages->initFrontend();
 		unset($optimizeImages);
 		
-		
-		
 		$hook = $this->di->getShared('hook');
 		$hook->add_filter('output_buffer_before_return', array($this, 'addPromotionTextToHtml'), (WP_PEPVN_PRIORITY_LAST - 1));
 		
@@ -79,6 +77,8 @@ class Module extends \WpPepVN\Mvc\Module
 		$wpExtend = $this->di->getShared('wpExtend');
 		
 		$tmp = $wpExtend->getWpOptimizeByxTrafficPluginPromotionInfo();
+		
+		$buffer = preg_replace('#<!--[^>]+'.preg_quote($tmp['data']['plugin_wp_url'],'#').'[^>]+-->#is','',$buffer);
 		
 		$buffer = PepVN_Data::appendTextToTagBodyOfHtml($tmp['html_comment_text'],$buffer);
 		

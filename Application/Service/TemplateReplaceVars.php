@@ -283,5 +283,4 @@ class TemplateReplaceVars
 		return $input_parameters['text'];
 	}
 	
-	
 }

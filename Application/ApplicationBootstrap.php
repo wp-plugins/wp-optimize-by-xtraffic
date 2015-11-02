@@ -4,6 +4,7 @@ namespace WPOptimizeByxTraffic\Application;
 use WpPepVN\DependencyInjection\FactoryDefault as DIFactoryDefault
 	,WPOptimizeByxTraffic\Application\Service\WpActionManager
 	,WpPepVN\Utils
+	,WpPepVN\System
 ;
 
 include_once(WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_LIBS_DIR . 'WpPepVN' . DIRECTORY_SEPARATOR . 'Mvc' . DIRECTORY_SEPARATOR . 'Application.php');
@@ -100,6 +101,7 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		
 		if($wpExtend->is_admin()) {
 			add_action('admin_notices', array($this, 'wp_action_admin_notices') );
+			add_action('network_admin_notices', array($this, 'wp_action_admin_notices') );
 		}
 		
 		
@@ -210,6 +212,28 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		
 		include_once WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_DIR . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 		
+		System::mkdir(WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_STORAGES_CACHE_GENERAL_DIR);
+		
+		/*
+		//Begin schedule events (wp cron jobs). Run every 1 minutes
+		add_filter( 'cron_schedules', array($this, 'action_cron_schedules_add_every_minute') );
+		
+		if(!wp_get_schedule( 'wppepvn_cronjob', array())) {
+			if(!wp_next_scheduled( 'wppepvn_cronjob', array())) {
+				$current_time = $wpExtend->current_time( 'timestamp' );
+				
+				wp_schedule_single_event( 
+					//((ceil($current_time/60) * 60) + 60)
+					$current_time
+					, 'wppepvn_every_minute'
+					, 'wppepvn_cronjob'
+					, array() 
+				);
+				
+			}
+		}
+		*/
+		
 		if($wpExtend->is_admin()) {
 			if($wpExtend->isCurrentUserCanManagePlugin()) {
 				$this->_defaultModuleName = 'Backend';
@@ -234,6 +258,10 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 	public function wp_action_wp_loaded() 
     {
 		add_action( 'wp_ajax_nopriv_wppepvn_ajax_action', array($this,'ajax_action'), WP_PEPVN_PRIORITY_LAST);
+		add_action( 'wp_ajax_wppepvn_ajax_action', array($this,'ajax_action'), WP_PEPVN_PRIORITY_LAST);
+		
+		add_action( 'wp_ajax_nopriv_wppepvn_cronjob', array($this,'cronjob_action'), WP_PEPVN_PRIORITY_LAST);
+		add_action( 'wp_ajax_wppepvn_cronjob', array($this,'cronjob_action'), WP_PEPVN_PRIORITY_LAST);
 	}
 	
 	/*
@@ -250,6 +278,7 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 			, inside the main WordPress function wp(). 
 		Useful if you need to have access to post data but can't use templates for output. 
 		Action function argument: WP object ($wp) by reference.
+		Run on front-end only, not run in backend
 	*/
 	public function wp_action_wp() 
     {
@@ -287,6 +316,17 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		}
 	}
 	
+	public function action_cron_schedules_add_every_minute( $schedules ) 
+	{
+		// Adds once weekly to the existing schedules.
+		$schedules['wppepvn_every_minute'] = array(
+			'interval' => 60
+			, 'display' => __( 'Every Minute' )
+		);
+		
+		return $schedules;
+	}
+	
 	public function ajax_action() 
     {
 		
@@ -294,19 +334,31 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		
 		if($wpExtend->isWpAjax()) {
 			
-			if(isset($_GET['action'])) {
-				if('wppepvn_ajax_action' === $_GET['action']) {
-					$ajaxHandle = $this->di->getShared('ajaxHandle');
-					$ajaxHandle->run();
-				}
-			}
-			
-			$backgroundQueueJobsManager = $this->di->getShared('backgroundQueueJobsManager');
-			$backgroundQueueJobsManager->receive();
+			$ajaxHandle = $this->di->getShared('ajaxHandle');
+			$ajaxHandle->run();
 			
 			wp_die();
 			exit();
 		}
+	}
+	
+	public function cronjob_action() 
+    {
+		echo '<h2>Cronjob Begin : '.time().' - '.date('Y-m-d H:i:s').'</h2>' . PHP_EOL;
+		
+		$wpExtend = $this->di->getShared('wpExtend');
+		
+		$backgroundQueueJobsManager = $this->di->getShared('backgroundQueueJobsManager');
+		$backgroundQueueJobsManager->receive();
+		
+		$cronjob = $this->di->getShared('cronjob');
+		$cronjob->run();
+		
+		echo '<h2>Cronjob End : '.time().' - '.date('Y-m-d H:i:s').'</h2>';
+		
+		wp_die();
+		exit();
+	
 	}
 	
 	public function wp_plugin_activation_hook() 
@@ -320,6 +372,8 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 				$session->set($sessionKey, 'n');
 				$session->remove($sessionKey);
 				
+				$this->_isPluginActivationStatus = true;
+				
 				$dashboard = $this->di->getShared('dashboard');
 				$dashboard->on_plugin_activation();
 
@@ -330,16 +384,17 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 				$optimizeLinks->migrateOptions();
 				
 				$optimizeImages = $this->di->getShared('optimizeImages');
-				$optimizeImages->migrateOptions();
+				$optimizeImages->on_plugin_activation();
 				
 				$analyzeText = $this->di->getShared('analyzeText');
 				$analyzeText->add_db_index();
 				
-				$optimizeImages = $this->di->getShared('optimizeImages');
-				$optimizeImages->on_plugin_activation();
-				
 				$cacheManager = $this->di->getShared('cacheManager');
 				$cacheManager->clean_cache(',all,');
+				
+				wp_clear_scheduled_hook('wppepvn_cronjob', array());
+				
+				wp_clear_scheduled_hook('wppepvn_cronjob');
 				
 			}
 		}
@@ -355,30 +410,35 @@ class ApplicationBootstrap extends \WpPepVN\Mvc\Application
 		$sessionKey = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG.'-plugin-activation-status';
 		$session->set($sessionKey, 'y');
 		
+		$this->_isPluginActivationStatus = true;
+		
 	}
 	
 	
 	public function wp_action_admin_notices() 
     {
-		foreach($this->_noticesStore as $keyOne => $valueOne) {
+		if(!$this->_isPluginActivationStatus) {
 			
-			unset($this->_noticesStore[$keyOne]);
-			
-			$class = '';
-			
-			if('success' === $valueOne['type']) {
-				$class = 'updated';
-			} else if('info' === $valueOne['type']) {
-				$class = 'updated';
-			} else if('warning' === $valueOne['type']) {
-				$class = 'update-nag';
-			} else if('error' === $valueOne['type']) {
-				$class = 'error';
+			foreach($this->_noticesStore as $keyOne => $valueOne) {
+				
+				unset($this->_noticesStore[$keyOne]);
+				
+				$class = '';
+				
+				if('success' === $valueOne['type']) {
+					$class = 'updated';
+				} else if('info' === $valueOne['type']) {
+					$class = 'updated';
+				} else if('warning' === $valueOne['type']) {
+					$class = 'update-nag';
+				} else if('error' === $valueOne['type']) {
+					$class = 'error';
+				}
+				
+				echo '<div class="'.$class.'" style="padding: 1%;">'.$valueOne['text'].'</div>';
 			}
 			
-			echo '<div class="'.$class.'" style="padding: 1%;">'.$valueOne['text'].'</div>';
 		}
-		
 	}
 	
 }

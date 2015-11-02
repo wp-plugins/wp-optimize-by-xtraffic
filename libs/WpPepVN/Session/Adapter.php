@@ -137,10 +137,6 @@ abstract class Adapter
 
 	/**
 	 * Check whether a session variable is set in an application context
-	 *
-	 *<code>
-	 *	var_dump($session->has('auth'));
-	 *</code>
 	 */
 	public function has($index)
 	{
@@ -185,10 +181,6 @@ abstract class Adapter
 
 	/**
 	 * Check whether the session has been started
-	 *
-	 *<code>
-	 *	var_dump($session->isStarted());
-	 *</code>
 	 */
 	public function isStarted()
 	{
@@ -197,10 +189,6 @@ abstract class Adapter
 
 	/**
 	 * Destroys the active session
-	 *
-	 *<code>
-	 *	var_dump($session->destroy());
-	 *</code>
 	 */
 	public function destroy()
 	{
@@ -213,7 +201,6 @@ abstract class Adapter
 	 * Returns the status of the current session. For PHP 5.3 this function will always return SESSION_NONE
 	 *
 	 *<code>
-	 *	var_dump($session->status());
 	 *
 	 *  // PHP 5.4 and above will give meaningful messages, 5.3 gets SESSION_NONE always
 	 *  if ($session->status() !== $session::SESSION_ACTIVE) {

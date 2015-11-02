@@ -257,10 +257,6 @@ class DependencyInjection implements DependencyInjectionInterface
 	/**
 	 * Allows to obtain a shared service using the array syntax
 	 *
-	 *<code>
-	 *	var_dump($di["request"]);
-	 *</code>
-	 *
 	 * @param string name
 	 * @return mixed
 	 */

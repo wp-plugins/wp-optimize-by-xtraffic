@@ -18,7 +18,7 @@ class System
 	
 	public static function extension_loaded($name)
 	{
-		$k = crc32('extension_loaded' . $name);
+		$k = 'z'.crc32('extension_loaded' . $name);
 		
 		if(isset(self::$_tempData[$k])) {
 			return self::$_tempData[$k];
@@ -30,7 +30,7 @@ class System
 	
 	public static function function_exists($name)
 	{
-		$k = crc32('function_exists' . $name);
+		$k = 'z'.crc32('function_exists_' . $name);
 		
 		if(isset(self::$_tempData[$k])) {
 			return self::$_tempData[$k];
@@ -42,7 +42,7 @@ class System
 	
 	public static function class_exists($name)
 	{
-		$k = crc32('class_exists' . $name);
+		$k = 'z'.crc32('class_exists' . $name);
 		
 		if(isset(self::$_tempData[$k])) {
 			return self::$_tempData[$k];
@@ -54,7 +54,7 @@ class System
 	
 	public static function file_exists($path)
 	{
-		return file_exists($filename);
+		return file_exists($path);
 	}
 	
 	public static function getWebServerSoftwareName()
@@ -193,7 +193,9 @@ class System
 		}
 		
 		if($dir) {
+			
 			if(is_writable($dir)) {
+				
 				if (is_dir($dir)) {
 					
 					$objects = false;
@@ -247,6 +249,81 @@ class System
 			}
 		} else {
 			$resultData['error']++;
+		}
+		
+		return $resultData;
+	}
+	
+    public static function scandirR($dir, $matchPattern = false) 
+	{
+		$resultData = array(
+			'files' => array()
+			,'dirs' => array()
+		);
+		
+		if($dir) {
+			
+			if(is_readable($dir)) {
+				
+				if (is_dir($dir)) {
+					
+					$dir = Utils::trailingslashdir($dir);
+					
+					$objects = scandir($dir);
+					
+					if(is_array($objects)) {
+						
+						$objects = array_diff($objects, array('.','..')); 
+						
+						if(!empty($objects)) {
+							
+							foreach ($objects as $obj) {
+								
+								$objPath = $dir . $obj;
+								
+								if (is_dir($objPath)) {
+									
+									$rsOne = self::scandirR($objPath,$matchPattern);
+									
+									$resultData['files'] = array_merge($resultData['files'],$rsOne['files']);unset($rsOne['files']);
+									
+									$resultData['dirs'] = array_merge($resultData['dirs'],$rsOne['dirs']);unset($rsOne['dirs']);
+									
+									unset($rsOne);
+									
+									if($matchPattern) {
+										if(preg_match($matchPattern,$objPath)) {
+											$resultData['dirs'][] = $objPath;
+										}
+									} else {
+										$resultData['dirs'][] = $objPath;
+									}
+								} else {
+									
+									if($matchPattern) {
+										if(preg_match($matchPattern,$objPath)) {
+											$resultData['files'][] = $objPath;
+										}
+									} else {
+										$resultData['files'][] = $objPath;
+									}
+								}
+							}
+						}
+						
+					}
+					
+				} else {
+					
+					if($matchPattern) {
+						if(preg_match($matchPattern,$dir)) {
+							$resultData['files'][] = $dir;
+						}
+					} else {
+						$resultData['files'][] = $dir;
+					}
+				}
+			}
 		}
 		
 		return $resultData;
@@ -415,5 +492,115 @@ class System
 		return $status;
 	}
 	
+	public static function ini_get($name)
+	{
+		$k = crc32('ini_get'.$name);
+		
+		if(!isset(self::$_tempData[$k])) {
+			self::$_tempData[$k] = ini_get($name);
+		}
+		
+		return self::$_tempData[$k];
+	}
 	
+	public static function isDisableFunction($func)
+	{
+		$k = crc32('isDisableFunction'.$func);
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			$disable_functions = self::ini_get('disable_functions');
+			$suhosin_blacklist = self::ini_get('suhosin.executor.func.blacklist');
+			
+			$func = preg_quote($func,'#');
+			
+			$pattern = '#([\s,]+'.$func.'|^'.$func.')#';
+			
+			if(preg_match($pattern, $disable_functions) || preg_match($pattern, $suhosin_blacklist)) {
+				self::$_tempData[$k] = true;
+			} else {
+				self::$_tempData[$k] = false;
+			}
+			
+		}
+		
+		return self::$_tempData[$k];
+	}
+	
+	
+	public static function isSafeMode()
+	{
+		$k = 'isSafeMode';
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			$safe_mode = self::ini_get('safe_mode');
+			$safe_mode = strtolower($safe_mode);
+			
+			if('on' === $safe_mode) {
+				self::$_tempData[$k] = true;
+			} else {
+				self::$_tempData[$k] = false;
+			}
+		}
+		
+		return self::$_tempData[$k];
+	}
+	
+	public static function fileperms($path)
+	{
+		$perms = substr(sprintf('%o', fileperms($path)), -4);
+		$perms = (string)$perms;
+		
+		return $perms;
+	}
+	
+	public static function setMaxHeavyExecution()
+	{
+		if(self::function_exists('ignore_user_abort')) {
+			@ignore_user_abort(true);
+		}
+		
+		if(self::function_exists('set_time_limit')) {
+			@set_time_limit(0);
+		}
+		
+		if(self::function_exists('ini_set')) {
+			@ini_set('memory_limit', -1);
+			@ini_set('max_execution_time',0);
+		}
+		
+	}
+	
+	public static function isOS32b()
+	{
+		$k = 'isOS32b';
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			if(4 === PHP_INT_SIZE) {
+				self::$_tempData[$k] = true;
+			} else {
+				self::$_tempData[$k] = false;
+			}
+		}
+		
+		return self::$_tempData[$k];
+	}
+	
+	public static function isOS64b()
+	{
+		$k = 'isOS64b';
+		
+		if(!isset(self::$_tempData[$k])) {
+			
+			if(8 === PHP_INT_SIZE) {
+				self::$_tempData[$k] = true;
+			} else {
+				self::$_tempData[$k] = false;
+			}
+		}
+		
+		return self::$_tempData[$k];
+	}
 }

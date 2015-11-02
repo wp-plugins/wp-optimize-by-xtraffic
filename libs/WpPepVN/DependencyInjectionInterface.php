@@ -115,11 +115,6 @@ interface DependencyInjectionInterface extends \ArrayAccess
     
 	/**
 	 * Allows to obtain a shared service using the array syntax
-	 *
-	 *<code>
-	 *	var_dump($di["request"]);
-	 *</code>
-	 *
 	 * @param string name
 	 * @return mixed
 	 */

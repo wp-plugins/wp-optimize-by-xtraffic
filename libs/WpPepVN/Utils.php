@@ -3,6 +3,7 @@ namespace WpPepVN;
 
 use WpPepVN\Text
 	, WpPepVN\Hash
+	, WpPepVN\System
 ;
 
 class Utils 
@@ -340,13 +341,39 @@ class Utils
 		return $input_path;
 	}
 	
+	public static function remove_special_chars_filename($filename)
+	{
+		$special_chars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}", chr(0));
+		
+		$filename = preg_replace( "#\x{00a0}#siu", ' ', $filename);
+		$filename = str_replace( $special_chars, '', $filename);
+		$filename = str_replace( array( '%20', '+' ), '-', $filename );
+		$filename = preg_replace( '/[\r\n\t -]+/', '-', $filename );
+		$filename = trim( $filename, '.-_' );
+		
+		$filename = trim($filename);
+		
+		return $filename;
+	}
+	
 	public static function safeFileName($filename)
 	{
 		$pathInfo = pathinfo($filename);
 		
 		if(isset($pathInfo['extension']) && isset($pathInfo['filename'])) {
+			
 			$pathInfo['filename'] = preg_replace('#[\.]+#i',' ',$pathInfo['filename']);
 			$pathInfo['extension'] = preg_replace('#[\.]+#i','.',$pathInfo['extension']);
+			
+			$pathInfo['extension'] = trim($pathInfo['extension']);
+			$pathInfo['filename'] = trim($pathInfo['filename']);
+			
+			$pathInfo['extension'] = self::remove_special_chars_filename($pathInfo['extension']);
+			$pathInfo['filename'] = self::remove_special_chars_filename($pathInfo['filename']);
+			
+			$pathInfo['extension'] = trim($pathInfo['extension']);
+			$pathInfo['filename'] = trim($pathInfo['filename']);
+			
 			$pathInfo['filename'] = Text::toSlug($pathInfo['filename']);
 			
 			if(isset($pathInfo['dirname'])) {
@@ -531,6 +558,149 @@ class Utils
 		
 		return false;
 	}
+	
+	public static function parseAttributeNameAndValue($text)
+	{
+		$k = crc32('parseAttributeNameAndValue_'.$text);
+		
+		if(isset(self::$_tempData[$k])) {
+			return self::$_tempData[$k];
+		}
+		
+		self::$_tempData[$k] = array();
+		
+		preg_match('#([a-z0-9\-\_]+)(=(\"|\')([^\'\"]+)\3)?#is',$text,$matched1);
+		
+		if(isset($matched1[1]) && $matched1[1]) {
+			if(isset($matched1[4]) && $matched1[4]) {
+				self::$_tempData[$k][$matched1[1]] = $matched1[4];
+			} else {
+				self::$_tempData[$k][$matched1[1]] = '';
+			}
+		}
+		
+		return self::$_tempData[$k];
+	}
+	
+	public static function parseAttributesNamesAndValues($text)
+	{
+		$k = crc32('parseAttributesNamesAndValues_'.$text);
+		
+		if(isset(self::$_tempData[$k])) {
+			return self::$_tempData[$k];
+		}
+		
+		self::$_tempData[$k] = array();
+		
+		$text = ' '.$text.' ';
+		
+		preg_match_all('#\s+([a-z0-9\-\_]+)(=(\"|\')[^\'\"]+\3)?#is',$text,$matched2);
+		
+		$matched2 = $matched2[0];
+		
+		foreach($matched2 as $key1 => $value1) {
+			
+			unset($matched2[$key1]);
+			
+			$value1 = self::parseAttributeNameAndValue($value1);
+			
+			if(!empty($value1)) {
+				self::$_tempData[$k] = array_merge(self::$_tempData[$k],$value1);
+			}
+			
+			unset($key1,$value1);
+		}
+		
+		return self::$_tempData[$k];
+	}
+	
+	public static function parseAttributesHtmlTag($text)
+	{
+		$k = crc32('prsatthttg'.$text);
+		
+		if(isset(self::$_tempData[$k])) {
+			
+			return self::$_tempData[$k];
+			
+		} else {
+			
+			self::$_tempData[$k] = array();
+			
+			preg_match('#<([^\s \t/>]+)([^>]*)/?>#is',$text,$matched1);
+			
+			if(isset($matched1[1]) && $matched1[1]) {
+				self::$_tempData[$k]['tag_name'] = $matched1[1];
+			}
+			
+			if(isset($matched1[2]) && $matched1[2]) {
+				
+				$matched1 = self::parseAttributesNamesAndValues($matched1[2]);
+				
+				if(!empty($matched1)) {
+					self::$_tempData[$k]['attributes'] = $matched1;
+				}
+			}
+			
+			return self::$_tempData[$k];
+		}
+	}
+	
+	
+	public static function setAttributeHtmlTag(
+		$text
+		, $attr_name
+		, $attr_value
+		, $replaceAttrStatus = false
+	) {
+		$rsParseAttributesHtmlTag = self::parseAttributesHtmlTag($text);
+		
+		if(null === $attr_value) {
+			$text = preg_replace('#\s+'.preg_quote($attr_name,'#').'(=(\"|\')[^\'\"]+\2)?#is',' ',$text);
+		} else {
+			
+			$newAttrValue = '';
+			
+			if(!$replaceAttrStatus) {
+				preg_match('#\s+('.preg_quote($attr_name,'#').')(=(\"|\')([^\'\"]+)\3)?#is',$text,$matched1);
+				if(isset($matched1[1]) && $matched1[1]) {
+					if(isset($matched1[4]) && $matched1[4]) {
+						$newAttrValue = ' '.$matched1[4].' ';
+					}
+				}
+			}
+			
+			if($newAttrValue) {
+				$newAttrValue = preg_replace('#\s+'.preg_quote($attr_value,'#').'\s+#is',' ',$newAttrValue);
+			}
+			
+			$newAttrValue .= ' '.$attr_value.' ';
+			$newAttrValue = Text::removeSpace($newAttrValue,' ');
+			$newAttrValue = Text::reduceSpace($newAttrValue);
+			
+			$text = preg_replace('#\s+'.preg_quote($attr_name,'#').'(=(\"|\')[^\'\"]+\2)?#is',' ',$text);
+			$text = preg_replace('#<'.preg_quote($rsParseAttributesHtmlTag['tag_name'],'#').'\s+#is','<'.$rsParseAttributesHtmlTag['tag_name'].' '.$attr_name.'="'.esc_attr($newAttrValue).'"',$text);
+		}
+		
+		return $text;
+	}
+	
+	public static function trailingslashdir($dir)
+	{
+		$dir = self::untrailingslashdir($dir);
+		
+		$dir .= DIRECTORY_SEPARATOR;
+		
+		return $dir;
+	}
+	
+	public static function untrailingslashdir($dir)
+	{
+		$dir = preg_replace('#[\\\/]+$#','',$dir);
+		
+		return $dir;
+	}
+	
+	
 }
 
 Utils::setDefaultParams();

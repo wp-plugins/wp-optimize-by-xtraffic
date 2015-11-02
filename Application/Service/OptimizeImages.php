@@ -186,7 +186,7 @@ class OptimizeImages
 				$image_src = $wpExtend->wp_get_attachment_image_src($post_thumbnail_id, $size);
 				
 				if($image_src && is_array($image_src)) {
-				
+					
 					$imgName = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG;
 					
 					$imgInfo = pathinfo($image_src[0]);
@@ -273,6 +273,70 @@ class OptimizeImages
 		return $html;
 	}
 	
+	
+	public function process_image_tag($img_tag) 
+	{
+		$parseImgTag = Utils::parseAttributesHtmlTag($img_tag);
+		
+		if(isset($parseImgTag['attributes']['src']) && $parseImgTag['attributes']['src']) {
+			
+			$imgSrc = $parseImgTag['attributes']['src'];
+			
+			$imgName = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_SLUG;
+			
+			$imgInfo = pathinfo($imgSrc);
+			if(isset($imgInfo['filename'])) {
+				$imgName = $imgInfo['filename'];
+			}
+			
+			$max_size_image_tag = $this->get_max_size_image_tag($img_tag);
+			
+			$processImageOptions1 = array(
+				'optimized_image_file_name' => $imgName
+				,'original_image_src' => $imgSrc
+				,'resize_max_width' => (isset($parseImgTag['attributes']['width']) ? $parseImgTag['attributes']['width'] : 0)
+				,'resize_max_height' => (isset($parseImgTag['attributes']['height']) ? $parseImgTag['attributes']['height'] : 0)
+				,'action' => 'do_process_image'
+			);
+			
+			
+			
+			if(isset($max_size_image_tag['width']) && ($max_size_image_tag['width']>0)) {
+				$processImageOptions1['resize_max_width'] = $max_size_image_tag['width'];
+			}
+			
+			if(isset($max_size_image_tag['height']) && ($max_size_image_tag['height']>0)) {
+				$processImageOptions1['resize_max_height'] = $max_size_image_tag['height'];
+			}
+			
+			$device_screen_width = $this->_check_get_screen_width();
+			
+			if($device_screen_width>0) {
+				if($processImageOptions1['resize_max_width'] > $device_screen_width) {
+					if($processImageOptions1['resize_max_height']>0) {
+						$processImageOptions1['resize_max_height'] = ($device_screen_width * $processImageOptions1['resize_max_height']) / $processImageOptions1['resize_max_width'];
+					}
+					$processImageOptions1['resize_max_width'] = $device_screen_width;
+				}
+			}
+			
+			$processImageOptions1['resize_max_width'] = (int)$processImageOptions1['resize_max_width'];
+			$processImageOptions1['resize_max_height'] = (int)$processImageOptions1['resize_max_height'];
+			
+			$rsProcessImage1 = $this->process_image($processImageOptions1);
+			
+			unset($processImageOptions1);
+			
+			if($rsProcessImage1['image_optimized_file_url']) {
+				$imgSrc = $rsProcessImage1['image_optimized_file_url'];
+				$img_tag = Utils::setAttributeHtmlTag($img_tag,'src',$imgSrc,true);
+			}
+			
+		}
+		
+		return $img_tag;
+		
+	}
 	
 	public function preview_processed_image() 
 	{
@@ -379,6 +443,7 @@ class OptimizeImages
 			,'optimize_images_override_title' => ''
 			
 			,'optimize_images_optimize_image_file_enable' => ''
+			,'optimize_images_only_handle_file_when_uploading_enable' => ''
 			,'optimize_images_file_minimum_width_height' => 150
 			,'optimize_images_file_maximum_width_height' => 0
 			,'optimize_images_auto_resize_images_enable' => ''
@@ -505,6 +570,29 @@ class OptimizeImages
 		
 	}
 	
+	public function on_plugin_activation()
+	{
+		$this->migrateOptions();
+		
+		//set chmod executable file optimize image
+		$dir = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'includes/optimize-images/';
+		$rsScandirR = System::scandirR($dir);
+		if(isset($rsScandirR['files']) && ($rsScandirR['files']) && !empty($rsScandirR['files'])) {
+			foreach($rsScandirR['files'] as $key1 => $value1) {
+				if($value1 && is_file($value1)) {
+					if(preg_match('#(gifsicle|jpegtran|optipng|pngquant)$#',$value1)) {
+						if(!is_executable($value1)) {
+							if(!System::isSafeMode()) {
+								@chmod($value1, 0755);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		$this->_remove_old_structure_file();
+	}
 	
 	private function _fixFileName($file_name)
 	{
@@ -1505,6 +1593,9 @@ class OptimizeImages
 										$valueTemp1 = $imgOptimizedFilePath1;
 										
 										if($valueTemp1 && is_file($valueTemp1)) {
+											
+											$this->optimize_lossy_image_file($valueTemp1);
+											
 											$valueTemp2 = filesize($valueTemp1);
 											if($valueTemp2 && ($valueTemp2>0)) {
 												$rs_getimagesize = $this->_getimagesize($valueTemp1);
@@ -2613,12 +2704,252 @@ class OptimizeImages
 
 	} 
 	
+	public function isHasGmagick()
+	{
+		if(System::extension_loaded('gmagick')) {
+			if(System::class_exists('\Gmagick')) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
+	public function isHasImagick()
+	{
+		if(System::extension_loaded('imagick')) {
+			if(System::class_exists('\Imagick')) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
-	public function on_plugin_activation()
+	public function optimize_lossy_image_file($original_file_path)
+	{
+		
+		if(is_file($original_file_path) && is_readable($original_file_path)) {
+			clearstatcache(true, $original_file_path);
+			$original_file_size = filesize($original_file_path);
+			
+			if($original_file_size > 0) {
+				
+				$rsGetImageFileInfo = $this->_getImageFileInfo($original_file_path);
+				
+				if(isset($rsGetImageFileInfo['image_type']) && $rsGetImageFileInfo['image_type']) {
+					
+					$optimizedImageTmpFilePath = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_STORAGES_CACHE_GENERAL_DIR . md5($original_file_path . mt_rand()) .'_'. basename($original_file_path) . '.tmp';
+					
+					copy($original_file_path,$optimizedImageTmpFilePath);
+					
+					if(is_file($optimizedImageTmpFilePath)) {
+						
+						if(
+							('gif' === $rsGetImageFileInfo['image_type'])
+							&& PepVN_Images::isAnimation($original_file_path)
+						) {
+							
+						} else {
+							
+							if($this->isHasGmagick()) {
+								try {
+									$gmagick = new \Gmagick( $optimizedImageTmpFilePath );
+									$gmagick->stripimage();
+									$gmagick->setimageformat( strtoupper($rsGetImageFileInfo['image_type']) );
+									$gmagick->writeimage( $optimizedImageTmpFilePath );
+									$gmagick->destroy();
+									unset($gmagick);
+								} catch ( Exception $e ) {
+									
+								}
+							}
+							
+							if($this->isHasImagick()) {
+								try {
+									$imagick = new \Imagick( $optimizedImageTmpFilePath );
+									$imagick->stripImage();
+									$imagick->setImageFormat( strtoupper($rsGetImageFileInfo['image_type']) );
+									$imagick->setImageCompressionQuality(90);
+									$imagick->writeImage( $optimizedImageTmpFilePath );
+									$imagick->clear();
+									unset($gmagick);
+								} catch ( Exception $e ) {
+									
+								}
+							}
+							
+							clearstatcache(true, $optimizedImageTmpFilePath);
+							$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+							
+							if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+								$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+								if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+									unlink($original_file_path);
+									copy($optimizedImageTmpFilePath,$original_file_path);
+								}
+							}
+						}
+						
+						if(
+							!System::isSafeMode()
+							&& !System::isDisableFunction('exec')
+							&& ( strtolower(PHP_OS) === 'linux')
+						) {
+							
+							if('jpg' === $rsGetImageFileInfo['image_type']) {
+								
+								$toolPath = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'includes/optimize-images/linux/';
+								
+								if(System::isOS64b()) {
+									$toolPath .= 'x64/';
+								}
+								
+								$toolPath .= 'jpegtran';
+								
+								if(is_file($toolPath) && is_executable($toolPath)) {
+									
+									// run jpegtran - non-progressive
+									copy($original_file_path,$optimizedImageTmpFilePath);
+									exec( $toolPath . ' -copy none -optimize -outfile ' . escapeshellarg( $optimizedImageTmpFilePath ) . ' ' . escapeshellarg( $optimizedImageTmpFilePath ) );
+									
+									clearstatcache(true, $optimizedImageTmpFilePath);
+									if(is_file($optimizedImageTmpFilePath)) {
+										clearstatcache(true, $optimizedImageTmpFilePath);
+										$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+										
+										clearstatcache(true, $original_file_path);
+										$original_file_size = filesize($original_file_path);
+										
+										if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+											$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+											if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+												unlink($original_file_path);
+												copy($optimizedImageTmpFilePath,$original_file_path);
+											}
+										}
+									}
+									
+									
+									// run jpegtran - progressive
+									copy($original_file_path,$optimizedImageTmpFilePath);
+									exec( $toolPath . ' -copy none -optimize -progressive -outfile ' . escapeshellarg( $optimizedImageTmpFilePath ) . ' ' . escapeshellarg( $optimizedImageTmpFilePath ) );
+									
+									clearstatcache(true, $optimizedImageTmpFilePath);
+									if(is_file($optimizedImageTmpFilePath)) {
+										clearstatcache(true, $optimizedImageTmpFilePath);
+										$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+										
+										clearstatcache(true, $original_file_path);
+										$original_file_size = filesize($original_file_path);
+										
+										if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+											$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+											if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+												unlink($original_file_path);
+												copy($optimizedImageTmpFilePath,$original_file_path);
+											}
+										}
+										
+									}
+								}
+								
+							} else if('png' === $rsGetImageFileInfo['image_type']) {
+								
+								$toolPath = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'includes/optimize-images/linux/pngquant';
+								if(is_file($toolPath) && is_executable($toolPath)) {
+									copy($original_file_path,$optimizedImageTmpFilePath);
+									exec( $toolPath . ' --quality=70-90 --force --speed=5 --output='.escapeshellarg( $optimizedImageTmpFilePath ).' ' . escapeshellarg( $optimizedImageTmpFilePath ) );
+									
+									clearstatcache(true, $optimizedImageTmpFilePath);
+									if(is_file($optimizedImageTmpFilePath)) {
+										
+										$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+										
+										clearstatcache(true, $original_file_path);
+										$original_file_size = filesize($original_file_path);
+										
+										if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+											$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+											if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+												unlink($original_file_path);
+												copy($optimizedImageTmpFilePath,$original_file_path);
+											}
+										}
+										
+									}
+								}
+								
+								
+								$toolPath = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'includes/optimize-images/linux/optipng';
+								if(is_file($toolPath) && is_executable($toolPath)) {
+									copy($original_file_path,$optimizedImageTmpFilePath);
+									exec( $toolPath . ' -o1 -clobber -fix -quiet -strip all ' . escapeshellarg( $optimizedImageTmpFilePath ) );
+									
+									clearstatcache(true, $optimizedImageTmpFilePath);
+									if(is_file($optimizedImageTmpFilePath)) {
+										$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+										
+										clearstatcache(true, $original_file_path);
+										$original_file_size = filesize($original_file_path);
+										
+										if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+											$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+											if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+												unlink($original_file_path);
+												copy($optimizedImageTmpFilePath,$original_file_path);
+											}
+										}
+									}
+								}
+							} else if('gif' === $rsGetImageFileInfo['image_type']) {
+								
+								$toolPath = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_APPLICATION_DIR . 'includes/optimize-images/linux/gifsicle';
+								if(is_file($toolPath) && is_executable($toolPath)) {
+									copy($original_file_path,$optimizedImageTmpFilePath);
+									exec( $toolPath . ' -b -O6 --careful -o ' . escapeshellarg( $optimizedImageTmpFilePath ) .' '.escapeshellarg( $optimizedImageTmpFilePath ) );
+									
+									clearstatcache(true, $optimizedImageTmpFilePath);
+									if(is_file($optimizedImageTmpFilePath)) {
+										$optimizedImageTmpFileSize = filesize($optimizedImageTmpFilePath);
+										
+										clearstatcache(true, $original_file_path);
+										$original_file_size = filesize($original_file_path);
+										
+										if(($optimizedImageTmpFileSize > 0) && ($original_file_size > $optimizedImageTmpFileSize)) {
+											$tmp = PepVN_Images::getImageInfo($optimizedImageTmpFilePath, false);
+											if(isset($tmp['image_type']) && $tmp['image_type'] && ($rsGetImageFileInfo['image_type'] === $tmp['image_type'])) {
+												unlink($original_file_path);
+												copy($optimizedImageTmpFilePath,$original_file_path);
+											}
+										}
+										
+									}
+								}
+							}
+							
+						}
+						
+						clearstatcache(true, $optimizedImageTmpFilePath);
+						if(is_file($optimizedImageTmpFilePath)) {
+							unlink($optimizedImageTmpFilePath);
+						}
+					}
+					
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	private function _remove_old_structure_file()
 	{
 		
 		$dir = $this->_folderStorePath;
+		
 		$objects = scandir($dir);
 		
 		if(is_array($objects)) {
@@ -2642,5 +2973,26 @@ class OptimizeImages
 	}
 	
 	
+	public function findAndOptimizeLossyImageFiles($dir)
+	{
+		$imageExtensionsAllow = $this->imageExtensionsAllow;
+		
+		$matchPattern = '#('.implode('|',$imageExtensionsAllow).')$#is';
+		
+		$rsScandirR = System::scandirR($dir,$matchPattern);
+		
+		unset($rsScandirR['dirs']);
+		
+		$rsScandirR['files'] = array_unique($rsScandirR['files']);
+		
+		foreach($rsScandirR['files'] as $key1 => $value1) {
+			
+			unset($rsScandirR['files'][$key1]);
+			
+			$this->optimize_lossy_image_file($value1);
+			
+		}
+		
+	}
 }
 

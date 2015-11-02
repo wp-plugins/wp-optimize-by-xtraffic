@@ -4,7 +4,9 @@ namespace WPOptimizeByxTraffic\Application\Service;
 use WPOptimizeByxTraffic\Application\Model\WpOptions
 	,WpPepVN\Utils
 	,WpPepVN\Hash
+	,WpPepVN\Text
 	,WpPepVN\DependencyInjectionInterface
+	,WPOptimizeByxTraffic\Application\Service\TempDataAndCacheFile
 ;
 
 class OptimizeLinks
@@ -222,7 +224,7 @@ class OptimizeLinks
 	{
 		
 		$keyCache1 = Utils::hashKey(array(
-			'_parse_data_custom_keywords'
+			__CLASS__ . __METHOD__
 			,$text
 		));
 		
@@ -251,6 +253,10 @@ class OptimizeLinks
 			$text = explode(PHP_EOL,$text);
 
 			foreach($text as $key1 => $value1) {
+				
+				$value1 = preg_replace('#\[\[[^\[\]]+\]\]#','',$value1);
+				
+				$value1 = trim($value1);
 				
 				$temp1 = $this->_explode_and_clean_data($value1);
 				
@@ -311,23 +317,24 @@ class OptimizeLinks
 		
 	}
 	
-	private function _get_data_custom_keywords()
+	
+	
+	private function _fetch_raw_data_custom_keywords()
 	{
-		$classMethodKey = Hash::crc32b(__CLASS__ . '_' . __METHOD__);
 		
 		$keyCache1 = Utils::hashKey(array(
-			$classMethodKey
+			__CLASS__ . __METHOD__
 		));
 		
-		$group_keywords1 = TempDataAndCacheFile::get_cache($keyCache1);
+		$resultData = TempDataAndCacheFile::get_cache($keyCache1);
 		
-		if(null === $group_keywords1) {
+		if(null === $resultData) {
 			
 			$options = self::getOption();
 			
 			$wpExtend = $this->di->getShared('wpExtend');
 		
-			$group_keywords1 = array();
+			$resultData = '';
 			
 			$data_custom = trim($options['data_custom']); 
 			
@@ -381,6 +388,37 @@ class OptimizeLinks
 			$data_custom = trim($data_custom);
 			
 			if (!empty($data_custom) ) {
+				$resultData = $data_custom;
+			}
+			
+			TempDataAndCacheFile::set_cache($keyCache1,$resultData);
+		}
+		
+		return $resultData;
+	}
+	
+	
+	
+	private function _get_data_custom_keywords()
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+		));
+		
+		$group_keywords1 = TempDataAndCacheFile::get_cache($keyCache1);
+		
+		if(null === $group_keywords1) {
+			
+			$options = self::getOption();
+			
+			$wpExtend = $this->di->getShared('wpExtend');
+		
+			$group_keywords1 = array();
+			
+			$data_custom = $this->_fetch_raw_data_custom_keywords();
+			
+			if (!empty($data_custom) ) {
 				$group_keywords1 = $this->_parse_data_custom_keywords($data_custom, array(
 					'case_sensitive' => $options['autolinks_case_sensitive']
 				));
@@ -391,6 +429,196 @@ class OptimizeLinks
 		
 		return $group_keywords1;
 	}
+	
+	private function _get_terms_name()
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+		));
+		
+		$resultData = TempDataAndCacheFile::get_cache($keyCache1);
+		
+		if(null === $resultData) {
+			
+			$resultData = array();
+			
+			$wpExtend = $this->di->getShared('wpExtend');
+			
+			$terms = $wpExtend->getTermsName();
+			
+			foreach($terms as $key1 => $value1) {
+				
+				unset($terms[$key1]);
+				
+				if($value1 && !empty($value1)) {
+					
+					$value1 = implode(PHP_EOL,$value1);
+					
+					$value1 = Text::strtolower($value1);
+					
+					$value1 = explode(PHP_EOL,$value1);
+					
+					$value1 = PepVN_Data::cleanArray($value1);
+					
+					$value1 = array_unique($value1);
+					
+					$resultData[$key1] = $value1;
+					
+				}
+				
+				unset($value1,$key1);
+				
+			}
+			
+			TempDataAndCacheFile::set_cache($keyCache1,$resultData);
+		}
+		
+		return $resultData;
+	}
+	
+	private function _parseCustomAttributes($text)
+	{
+		$k = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $text
+		));
+		
+		if(isset(self::$_tempData[$k])) {
+			return self::$_tempData[$k];
+		}
+		
+		$resultData = array();
+		
+		preg_match('#\[\[([^\[\]]+)\]\]#',$text,$matched1);
+		
+		if(isset($matched1[1]) && $matched1[1]) {
+			
+			$matched1 = html_entity_decode($matched1[1], ENT_QUOTES | ENT_HTML401 | ENT_XML1 | ENT_XHTML | ENT_HTML5, 'UTF-8');
+			
+			$resultData = Utils::parseAttributesNamesAndValues($matched1);
+			
+		}
+		
+		self::$_tempData[$k] = $resultData;
+		
+		return $resultData;
+	}
+	
+	/*
+		$keywords = array(
+			'keyword' => weight
+		);
+	*/
+	private function _parseWeightsOfKeywords($keywords)
+	{
+		$k = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			, $keywords
+		));
+		
+		if(isset(self::$_tempData[$k])) {
+			return self::$_tempData[$k];
+		}
+		
+		$data_custom = $this->_fetch_raw_data_custom_keywords();
+		
+		if(!empty($data_custom)) {
+			
+			$data_custom = (array)$data_custom;
+			$data_custom = implode(PHP_EOL,$data_custom);
+			$data_custom = trim($data_custom);
+			$data_custom = Text::strtolower($data_custom);
+			$data_custom = explode(PHP_EOL,$data_custom);
+			
+			$data_custom = PepVN_Data::cleanArray($data_custom);
+			
+			if(!empty($data_custom)) {
+				
+				$data_custom = array_unique($data_custom);
+				
+			}
+		}
+		
+		if(!$data_custom || empty($data_custom) || !is_array($data_custom)) {
+			$data_custom = array();
+		}
+		
+		$terms = $this->_get_terms_name();
+		
+		$tmp = '';
+		
+		$categoryRegExp = false;
+		
+		if(isset($terms['category']) && $terms['category'] && !empty($terms['category'])) {
+			$tmp = implode(PHP_EOL,$terms['category']);
+			$tmp = preg_quote($tmp,'#');
+			$tmp = explode(PHP_EOL,$tmp);
+			$tmp = implode('|',$tmp);
+			if($tmp) {
+				$categoryRegExp = '#('.$tmp.')#is';
+			}
+		}
+		
+		$postTagRegExp = false;
+		
+		if(isset($terms['post_tag']) && $terms['post_tag'] && !empty($terms['post_tag'])) {
+			$tmp = implode(PHP_EOL,$terms['post_tag']);
+			$tmp = preg_quote($tmp,'#');
+			$tmp = explode(PHP_EOL,$tmp);
+			$tmp = implode('|',$tmp);
+			if($tmp) {
+				$postTagRegExp = '#('.$tmp.')#is';
+			}
+		}
+		
+		unset($terms,$tmp);
+		
+		foreach($keywords as $keyword => $weight) {
+			
+			$maxWeight = 1;
+			
+			if($maxWeight>0.7) {
+				if($postTagRegExp) {
+					if(preg_match($postTagRegExp,$keyword)) {
+						$maxWeight = 0.7;
+					}
+				}
+			}
+			
+			if($maxWeight>0.5) {
+				if($categoryRegExp) {
+					if(preg_match($categoryRegExp,$keyword)) {
+						$maxWeight = 0.5;
+					}
+				}
+			}
+			
+			$keyword_preg_quote = preg_quote($keyword,'#');
+			
+			foreach($data_custom as $key2 => $value2) {
+				if(preg_match('#(\,|\;)('.$keyword_preg_quote.')(\,|\;)#i',','.$value2.',')) {
+					
+					$value2 = $this->_parseCustomAttributes($value2);
+					
+					if($value2 && isset($value2['w']) && $value2['w']) {
+						$value2['w'] = (int)$value2['w'];
+						if($value2['w'] > $maxWeight) {
+							$maxWeight = $value2['w'];
+						}
+					}
+				}
+			}
+			
+			$keywords[$keyword] = ceil($weight * $maxWeight);
+		}
+		
+		self::$_tempData[$k] = $keywords;
+		
+		return $keywords;
+		
+	}
+	
 	
 	public function process_text($text)
 	{
@@ -497,6 +725,8 @@ class OptimizeLinks
 				}
 				
 				if(!empty($group_keywords2)) {
+					
+					$group_keywords2 = $this->_parseWeightsOfKeywords($group_keywords2);
 					
 					arsort($group_keywords2);
 					

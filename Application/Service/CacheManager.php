@@ -128,6 +128,56 @@ class CacheManager
 		$timestampNow = PepVN_Data::$defaultParams['requestTime'];
 		$timestampNow = (int)$timestampNow;
 		
+		if(
+			isset($data_type['all'])
+		) {
+			
+			$arrayPaths = array();
+			
+			$keyTemp = WP_CONTENT_PEPVN_DIR . 'cache' . DIRECTORY_SEPARATOR . 'static-files' . DIRECTORY_SEPARATOR;
+			$arrayPaths[$keyTemp] = 24;	//hours
+			
+			$keyTemp = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_STORAGES_CACHE_DIR . 'images' . DIRECTORY_SEPARATOR;
+			$arrayPaths[$keyTemp] = 24;	//hours
+			
+			foreach($arrayPaths as $path1 => $timeout) {
+				unset($arrayPaths[$path1]);
+				
+				$timeout = (int)$timeout;
+				$timeoutSeconds = $timeout * 3600;
+				
+				if($path1) {
+					
+					$objects = System::scandir($path1);
+					
+					foreach($objects as $objIndex => $objPath) {
+						unset($objects[$objIndex]);
+						
+						if($objPath) {
+							if(is_file($objPath)) {
+								if(is_readable($objPath) && is_writable($objPath)) {
+									$fileatime = fileatime($objPath);
+									if($fileatime && ($fileatime > 0)) {
+										if(($fileatime + $timeoutSeconds) <= $timestampNow) {	//is timeout
+											System::unlink($objPath);
+										}
+									} else {
+										$filemtime = filemtime($objPath);
+										if($filemtime && ($filemtime > 0)) {
+											if(($filemtime + $timeoutSeconds) <= $timestampNow) {	//is timeout
+												System::unlink($objPath);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					
+				}
+			}
+		}
+		
 		WpOptions::cleanCache();
 		
 		$wpExtend->cleanCache();
@@ -181,9 +231,7 @@ class CacheManager
 					unset($objects[$objIndex]);
 					if($objPath) {
 						if(is_file($objPath)) {
-							if(is_readable($objPath) && is_writable($objPath)) {
-								unlink($objPath);
-							}
+							System::unlink($objPath);
 						}
 					}
 				}
@@ -213,56 +261,6 @@ class CacheManager
 				PepVN_Data::$cacheByTagObject->clean(array(
 					'clean_mode' => PepVN_Cache::CLEANING_MODE_ALL
 				));
-			}
-		}
-		
-		if(
-			isset($data_type['all'])
-		) {
-			
-			$arrayPaths = array();
-			
-			$keyTemp = WP_CONTENT_PEPVN_DIR . 'cache' . DIRECTORY_SEPARATOR . 'static-files' . DIRECTORY_SEPARATOR;
-			$arrayPaths[$keyTemp] = 24;	//hours
-			
-			$keyTemp = WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_STORAGES_CACHE_DIR . 'images' . DIRECTORY_SEPARATOR;
-			$arrayPaths[$keyTemp] = 24;	//hours
-			
-			foreach($arrayPaths as $path1 => $timeout) {
-				unset($arrayPaths[$path1]);
-				
-				$timeout = (int)$timeout;
-				$timeoutSeconds = $timeout * 3600;
-				
-				if($path1) {
-					
-					$objects = System::scandir($path1);
-					
-					foreach($objects as $objIndex => $objPath) {
-						unset($objects[$objIndex]);
-						
-						if($objPath) {
-							if(is_file($objPath)) {
-								if(is_readable($objPath) && is_writable($objPath)) {
-									$fileatime = fileatime($objPath);
-									if($fileatime && ($fileatime > 0)) {
-										if(($fileatime + $timeoutSeconds) <= $timestampNow) {	//is timeout
-											unlink($objPath);
-										}
-									} else {
-										$filemtime = filemtime($objPath);
-										if($filemtime && ($filemtime > 0)) {
-											if(($filemtime + $timeoutSeconds) <= $timestampNow) {	//is timeout
-												unlink($objPath);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					
-				}
 			}
 		}
 		
@@ -304,6 +302,14 @@ class CacheManager
 		
 		if($hook->has_action('clean_cache')) {
 			$hook->do_action('clean_cache');
+		}
+		
+		if(
+			isset($data_type['all'])
+		) {
+			if($hook->has_action('clean_cache_all')) {
+				$hook->do_action('clean_cache_all');
+			}
 		}
 		
 		if($hook->has_action('after_clean_cache')) {

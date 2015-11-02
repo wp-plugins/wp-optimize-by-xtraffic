@@ -394,7 +394,7 @@ class JSMin_JSMinException extends \Exception
         // some code
     
         // make sure everything is assigned properly
-        //parent::__construct($message, $code, $previous);
+        //parent::__construct($message, $code, $previous); 
     }
 
     // custom string representation of object

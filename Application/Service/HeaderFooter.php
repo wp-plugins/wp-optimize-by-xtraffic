@@ -96,7 +96,9 @@ class HeaderFooter
 		$options = HeaderFooter::getOption();
 		
 		echo '<script language="javascript" type="text/javascript">
+var wppepvn_site_url = "',$wpExtend->site_url(),'/";
 var wppepvn_admin_ajax_url = "',$wpExtend->admin_url('admin-ajax.php'),'";
+var wppepvn_cronjob_url = wppepvn_admin_ajax_url + "?action=wppepvn_cronjob";
 var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI,'";
 </script>';
 		
@@ -135,7 +137,9 @@ var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_
 		$wpExtend = $this->di->getShared('wpExtend');
 		
 		echo '<script language="javascript" type="text/javascript">
+var wppepvn_site_url = "',$wpExtend->site_url(),'/";
 var wppepvn_admin_ajax_url = "',$wpExtend->admin_url('admin-ajax.php'),'";
+var wppepvn_cronjob_url = wppepvn_admin_ajax_url + "?action=wppepvn_cronjob";
 var wp_optimize_by_xtraffic_plugin_root_uri = "',WP_OPTIMIZE_BY_XTRAFFIC_PLUGIN_ROOT_URI,'";
 </script>';
 		

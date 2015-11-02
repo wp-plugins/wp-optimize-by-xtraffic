@@ -74,11 +74,6 @@ class Group implements \Countable, \ArrayAccess, \Iterator
 
 	/**
 	 * Checks if an index exists
-	 *
-	 *<code>
-	 * var_dump(isset($message['database']));
-	 *</code>
-	 *
 	 * @param int index
 	 * @return boolean
 	 */

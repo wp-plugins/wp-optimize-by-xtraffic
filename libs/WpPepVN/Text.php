@@ -3,6 +3,8 @@
 namespace WpPepVN;
 
 use WpPepVN\Text\Slug as TextSlug
+	,WpPepVN\Utils
+	,WpPepVN\System
 ;
 
 
@@ -25,6 +27,8 @@ abstract class Text
 	const RANDOM_NOZERO = 4;
 	
 	public static $defaultParams = false;
+	
+	protected static $_tempData = array();
 	
 	public static function setDefaultParams()
 	{
@@ -60,11 +64,12 @@ abstract class Text
 				unset($key1,$value1);
 			}
 			unset($arrayVietnameseChars);
+			
+			self::$defaultParams['mb_internal_encoding'] = mb_internal_encoding();
+			
 		}
 	}
 	
-		
-
 	/**
 	 * Converts strings to camelize style
 	 *
@@ -277,11 +282,34 @@ abstract class Text
 		return $result;
 	}
 	
+	public static function strtolower($input_text,$input_encoding = 'UTF-8') 
+	{
+		if(System::function_exists('mb_convert_case')) {
+			return mb_convert_case($input_text, MB_CASE_LOWER, $input_encoding);
+		} else {
+			return strtolower($input_text);
+		}
+	}
+	
+	public static function strtoupper($input_text,$input_encoding = 'UTF-8') 
+	{
+		if(System::function_exists('mb_convert_case')) {
+			return mb_convert_case($input_text, MB_CASE_UPPER, $input_encoding);
+		} else {
+			return strtolower($input_text);
+		}
+	}
 	
 	public static function toSlug($string, $separator = '-', $replace = null, $lowercase = true)
 	{
 		$string = self::decodeText($string);
+		
 		$string = self::removeVietnameseMark($string);
+		
+		if(System::function_exists('remove_accents')) {
+			$string = remove_accents($string);
+		}
+		
 		return TextSlug::generate($string, $separator, $replace, $lowercase);
 	}
 	
@@ -419,7 +447,80 @@ abstract class Text
 		
 		return $s;
 	}
+	
+	
+	public static function similar_text($s1,$s2)
+	{
+		
+		$k = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+			,$s1
+			,$s2
+		));
+		
+		if(isset(self::$_tempData[$k])) {
+			return self::$_tempData[$k];
+		} else {
+			self::$_tempData[$k] = 0;	//0:not similar, 100 : exact (percent)
+			
+			$totalPercents = array();
+			
+			$s1 = (string)$s1;
+			$s2 = (string)$s2;
+			
+			$s1 = self::safeText($s1);
+			$s2 = self::safeText($s2);
+			
+			similar_text($s1,$s2,$percent);
+			$totalPercents[] = (float)$percent;
+			
+			similar_text($s2,$s1,$percent);
+			$totalPercents[] = (float)$percent;
+			
+			$s1_tmp = self::toSlug($s1,' ');
+			$s2_tmp = self::toSlug($s2,' ');
+			
+			similar_text($s1_tmp,$s2_tmp,$percent);
+			$totalPercents[] = (float)$percent;
+			
+			similar_text($s2_tmp,$s1_tmp,$percent);
+			$totalPercents[] = (float)$percent;
+			
+			self::$_tempData[$k] = array_sum($totalPercents) / count($totalPercents);
+			
+			/*
+			$s1_levenshtein = mb_substr($s1,0,255,'UTF-8');
+			$s2_levenshtein = mb_substr($s2,0,255,'UTF-8');
+			
+			$percent = levenshtein($s1_levenshtein, $s2_levenshtein);
+			if($percent >= 0) {
+			}
+			*/
+			
+			self::$_tempData[$k] = (float)self::$_tempData[$k];
+			
+			return self::$_tempData[$k];
+		}
+		
+	}
+	
+	public static function substr($string, $start, $length = NULL, $encoding = NULL)
+	{
+		if(!$encoding) {
+			$encoding = self::$defaultParams['mb_internal_encoding'];
+		}
+		return mb_substr($string, $start, $length, $encoding);
+	}
+	
+	public static function strlen($string, $encoding = NULL)
+	{
+		if(!$encoding) {
+			$encoding = self::$defaultParams['mb_internal_encoding'];
+		}
+		
+		return mb_strlen($string, $encoding);
+	}
+	
 }
-
 
 Text::setDefaultParams();

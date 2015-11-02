@@ -4,7 +4,7 @@ Donate link: http://blog-xtraffic.pep.vn/
 Tags: optimize, image, image protection, images, post, posts, page, comments, links, seo, google, automatic, plugin, cache, categories, category, comment, content, feed, feeds, link, watermark, watermarking, pages, photo, photos, picture, pictures, plugins, Post, rss, search, tag, tags, text, wordpress, javascript, css, stylesheet, style, minify, combine, speed, header, head, footer, performance, images lazy load, lazy load
 Requires at least: 3.0.1
 Tested up to: 4.2.4
-Stable tag: 5.1.3
+Stable tag: 5.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,7 @@ Thank the authors who talked about us :) . We always try to do it better in the 
 * ***Optimize Links*** : automatically link keywords in your posts and comments with your focused links or best related posts. This plugin allows you to set nofollow attribute and open links in a new window.
   * Make external links open in new window and add nofollow attribute
   * Add nofollow links (include internal links & external links)
+  * Set weight of links and keywords
 * ***Optimize Images*** : 
   * Automatically adds alt and title attributes to all images in all posts specified by your settings (friendly SEO).
   * Auto resize images to fit the screen width of the device (Increase website's Google PageSpeed Insights point).
@@ -108,6 +109,13 @@ To install the plugin "***WP Optimize By xTraffic***" and get it working :
 4. Watermark Images By Photo (Logo)
 
 == Changelog ==
+
+= 5.1.5 =
+* Fix some issue.
+
+= 5.1.4 =
+* Add weight of links and keywords Optimize Links.
+* Fix minify javascript
 
 = 5.1.3 =
 * Fix some issue.

@@ -45,7 +45,6 @@ class Cronjob
 			}
 		}
 		
-		
 		if($doCronjobsStatus) {
 			if(isset($staticVarData['is_processing_cronjob_status']) && $staticVarData['is_processing_cronjob_status']) {
 				
@@ -65,6 +64,8 @@ class Cronjob
 		}
 		
 		if($doCronjobsStatus) {
+			
+			System::setMaxHeavyExecution();
 			
 			$staticVarData['last_time_process_cronjob'] = PepVN_Data::$defaultParams['requestTime'];
 			
@@ -109,13 +110,8 @@ class Cronjob
 			
 			$this->_staticVarObject->save($staticVarData,'m');
 			
-			$backgroundQueueJobsManager = $this->di->getShared('backgroundQueueJobsManager');
+			//never use backgroundQueueJobsManager->request(); here because infinite loop
 			
-			$backgroundQueueJobsManager->request();
-			
-			if(function_exists('spawn_cron')) {
-				spawn_cron();
-			}
 		}
 		
 		return $resultData;

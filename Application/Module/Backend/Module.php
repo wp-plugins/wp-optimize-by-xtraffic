@@ -46,6 +46,11 @@ class Module extends \WpPepVN\Mvc\Module
 		
 		$headerFooter = $this->di->getShared('headerFooter');
 		$headerFooter->initBackend();
+		
+		if(isset($_GET['findAndOptimizeLossyImageFilesStatus'])) {
+			$optimizeImages = $this->di->getShared('optimizeImages');
+			$optimizeImages->findAndOptimizeLossyImageFiles(WP_PEPVN_SITE_UPLOADS_DIR);
+		}
 	}
 	
 	

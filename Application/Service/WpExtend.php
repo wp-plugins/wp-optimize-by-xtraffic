@@ -926,6 +926,73 @@ class WpExtend extends TempData
 		}
 	}
 	
+	public function getTermsName()
+	{
+		
+		$keyCache1 = Utils::hashKey(array(
+			__CLASS__ . __METHOD__
+		));
+		
+		$tmp = PepVN_Data::$cacheObject->get_cache($keyCache1);
+		
+		if(null !== $tmp) {
+			return $tmp;
+		}
+		
+		$resultData = array();
+		
+		$rsGetAllAvailableTaxonomies = $this->get_taxonomies(
+			array(
+			  'public'   => true
+			)
+			, 'objects'
+			, 'and'
+		);
+		
+		foreach($rsGetAllAvailableTaxonomies as $keyOne => $valueOne) {
+			
+			unset($rsGetAllAvailableTaxonomies[$keyOne]);
+			
+			if($valueOne) {
+				
+				if(isset($valueOne->name) && $valueOne->name) {
+					
+					$terms = get_terms( $valueOne->name, array(
+						'orderby'           => 'name', 
+						'order'             => 'ASC',
+						'hide_empty'        => false, 
+					));
+					
+					if($terms) {
+						
+						if(is_array($terms) && !empty($terms) && !is_wp_error($terms)) {
+							
+							foreach($terms as $keyTwo => $valueTwo) {
+								
+								unset($terms[$keyTwo]);
+								
+								if($valueTwo) {
+									
+									if(isset($valueTwo->name) && $valueTwo->name) {
+										
+										$resultData[$valueOne->name][] = $valueTwo->name;
+										
+									}
+								}
+							}
+						}
+					}
+					
+					
+				}
+			}
+		}
+		
+		PepVN_Data::$cacheObject->set_cache($keyCache1, $resultData);
+		
+		return $resultData;
+	}
+	
 	public function getAllPostTypes($output = 'objects')
 	{
 		
@@ -977,8 +1044,9 @@ class WpExtend extends TempData
 		return $resultData;
 	}
 	
-	public function getAllTaxonomies($output = 'objects')
-	{
+	public function getAllTaxonomies(
+		$output = 'objects'	//'names' or 'objects'
+	) {
 		
 		$keyCache1 = Utils::hashKey(array(
 			__CLASS__ . __METHOD__
@@ -1029,7 +1097,7 @@ class WpExtend extends TempData
 		
 		$keyCache1 = Utils::hashKey(array(
 			__CLASS__ . __METHOD__
-			,$output 
+			//,$output 
 		));
 		
 		$resultData = PepVN_Data::$cacheObject->get_cache($keyCache1);
@@ -1369,9 +1437,31 @@ class WpExtend extends TempData
 		}
 	}
 	
+	public function isPagenow($pagesnow) 
+	{
+		$pagesnow = (array)$pagesnow;
+		
+		if(isset($GLOBALS['pagenow']) && $GLOBALS['pagenow'] && in_array($GLOBALS['pagenow'], $pagesnow)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public function isLoginPage() 
 	{
-		return in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'));
+		
+		$k = 'isLoginPage';
+		
+		if(isset(self::$_wpextend_tempData[$k])) {
+			return self::$_wpextend_tempData[$k];
+		} else {
+			
+			self::$_wpextend_tempData[$k] = $this->isPagenow(array('wp-login.php', 'wp-register.php'));
+			
+			return self::$_wpextend_tempData[$k];
+		}
+		
 	}
 	
 	public function getPaged() 

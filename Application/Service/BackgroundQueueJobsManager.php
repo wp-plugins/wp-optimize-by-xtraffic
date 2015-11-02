@@ -32,7 +32,7 @@ class BackgroundQueueJobsManager
 		
 		$this->_staticVarObject = new ServiceStaticVar(md5('WPOptimizeByxTraffic/Application/Service/BackgroundQueueJobsManager/construct'), $tmp);
 		
-		$this->_configs['url'] = $wpExtend->admin_url('admin-ajax.php').'?__ts='.PepVN_Data::$defaultParams['requestTime'];
+		$this->_configs['url'] = $wpExtend->admin_url('admin-ajax.php').'?action=wppepvn_cronjob&__ts='.PepVN_Data::$defaultParams['requestTime'];
 		
 		$this->_configs['key_data_send'] = 'wppepvn_bgqumn_dtecs';
 		
@@ -82,6 +82,7 @@ class BackgroundQueueJobsManager
 			$session->set($sessionKey, '');
 			
 			$session->remove($sessionKey);
+			
 		}
 		
 	}
@@ -112,17 +113,6 @@ class BackgroundQueueJobsManager
 		
 		$doQueueJobsStatus = true;
 		
-		/*
-		if($doQueueJobsStatus) {
-			if(isset($staticVarData['last_time_process_queue_jobs']) && $staticVarData['last_time_process_queue_jobs']) {
-				$doQueueJobsStatus = false;
-				if(($staticVarData['last_time_process_queue_jobs'] + (1 * 1)) < PepVN_Data::$defaultParams['requestTime']) {	//is timeout 
-					$doQueueJobsStatus = true;
-				}
-			}
-		}
-		*/
-		
 		if($doQueueJobsStatus) {
 			if(isset($staticVarData['is_processing_queue_jobs_status']) && $staticVarData['is_processing_queue_jobs_status']) {
 				
@@ -137,11 +127,9 @@ class BackgroundQueueJobsManager
 			}
 		}
 		
-		if(WP_PEPVN_DEBUG) {
-			//$doQueueJobsStatus = true;
-		}
-		
 		if($doQueueJobsStatus) {
+			
+			System::setMaxHeavyExecution();
 			
 			$staticVarData['last_time_process_queue_jobs'] = PepVN_Data::$defaultParams['requestTime'];
 			$staticVarData['is_processing_queue_jobs_status'] = true;
@@ -202,6 +190,7 @@ class BackgroundQueueJobsManager
 	
 	public function request($data = array())
 	{
+		
 		$secret_key_data_send = $this->_configs['secret_key_data_send'];
 		
 		$data = (array)$data;

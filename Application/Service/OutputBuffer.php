@@ -16,7 +16,7 @@ class OutputBuffer
     public function initFrontend() 
     {
 		if(function_exists('ob_start')) {
-			ob_start(array(&$this, 'output_callback'));
+			ob_start(array($this, 'output_callback'));
 		}
 	}
 	
@@ -26,7 +26,9 @@ class OutputBuffer
 		
 		$wpExtend = $this->di->getShared('wpExtend');
 		
-		$buffer = $hook->apply_filters('output_buffer_before_return', $buffer);
+		if($hook->has_filter('output_buffer_before_return')) {
+			$buffer = $hook->apply_filters('output_buffer_before_return', $buffer);
+		}
 		
 		return $buffer;
 	}

@@ -14,12 +14,14 @@
 
 			<!-- Nav tabs -->
 			<ul class="nav nav-tabs" role="tablist">
-			<li role="presentation" class="active">
-			<a href="#optimize-alt-title" aria-controls="optimize-alt-title" role="tab" data-toggle="tab">Optimize ALT/TITLE</a>
-			</li>
-			<li role="presentation">
-			<a href="#optimize-image-file" aria-controls="optimize-image-file" role="tab" data-toggle="tab">Optimize Image File</a>
-			</li>
+			
+				<li role="presentation" class="active">
+					<a href="#optimize-alt-title" aria-controls="optimize-alt-title" role="tab" data-toggle="tab">Optimize ALT/TITLE</a>
+				</li>
+				
+				<li role="presentation">
+					<a href="#optimize-image-file" aria-controls="optimize-image-file" role="tab" data-toggle="tab">Optimize Image File</a>
+				</li>
 
 			</ul>
 		</div>
@@ -149,6 +151,22 @@
 							</div>
 							
 							<hr />
+							
+							<div style="<?php echo (WP_PEPVN_DEBUG ? '' : 'display:none;') ?>">
+								
+								<h4 style="margin-bottom: 20px;">Only handle file when uploading  : </h4>
+								
+								<div class="" style="margin-left:5%;margin-bottom: 20px;">
+									<div class="checkbox">
+										<label>
+											<h4 style="margin: 0;">
+												<?php echo $form->render('optimize_images_only_handle_file_when_uploading_enable'); ?>&nbsp;<?php $translate->e('Enable "Only handle file when uploading"'); ?>
+											</h4>
+										</label>
+									</div>
+									<p style="margin-left:25px; color:red; margin-bottom: 0;"><i><?php //$translate->e('Warning : This option will help your site load faster. However, in some cases, web layout will be error. If an error occurs, you should disable this option.'); ?></i></p>
+								</div>
+							</div>
 							
 							<div>
 								<h4 style="margin-bottom: 20px;">Automatically resize the images :</h4>

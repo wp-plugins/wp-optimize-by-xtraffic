@@ -150,6 +150,98 @@ class PepVN_Data
 			
 			self::$defaultParams['microtime_start'] = microtime(true);
 			self::$defaultParams['microtime_start'] = (float)self::$defaultParams['microtime_start'];
+			
+			self::$defaultParams['allow_html_tags']['text'] = array(
+				'p'
+				,'span'
+				,'strong'
+				,'div'
+				
+				//table 
+				,'table'
+				,'caption'
+				,'th'
+				,'tr'
+				,'td'
+				,'thead'
+				,'tbody'
+				,'tfoot'
+				,'col'
+				,'colgroup'
+				
+				,'a'
+				
+				,'em'
+				,'b'
+				,'u'
+				,'i'
+				,'h1'
+				,'h2'
+				,'h3'
+				,'h4'
+				,'h5'
+				,'h6'
+				,'ul'
+				,'ol'
+				,'li'
+				,'pre'
+				
+				,'article'
+				,'aside'
+				
+				,'center'
+				,'cite'
+				,'code'
+				,'dd'
+				,'del'
+				,'dfn'
+				,'dl'
+				,'dt'
+				,'figcaption'
+				,'figure'
+				,'footer'
+				,'header'
+				,'s'
+				,'small'
+				,'sub'
+				,'summary'
+				,'time'
+				,'section'
+				,'details'
+				,'summary'
+				
+			);
+			
+			self::$defaultParams['allow_html_tags']['non_text'] = array(
+				'br'
+				,'img'
+				,'hr'
+				
+				,'video'
+				,'source'
+				,'audio'
+			);
+			
+			self::$defaultParams['allow_html_attributes'] = array(
+				'src'
+				,'alt'
+				,'title'
+				,'href'
+				
+				,'align'
+				,'border'
+				,'cellpadding'
+				,'cellspacing'
+				
+				,'height'
+				,'width'
+				,'border'
+				,'type'
+				,'controls'
+				
+				,'frameborder'
+				,'allowfullscreen'
+			);
 		}
 	}
 	
@@ -288,12 +380,20 @@ class PepVN_Data
 	
 	public static function strtolower($input_text,$input_encoding = 'UTF-8') 
 	{
-		return mb_convert_case($input_text, MB_CASE_LOWER, $input_encoding);
+		if(System::function_exists('mb_convert_case')) {
+			return mb_convert_case($input_text, MB_CASE_LOWER, $input_encoding);
+		} else {
+			return strtolower($input_text);
+		}
 	}
 	
 	public static function strtoupper($input_text,$input_encoding = 'UTF-8') 
 	{
-		return mb_convert_case($input_text, MB_CASE_UPPER, $input_encoding);
+		if(System::function_exists('mb_convert_case')) {
+			return mb_convert_case($input_text, MB_CASE_UPPER, $input_encoding);
+		} else {
+			return strtolower($input_text);
+		}
 	}
 	
 	public static function gmdate_gmt($input_timestamp)
@@ -2025,7 +2125,96 @@ if(typeof('.$keyStoreJs.') === "undefined") { '.$keyStoreJs.' = new Array(); }
 	
 	
 	
+	static function removeBOM($input_text)
+	{
+		
+		if(false !== stripos($input_text,"\xEF\xBB\xBF")) {
+			$input_text = str_replace("\xEF\xBB\xBF","",$input_text);
+		}
+		
+		return $input_text;  
+	}
 	
+	
+	static function fixHtmlPage($input_html_page_text)
+	{
+		
+		$resultData = trim($input_html_page_text);
+		
+		if($resultData) {
+			
+			$input_html_page_text = self::removeBOM($input_html_page_text); 
+			
+			$doc = new \DOMDocument;
+			libxml_use_internal_errors(TRUE); 
+			
+			$hackstring = ' <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> ';
+			
+			$input_html_page_text = preg_replace('/<html[^>]*>\s*<head[^>]*>/i',' <html xmlns="http://www.w3.org/1999/xhtml"> <head> '.$hackstring, $input_html_page_text, 1, $counts);
+			
+			if(!$counts) {
+				$input_html_page_text = $hackstring.' '.$input_html_page_text;
+			}
+			
+			$doc->loadHTML($input_html_page_text);
+			
+			$input_html_page_text = $doc->saveHTML();
+			if($input_html_page_text) {
+				$input_html_page_text = trim($input_html_page_text);
+				if($input_html_page_text) {
+					$resultData = $input_html_page_text;
+				}
+			}
+			libxml_clear_errors();
+			$doc = NULL;unset($doc);
+		}
+		
+		
+		return $resultData;
+	}
+	
+	
+	static function getAllImagesTags($text,$strictStatus = false)
+	{
+		$resultData = array();
+		
+		if(preg_match_all('#<img[^>]+\\\?>#i', $text, $matched1)) {
+			
+			if(isset($matched1[0]) && is_array($matched1[0]) && (!empty($matched1[0]))) {
+				
+				$matched1 = $matched1[0];
+				
+				foreach($matched1 as $key1 => $value1) {
+					unset($matched1[$key1]);
+					
+					$rsOne = Utils::parseAttributesHtmlTag($value1);
+					
+					if(isset($rsOne['attributes'])) {
+						
+						if($strictStatus) {
+							if(isset($rsOne['attributes']['src']) && $rsOne['attributes']['src'] && Utils::isUrl($rsOne['attributes']['src'])) {
+								$resultData[$value1] = array(
+									'full' => $value1
+									,'attributes' => $rsOne['attributes']
+								);
+							}
+						} else {
+							$resultData[$value1] = array(
+								'full' => $value1
+								,'attributes' => $rsOne['attributes']
+							);
+						}
+						
+					}
+					
+					
+					unset($key1,$value1,$rsOne);
+				}
+			}
+		}
+		
+		return $resultData;
+	}
 	
 	
 }//class PepVN_Data

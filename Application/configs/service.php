@@ -25,7 +25,8 @@ use WpPepVN\Cache\Frontend\Data as CacheFrontendData
 	,WPOptimizeByxTraffic\Application\Service\BackgroundQueueJobsManager as ServiceBackgroundQueueJobsManager
 	,WPOptimizeByxTraffic\Application\Service\TemplateReplaceVars as ServiceTemplateReplaceVars
 	,WPOptimizeByxTraffic\Application\Service\Language as ServiceLanguage
-	
+	,WPOptimizeByxTraffic\Application\Service\Cronjob as ServiceCronjob
+	,WPOptimizeByxTraffic\Application\Service\WordnetApi as ServiceWordnetApi
 	
 ;
 
@@ -40,14 +41,10 @@ $di->set('wpExtend', $wpExtend, true);
 
 if($wpExtend->is_admin()) {
 	$di->set('adminNotice', function() use ($di) {
-		
 		$adminNotice = new \WPOptimizeByxTraffic\Application\Module\Backend\Service\AdminNotice();
-		
 		return $adminNotice;
-		
 	}, true);
 }
-
 
 $di->set('notice', function() {
     return new \WPOptimizeByxTraffic\Application\Service\Notice();
@@ -67,6 +64,7 @@ $di->set('crypt', function() use ($di) {
 	$crypt->setCipher('rijndael-256');
 	$crypt->setMode('cbc');
 	$crypt->setPadding(0);
+	
 	return $crypt;
 }, true);
 
@@ -88,7 +86,6 @@ $di->set('view', function () use ($config,$di) {
 	$view->setTemplateAfter('layout');
 	
     return $view;
-	
 }, true);
 
 $di->set(
@@ -146,8 +143,6 @@ $di->set(
     }
 	, true
 );
-
-
 
 /*
 *	Config for only this plugin
@@ -242,6 +237,14 @@ $di->set('backgroundQueueJobsManager', $backgroundQueueJobsManager, true);
 
 $di->set('templateReplaceVars', function() use ($di) {
     return new ServiceTemplateReplaceVars($di);
+}, true);
+
+$di->set('cronjob', function() use ($di) {
+    return new ServiceCronjob($di);
+}, true);
+
+$di->set('wordnetApi', function() use ($di) {
+    return new ServiceWordnetApi($di);
 }, true);
 
 $di->set('config', function() use (&$config) {

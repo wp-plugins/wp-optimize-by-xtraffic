@@ -77,3 +77,13 @@ if(!function_exists('http_response_code')) {
 	}
 }
 
+function wppepvn_cronjob($args)
+{
+	global $wpOptimizeByxTraffic;
+	if(isset($wpOptimizeByxTraffic) && $wpOptimizeByxTraffic) {
+		if(isset($wpOptimizeByxTraffic->di) && $wpOptimizeByxTraffic->di) {
+			$wpOptimizeByxTraffic->cronjob_action();
+		}
+	}
+}
+

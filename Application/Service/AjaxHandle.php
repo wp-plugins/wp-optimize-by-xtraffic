@@ -106,7 +106,8 @@ window.wppepvn_dtns.push("'.base64_encode(json_encode(self::$_dataSendForJS)).'"
 		}
 		
 		if(isset($dataSent['cronjob']['status']) && $dataSent['cronjob']['status']) {
-			$cronjob = new ServiceCronjob($this->di);
+			//$cronjob = new ServiceCronjob($this->di);
+			$cronjob = $this->di->getShared('cronjob');
 			$cronjob->run();
 		}
 		

@@ -127,7 +127,7 @@ class PepVN_Images
 	{
 		$resultData = false;
 		
-		if ($file && file_exists($file) && is_readable($file)) {
+		if ($file && is_file($file) && is_readable($file)) { 
 			
 			$rsGetimagesize = getimagesize($file);
 			if(isset($rsGetimagesize['mime']) && $rsGetimagesize['mime']) {

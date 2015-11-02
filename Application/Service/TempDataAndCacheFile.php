@@ -9,8 +9,6 @@ class TempDataAndCacheFile
 	
 	private static $_tempData = array();
 	
-	private static $_has_igbinary_status = false;
-	
 	private static $_key_salt = 0;
 	
 	private static $_group = 'default';
@@ -44,7 +42,7 @@ class TempDataAndCacheFile
 				if(false === $useCachePermanentStatus) {
 					$tmp = PepVN_Data::$cacheObject->get_cache($keyCache);
 				} else {
-					$tmp = self::$_tempData[$keyCache] = PepVN_Data::$cachePermanentObject->get_cache($keyCache);
+					$tmp = PepVN_Data::$cachePermanentObject->get_cache($keyCache);
 				}
 				if($tmp !== null) {
 					wp_cache_set( $keyCache, $tmp, self::$_group, WP_PEPVN_CACHE_TIMEOUT_NORMAL );

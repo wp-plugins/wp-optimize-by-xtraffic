@@ -50,6 +50,7 @@ class OptimizeImagesOptionsForm extends FormForm
 			,'optimize_images_override_title' => ''
 			
 			,'optimize_images_optimize_image_file_enable' => ''
+			,'optimize_images_only_handle_file_when_uploading_enable' => ''
 			,'optimize_images_auto_resize_images_enable' => ''
 			,'optimize_images_watermarks_enable' => ''
 			,'optimize_images_watermarks_watermark_text_background_enable' => ''

@@ -38,6 +38,8 @@ class Slug
 		if ($lowercase) {
 			$string = strtolower($string);
 		}
+		
+		$string = trim($string);
 
 		$string = preg_replace('#[\s \t\-/_\|\+]+#', $separator, $string);
 		

@@ -100,7 +100,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 	{
 		if(null === $this->_postData) {
 			if(isset($_POST) && is_array($_POST) && !empty($_POST)) {
-				$this->_postData = stripslashes_deep($_POST);
+				$this->_postData = stripslashes_deep((array)$_POST);
 			} else {
 				$this->_postData = array();
 			}

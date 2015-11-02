@@ -190,6 +190,16 @@ class WpActionManager
 		if(false === $wpExtend->isRequestIsAutoSavePosts()) {
 			if ( false === wp_is_post_revision( $post_ID ) ) {
 				if ( false === wp_is_post_autosave( $post_ID ) ) {
+					
+					if($hook->has_action('save_post_primary')) {
+						$hook->do_action('save_post_primary', array(
+							'post_ID' => $post_ID
+							, 'post' => $post
+							, 'update' => $update
+						));
+					}
+					
+					
 					if(
 						('publish' === get_post_status($post_ID))
 					) {
@@ -204,6 +214,8 @@ class WpActionManager
 						$this->_cleanCache();
 						
 					}
+					
+					
 				}
 			}
 		}
